@@ -1,5 +1,7 @@
-require "mr/version"
+require 'active_record'
+
+require 'mr/version'
 
 module MR
-  # TODO: your code goes here...
+
 end
