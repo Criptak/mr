@@ -21,6 +21,14 @@ class DBSchemaTests < Assert::Context
       $stdout = File.new('/dev/null', 'w')
       ActiveRecord::Schema.define(:version => 1) do
 
+        create_table "users" do |t|
+          t.string  "name"
+          t.string  "email"
+          t.boolean "active"
+          t.integer "area_id"
+          t.timestamps
+        end
+
       end
       $stdout = current_stdout
     end
