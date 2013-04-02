@@ -1,6 +1,10 @@
 require 'mr'
 require 'mr/fake_record'
 
+class TestRecord
+  include MR::Record
+end
+
 class TestFakeRecord
   include MR::FakeRecord
 

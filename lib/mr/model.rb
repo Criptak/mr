@@ -2,6 +2,7 @@ require 'ns-options'
 require 'set'
 require 'mr/associations'
 require 'mr/fields'
+require 'mr/record'
 
 module MR; end
 module MR::Model
@@ -28,6 +29,11 @@ module MR::Model
       args.last.kind_of?(Hash) ? args.pop : {},
       args.last || self.class.record_class.new
     ]
+    if @record.kind_of?(MR::Record)
+      @record.model = self
+    else
+      raise InvalidRecordError.new(@record)
+    end
     self.fields = field_values
   end
 
@@ -136,6 +142,12 @@ module MR::Model
       end
     end
 
+  end
+
+  class InvalidRecordError < RuntimeError
+    def initialize(record)
+      super "The passed record is not a kind of MR::Record: #{record.inspect}"
+    end
   end
 
 end

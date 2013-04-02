@@ -1,3 +1,4 @@
+require 'mr/record'
 require 'ns-options'
 require 'securerandom'
 require 'set'
@@ -8,6 +9,7 @@ module MR::FakeRecord
   def self.included(klass)
     klass.class_eval do
       include NsOptions
+      include MR::Record
       extend ClassMethods
 
       options :fr_config do
