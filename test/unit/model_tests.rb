@@ -49,6 +49,17 @@ module MR::Model
       assert_equal set_fields,       test_model.fields
     end
 
+    should "have set the record's model with itself" do
+      assert_equal subject, subject.send(:record).model
+    end
+
+    should "raise an exception when initialized with an object " \
+           "that isn't a kind of MR::Record" do
+      assert_raises(MR::Model::InvalidRecordError) do
+        TestModel.new('string')
+      end
+    end
+
     should "be comparable" do
       matching_model = TestModel.new(@fake_test_record)
       non_matching_model = TestModel.new(TestFakeRecord.new)
