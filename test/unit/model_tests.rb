@@ -1,11 +1,14 @@
 require 'assert'
 require 'mr/model'
+require 'mr/test_helpers'
 require 'ns-options/assert_macros'
 require 'test/support/test_models'
 
 module MR::Model
 
   class BaseTests < Assert::Context
+    include MR::TestHelpers
+
     desc "MR::Model"
     setup do
       @fake_test_record = TestFakeRecord.new({ :id => 1 })
@@ -142,17 +145,16 @@ module MR::Model
 
     should "allow setting fields when saved" do
       subject.save({ :name => 'Test' })
-      saved = @fake_test_record.saved_attributes
 
-      assert_equal 'Test', saved[:name]
+      assert_field_saved subject, :name, 'Test'
     end
 
     should "call the destroy method on it's record with #destroy" do
-      assert_equal false, @fake_test_record.destroyed?
+      assert_not_destroyed subject
 
       subject.destroy
 
-      assert_equal true, @fake_test_record.destroyed?
+      assert_destroyed subject
     end
 
     should "call the record's transaction with #transaction" do
