@@ -14,6 +14,8 @@ module MR::FakeRecord
         option :attributes, Set, :default => []
       end
 
+      attributes :id
+
       attr_reader :saved_attributes
 
     end
@@ -60,6 +62,14 @@ module MR::FakeRecord
 
   def destroyed?
     !!@destroyed
+  end
+
+  def ==(other)
+    if other.kind_of?(self.class)
+      self.id == other.id
+    else
+      super
+    end
   end
 
   module ClassMethods
