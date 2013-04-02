@@ -75,3 +75,45 @@ class WithModelTests < DBSchemaTests
   end
 
 end
+
+class BelongsToTests < WithModelTests
+  desc "using a belongs to association"
+  setup do
+    @area = Area.new({ :name => 'Alpha' })
+    @area.save
+  end
+  teardown do
+    @area.destroy
+  end
+
+  should "be able to read it and write to it" do
+    assert_nil subject.area
+
+    assert_nothing_raised do
+      subject.area = @area
+    end
+
+    assert_equal @area,    subject.area
+    assert_equal @area.id, subject.area_id
+  end
+
+end
+
+class HasManyTests < WithModelTests
+  desc "using a has many association"
+  setup do
+    @user.save
+    @comment = Comment.new({ :message => "Test", :user => @user })
+  end
+  teardown do
+    @comment.destroy
+    @user.destroy
+  end
+
+  should "be able to read it" do
+    @comment.save
+
+    assert_equal [ @comment ], subject.comments
+  end
+
+end

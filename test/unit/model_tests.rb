@@ -15,8 +15,8 @@ module MR::Model
 
     should have_accessors :fields
     should have_instance_methods :save, :destroy, :transaction, :valid?
-    should have_class_methods :mr_config, :record_class, :fields, :field_reader,
-      :field_writer, :field_accessor
+    should have_class_methods :mr_config, :record_class, :fields, :belongs_to,
+      :has_many, :field_reader, :field_writer, :field_accessor
 
     should "allow an optional record and fields to it's initialize" do
       fake_test_record = TestFakeRecord.new

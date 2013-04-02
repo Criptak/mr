@@ -1,5 +1,6 @@
 require 'ns-options'
 require 'set'
+require 'mr/associations'
 require 'mr/fields'
 
 module MR; end
@@ -120,6 +121,18 @@ module MR::Model
         MR::Fields::Reader.new(self, field_name)
         MR::Fields::Writer.new(self, field_name)
         self.mr_config.fields.add field_name.to_sym
+      end
+    end
+
+    def belongs_to(name, class_name, options = nil)
+      MR::Associations::BelongsTo.new(name, class_name, options).tap do |a|
+        a.define_methods(self)
+      end
+    end
+
+    def has_many(name, class_name, options = nil)
+      MR::Associations::HasMany.new(name, class_name, options).tap do |a|
+        a.define_method(self)
       end
     end
 
