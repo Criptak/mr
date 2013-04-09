@@ -7,7 +7,7 @@ module MR::Record
   class BaseTests < Assert::Context
     desc "MR::Record"
     setup do
-      @record = TestRecord.new
+      @record = TestFakeRecord.new
     end
     subject{ @record }
 

@@ -19,9 +19,11 @@ module MR::FakeRecord
     # check that it has accessors for it's has_many associations
     should have_accessors :comments
 
-    should have_instance_methods :attributes, :attributes=, :save!, :destroy,
-      :transaction, :new_record?, :valid?
-    should have_instance_methods :saved_attributes, :destroyed?
+    should have_cmeths :attributes, :belongs_to, :has_many
+
+    should have_imeths :attributes, :attributes=, :new_record?, :valid?
+    should have_imeths :save!, :destroy, :transaction
+    should have_imeths :saved_attributes, :destroyed?
 
     should "set an area_id when setting the area belongs_to association" do
       assert_nil subject.area

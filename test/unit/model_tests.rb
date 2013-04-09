@@ -17,9 +17,10 @@ module MR::Model
     subject{ @test_model }
 
     should have_accessors :fields
-    should have_instance_methods :save, :destroy, :transaction, :valid?
-    should have_class_methods :mr_config, :record_class, :fields, :belongs_to,
-      :has_many, :field_reader, :field_writer, :field_accessor
+    should have_cmeths :mr_config, :record_class
+    should have_cmeths :fields, :field_reader, :field_writer, :field_accessor
+    should have_cmeths :belongs_to, :has_many
+    should have_imeths :save, :destroy, :transaction, :valid?
 
     should "allow an optional record and fields to it's initialize" do
       fake_test_record = TestFakeRecord.new
