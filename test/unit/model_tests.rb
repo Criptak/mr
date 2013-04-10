@@ -17,9 +17,10 @@ module MR::Model
     subject{ @test_model }
 
     should have_accessors :fields
-    should have_instance_methods :save, :destroy, :transaction, :valid?
-    should have_class_methods :mr_config, :record_class, :fields, :belongs_to,
-      :has_many, :field_reader, :field_writer, :field_accessor
+    should have_cmeths :mr_config, :record_class
+    should have_cmeths :fields, :field_reader, :field_writer, :field_accessor
+    should have_cmeths :belongs_to, :has_many
+    should have_imeths :save, :destroy, :transaction, :valid?
 
     should "allow an optional record and fields to it's initialize" do
       fake_test_record = TestFakeRecord.new
@@ -174,35 +175,91 @@ module MR::Model
   class CallbacksTests < BaseTests
     desc "callbacks"
 
-    should "call the save and create ones when the record is a new record" do
+    should "call the save, create, and transaction ones when a new record" do
       @fake_test_record.stubs(:new_record?).returns(true)
       subject.save
 
+      assert_equal true, subject.before_transaction_called
+      assert_equal true, subject.before_transaction_on_create_called
+      assert_equal nil,  subject.before_transaction_on_update_called
+      assert_equal nil,  subject.before_transaction_on_destroy_called
       assert_equal true, subject.before_save_called
       assert_equal true, subject.before_create_called
       assert_equal nil,  subject.before_update_called
+      assert_equal nil,  subject.before_destroy_called
+      assert_equal nil,  subject.after_destroy_called
       assert_equal nil,  subject.after_update_called
       assert_equal true, subject.after_create_called
       assert_equal true, subject.after_save_called
+      assert_equal nil,  subject.after_transaction_on_destroy_called
+      assert_equal nil,  subject.after_transaction_on_update_called
+      assert_equal true, subject.after_transaction_on_create_called
+      assert_equal true, subject.after_transaction_called
     end
 
-    should "call save and update ones when the record isn't a new record" do
+    should "call save, update, and transaction ones when not a new record" do
       @fake_test_record.stubs(:new_record?).returns(false)
       subject.save
 
+      assert_equal true, subject.before_transaction_called
+      assert_equal nil,  subject.before_transaction_on_create_called
+      assert_equal true, subject.before_transaction_on_update_called
+      assert_equal nil,  subject.before_transaction_on_destroy_called
       assert_equal true, subject.before_save_called
       assert_equal nil,  subject.before_create_called
       assert_equal true, subject.before_update_called
+      assert_equal nil,  subject.before_destroy_called
+      assert_equal nil,  subject.after_destroy_called
       assert_equal true, subject.after_update_called
       assert_equal nil,  subject.after_create_called
       assert_equal true, subject.after_save_called
+      assert_equal nil,  subject.after_transaction_on_destroy_called
+      assert_equal true, subject.after_transaction_on_update_called
+      assert_equal nil,  subject.after_transaction_on_create_called
+      assert_equal true, subject.after_transaction_called
     end
 
-    should "call the destroy ones when the record is destroyed" do
+    should "call the destroy and transaction ones when the record is destroyed" do
       subject.destroy
 
+      assert_equal true, subject.before_transaction_called
+      assert_equal nil,  subject.before_transaction_on_create_called
+      assert_equal nil,  subject.before_transaction_on_update_called
+      assert_equal true, subject.before_transaction_on_destroy_called
+      assert_equal nil,  subject.before_save_called
+      assert_equal nil,  subject.before_create_called
+      assert_equal nil,  subject.before_update_called
       assert_equal true, subject.before_destroy_called
       assert_equal true, subject.after_destroy_called
+      assert_equal nil,  subject.after_update_called
+      assert_equal nil,  subject.after_create_called
+      assert_equal nil,  subject.after_save_called
+      assert_equal nil,  subject.after_transaction_on_update_called
+      assert_equal nil,  subject.after_transaction_on_create_called
+      assert_equal true, subject.after_transaction_on_destroy_called
+      assert_equal true, subject.after_transaction_called
+    end
+
+    should "call the transaction callbacks anytime a transaction is used" do
+      value = nil
+      subject.transaction{ value = true }
+
+      assert_equal true, subject.before_transaction_called
+      assert_equal nil,  subject.before_transaction_on_create_called
+      assert_equal nil,  subject.before_transaction_on_update_called
+      assert_equal nil,  subject.before_transaction_on_destroy_called
+      assert_equal nil,  subject.before_save_called
+      assert_equal nil,  subject.before_create_called
+      assert_equal nil,  subject.before_update_called
+      assert_equal nil,  subject.before_destroy_called
+      assert_equal nil,  subject.after_destroy_called
+      assert_equal nil,  subject.after_update_called
+      assert_equal nil,  subject.after_create_called
+      assert_equal nil,  subject.after_save_called
+      assert_equal nil,  subject.after_transaction_on_update_called
+      assert_equal nil,  subject.after_transaction_on_create_called
+      assert_equal nil,  subject.after_transaction_on_destroy_called
+      assert_equal true, subject.after_transaction_called
     end
 
   end

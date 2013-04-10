@@ -51,24 +51,35 @@ module MR::Model
 
   def save(field_values = nil)
     self.fields = field_values || {}
-    new_record = @record.new_record?
-    self.transaction do
+    event = @record.new_record? ? 'create' : 'update'
+
+    self.transaction(event) do
       run_callback 'before_save'
-      run_callback new_record ? 'before_create' : 'before_update'
+      run_callback "before_#{event}"
       @record.save!
-      run_callback new_record ? 'after_create' : 'after_update'
+      run_callback "after_#{event}"
       run_callback 'after_save'
     end
   end
 
   def destroy
-    run_callback 'before_destroy'
-    @record.destroy
-    run_callback 'after_destroy'
+    self.transaction('destroy') do
+      run_callback 'before_destroy'
+      @record.destroy
+      run_callback 'after_destroy'
+    end
   end
 
-  def transaction(&block)
+  def transaction(*args, &block)
+    if (event = args.first) && !['create', 'update', 'destroy'].include?(event)
+      raise ArgumentError, 'transaction events must be one of: create, update, destroy'
+    end
+
+    run_callback 'before_transaction'
+    run_callback "before_transaction_on_#{event}" if event
     @record.transaction(&block)
+    run_callback "after_transaction_on_#{event}" if event
+    run_callback 'after_transaction'
   end
 
   def valid?
@@ -93,6 +104,15 @@ module MR::Model
   def after_update;   end
   def before_destroy; end
   def after_destroy;  end
+
+  def before_transaction; end
+  def after_transaction;  end
+  def before_transaction_on_create; end
+  def after_transaction_on_create;  end
+  def before_transaction_on_update; end
+  def after_transaction_on_update;  end
+  def before_transaction_on_destroy; end
+  def after_transaction_on_destroy;  end
 
   def run_callback(name)
     self.send(name)

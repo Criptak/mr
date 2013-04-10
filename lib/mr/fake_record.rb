@@ -9,8 +9,8 @@ module MR::FakeRecord
   def self.included(klass)
     klass.class_eval do
       include NsOptions
-      include MR::Record
       extend ClassMethods
+      include MR::Record
 
       options :fr_config do
         option :attributes, Set, :default => []
