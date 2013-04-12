@@ -75,4 +75,8 @@ class User
   belongs_to :area, 'Area'
   has_many :comments, 'Comment'
 
+  def self.all_of_em_query
+    MR::Query.new(self, UserRecord.scoped)
+  end
+
 end

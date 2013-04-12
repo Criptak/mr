@@ -117,3 +117,56 @@ class HasManyTests < WithModelTests
   end
 
 end
+
+class QueryTests < WithModelTests
+  desc "using a MR::Query"
+  setup do
+    @users = [*(0..4)].map do |i|
+      User.new({ :name => "test #{i}" }).tap{|u| u.save }
+    end
+    @query = User.all_of_em_query
+  end
+  teardown do
+    @users.each(&:destroy)
+  end
+  subject{ @query }
+
+  should "allow fetching the models with #models" do
+    assert_equal @users, subject.models
+  end
+
+  should "allow counting the models with #count" do
+    assert_equal 5, subject.count
+  end
+
+end
+
+class PagedQueryTests < QueryTests
+  setup do
+    @paged_query = @query.paged(1, 3)
+  end
+  subject{ @paged_query }
+
+  should "allow fetching the models paged with #models" do
+    assert_equal @users[0, 3], subject.models
+
+    paged_query = @query.paged(2, 3)
+    assert_equal @users[3, 2], paged_query.models
+  end
+
+  should "allow fetching the models paged with #models" do
+    assert_equal 3, subject.count
+
+    paged_query = @query.paged(2, 3)
+    assert_equal 2, paged_query.count
+  end
+
+  should "allow counting the total number of models with #total_count" do
+    assert_equal 5, subject.total_count
+  end
+
+  should "allow counting the total number of pages with #total_pages" do
+    assert_equal 2, subject.total_pages
+  end
+
+end
