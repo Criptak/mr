@@ -115,16 +115,20 @@ module MR::Associations
     end
     subject{ @belongs_to }
 
-    should have_instance_methods :reader_method_name, :association_reader_name,
-      :read, :define_method
+    should have_imeths :reader_method_name, :writer_method_name
+    should have_imeths :association_reader_name, :association_writer_name
+    should have_imeths :read, :write, :define_methods
 
     should "build all the method names it needs" do
       assert_equal "test_models",  subject.reader_method_name
+      assert_equal "test_models=", subject.writer_method_name
       assert_equal "test_model_has_many",  subject.association_reader_name
+      assert_equal "test_model_has_many=", subject.association_writer_name
     end
 
     should "raise an error when read or write is called without a block" do
       assert_raises(ArgumentError){ subject.read }
+      assert_raises(ArgumentError){ subject.write }
     end
 
     should "raise an error if the associated class name " \
@@ -161,8 +165,25 @@ module MR::Associations
       assert_equal [], result
     end
 
-    should "add a reader with #define_method" do
-      subject.define_method(@klass)
+    should "raise an error if it isn't passed MR::Models with #write" do
+      test_record = @klass.new.record
+
+      assert_raises(ArgumentError) do
+        subject.write('test'){ test_record }
+      end
+    end
+
+    should "set the record's association with #write" do
+      test_record = @klass.new.record
+      test_models = [ TestModel.new ]
+      subject.write(test_models){ test_record }
+
+      expected_record = test_models.map{|m| m.send(:record) }
+      assert_equal expected_record, test_record.test_model_has_many
+    end
+
+    should "add a reader and writer with #define_methods" do
+      subject.define_methods(@klass)
       instance = @klass.new
       expected_models = instance.record.test_model_has_many.map do |r|
         TestModel.new(r)
@@ -170,6 +191,11 @@ module MR::Associations
 
       assert_instance_of Array, instance.test_models
       assert_equal expected_models, instance.test_models
+
+      new_model = TestModel.new
+      instance.test_models = [ TestModel.new ]
+
+      assert_equal [ new_model ], instance.test_models
     end
 
   end

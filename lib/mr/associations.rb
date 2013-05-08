@@ -30,7 +30,7 @@ module MR::Associations
     end
 
     def reader_method_name
-      @name
+      @name.to_s
     end
 
     def writer_method_name
@@ -38,7 +38,7 @@ module MR::Associations
     end
 
     def association_reader_name
-      @record_association_name
+      @record_association_name.to_s
     end
 
     def association_writer_name
@@ -107,8 +107,16 @@ module MR::Associations
       @name.to_s
     end
 
+    def writer_method_name
+      "#{@name}="
+    end
+
     def association_reader_name
-      @record_association_name
+      @record_association_name.to_s
+    end
+
+    def association_writer_name
+      "#{@record_association_name}="
     end
 
     def read(&record_provider)
@@ -123,12 +131,33 @@ module MR::Associations
       end
     end
 
-    def define_method(klass)
+    def write(mr_models, &record_provider)
+      mr_models = [*mr_models].compact
+      if !record_provider
+        raise ArgumentError, 'requires a block to provide the record instance'
+      end
+      mr_models.each do |mr_model|
+        if !mr_model.kind_of?(MR::Model)
+          raise ArgumentError, "value #{mr_model.inspect} must be a kind of MR::Model"
+        end
+      end
+
+      record = record_provider.call
+      association_records = mr_models.map{|mr_model| mr_model.send(:record) }
+      record.send(association_writer_name, association_records)
+    end
+
+    def define_methods(klass)
       has_many = self
       klass.class_eval do
 
         define_method(has_many.reader_method_name) do
           has_many.read{ record }
+        end
+
+        define_method(has_many.writer_method_name) do |mr_models|
+          has_many.write(mr_models){ record }
+          self.send(has_many.reader_method_name)
         end
 
       end
