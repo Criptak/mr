@@ -158,7 +158,7 @@ module MR::Model
 
     def has_many(name, class_name, options = nil)
       MR::Associations::HasMany.new(name, class_name, options).tap do |a|
-        a.define_method(self)
+        a.define_methods(self)
       end
     end
 
