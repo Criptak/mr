@@ -30,9 +30,9 @@ module MR
     attr_reader :page_num, :page_size, :page_offset
 
     def initialize(query, page_num = nil, page_size = nil)
-      @page_num  = page_num && page_num.to_i > 0 ? page_num.to_i : 1
-      @page_size = page_size && page_size.to_i > 0 ? page_size.to_i : 25
-      @page_offset = (@page_num - 1) * @page_size
+      @page_num    = PageNumber.new(page_num)
+      @page_size   = PageSize.new(page_size)
+      @page_offset = PageOffset.new(@page_num, @page_size)
 
       @unpaged_relation = query.relation.dup
       relation = query.relation.offset(@page_offset).limit(@page_size)
@@ -44,6 +44,24 @@ module MR
     # then, running it in the `initialize` would be wasteful.
     def total_count
       @unpaged_relation.count
+    end
+
+    module PageNumber
+      def self.new(number)
+        number && number.to_i > 0 ? number.to_i : 1
+      end
+    end
+
+    module PageSize
+      def self.new(number)
+        number && number.to_i > 0 ? number.to_i : 25
+      end
+    end
+
+    module PageOffset
+      def self.new(page_number, page_size)
+        (page_number - 1) * page_size
+      end
     end
 
   end
