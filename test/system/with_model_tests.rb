@@ -165,8 +165,4 @@ class PagedQueryTests < QueryTests
     assert_equal 5, subject.total_count
   end
 
-  should "allow counting the total number of pages with #total_pages" do
-    assert_equal 2, subject.total_pages
-  end
-
 end

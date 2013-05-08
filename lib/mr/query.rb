@@ -39,20 +39,11 @@ module MR
       super query.model_class, relation
     end
 
+    # This isn't done in the `initialize` because it runs a query (which is
+    # expensive) and should only be done when it's needed. If it's never used
+    # then, running it in the `initialize` would be wasteful.
     def total_count
       @unpaged_relation.count
-    end
-
-    def total_pages
-      (total_count / @page_size.to_f).ceil
-    end
-
-    def current_page
-      @page_num
-    end
-
-    def last_page?
-      @page_num >= total_pages
     end
 
   end

@@ -46,8 +46,7 @@ class MR::Query
     end
     subject{ @paged_query }
 
-    should have_instance_methods :total_count, :total_pages, :current_page,
-      :last_page?, :page_num, :page_size, :page_offset
+    should have_instance_methods :total_count, :page_num, :page_size, :page_offset
 
     should "be a kind of MR::Query" do
       assert_kind_of MR::Query, subject
@@ -66,17 +65,6 @@ class MR::Query
 
     should "count the total number of models with #total_count" do
       assert_equal 2, subject.total_count
-    end
-
-    should "count the total number of pages with #total_pages" do
-      assert_equal 2, subject.total_pages
-    end
-
-    should "return whether it's the last page or not with #last_page?" do
-      assert_equal false, subject.last_page?
-
-      paged_query = MR::PagedQuery.new(@query, 2, 1)
-      assert_equal true, paged_query.last_page?
     end
 
     should "default page number and page size" do
