@@ -86,6 +86,10 @@ module MR::Model
     @record.valid?
   end
 
+  def new?
+    @record.new_record?
+  end
+
   def ==(other)
     if other.kind_of?(self.class)
       @record == other.record
