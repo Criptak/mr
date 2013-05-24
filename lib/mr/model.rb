@@ -53,7 +53,7 @@ module MR::Model
   def save(field_values = nil)
     self.fields = field_values || {}
     event = @record.new_record? ? 'create' : 'update'
-
+    raise InvalidError.new(self, self.errors) if !@record.valid?
     self.transaction(event) do
       run_callback 'before_save'
       run_callback "before_#{event}"
@@ -81,6 +81,10 @@ module MR::Model
     @record.transaction(&block)
     run_callback "after_transaction_on_#{event}" if event
     run_callback 'after_transaction'
+  end
+
+  def errors
+    @record.errors.messages
   end
 
   def valid?
@@ -175,6 +179,14 @@ module MR::Model
       self.record_class.all.map{|record| self.new(record) }
     end
 
+  end
+
+  class InvalidError < RuntimeError
+    attr_reader :errors
+    def initialize(model, errors)
+      @errors = errors
+      super "Invalid #{model.class} couldn't be saved"
+    end
   end
 
   class InvalidRecordError < RuntimeError

@@ -52,6 +52,8 @@ class UserRecord < ActiveRecord::Base
     :foreign_key => 'user_id',
     :dependent   => :destroy
   }
+
+  validates_presence_of :name
 end
 
 class FakeUserRecord

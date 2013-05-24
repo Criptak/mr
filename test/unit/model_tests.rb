@@ -22,7 +22,7 @@ module MR::Model
     should have_cmeths :belongs_to, :has_many
     should have_cmeths :find, :all
     should have_imeths :save, :destroy, :transaction
-    should have_imeths :valid?, :new?
+    should have_imeths :errors, :valid?, :new?
 
     should "allow an optional record and fields to it's initialize" do
       fake_test_record = TestFakeRecord.new
@@ -303,6 +303,35 @@ module MR::Model
     should "return the matching model using AR's find method" do
       expected_models = @records.map{|r| TestModel.new(r) }
       assert_equal expected_models, @result
+    end
+
+  end
+
+
+  class InvalidTests < BaseTests
+    desc "when saving an invalid record"
+    setup do
+      errors_mock = mock("ActiveRecord::Errors")
+      @fake_test_record.stubs(:valid?).returns(false)
+      @fake_test_record.stubs(:errors).returns(errors_mock)
+      errors_mock.stubs(:messages).returns({ :name => [ "can't be blank" ]})
+    end
+
+    should "raise a InvalidModel exception with the ActiveRecord error messages" do
+      exception = nil
+      begin
+        @test_model.save
+      rescue Exception => exception
+      end
+
+      assert_instance_of MR::Model::InvalidError, exception
+      assert_equal [ "can't be blank" ], exception.errors[:name]
+    end
+
+    should "return the ActiveRecord's error messages with errors" do
+      @test_model.valid?
+
+      assert_equal [ "can't be blank" ], @test_model.errors[:name]
     end
 
   end
