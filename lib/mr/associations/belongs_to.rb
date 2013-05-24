@@ -5,6 +5,8 @@ module MR::Associations
   class BelongsTo
     include Helpers
 
+    NullModel = Struct.new(:record)
+
     def initialize(name, associated_class_name, options = nil)
       options ||= {}
       @name = name.to_s
@@ -50,9 +52,10 @@ module MR::Associations
       if !record_provider
         raise ArgumentError, 'requires a block to provide the record instance'
       end
-      if !mr_model.kind_of?(MR::Model)
+      if mr_model && !mr_model.kind_of?(MR::Model)
         raise ArgumentError, "value must be a kind of MR::Model"
       end
+      mr_model ||= NullModel.new
 
       record = record_provider.call
       record.send(association_writer_name, mr_model.send(:record))

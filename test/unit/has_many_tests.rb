@@ -78,6 +78,9 @@ class MR::Associations::HasMany
 
       expected_record = test_models.map{|m| m.send(:record) }
       assert_equal expected_record, test_record.test_model_has_many
+
+      subject.write(nil){ test_record }
+      assert_equal [], test_record.test_model_has_many
     end
 
     should "add a reader and writer with #define_methods" do

@@ -69,6 +69,9 @@ class MR::Associations::BelongsTo
 
       expected_record = test_model.send(:record)
       assert_equal expected_record, test_record.test_model_belongs_to
+
+      subject.write(nil){ test_record }
+      assert_nil test_record.test_model_belongs_to
     end
 
     should "add a reader and writer with #define_methods" do
