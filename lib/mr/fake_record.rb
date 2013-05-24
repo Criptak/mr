@@ -66,6 +66,14 @@ module MR::FakeRecord
     !!@destroyed
   end
 
+  def [](attribute_name)
+    self.send(attribute_name)
+  end
+
+  def []=(attribute_name, value)
+    self.send("#{attribute_name}=", value)
+  end
+
   def ==(other)
     if other.kind_of?(self.class)
       self.id == other.id
