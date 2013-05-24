@@ -1,6 +1,7 @@
 require 'ns-options'
 require 'set'
-require 'mr/associations'
+require 'mr/associations/belongs_to'
+require 'mr/associations/has_many'
 require 'mr/fields'
 require 'mr/record'
 
