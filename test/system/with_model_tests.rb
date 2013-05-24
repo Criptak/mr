@@ -166,3 +166,31 @@ class PagedQueryTests < QueryTests
   end
 
 end
+
+class FinderTests < WithModelTests
+  setup do
+    @users = [*(1..3)].map do |i|
+      record = UserRecord.new({ :name => "test #{i}" }).tap do |u|
+        u.id = i
+        u.save!
+      end
+      User.new(record)
+    end
+  end
+  teardown do
+    @users.each(&:destroy)
+  end
+
+  should "allow fetching a single user with find" do
+    assert_equal @users[0], User.find(1)
+
+    assert_raises(ActiveRecord::RecordNotFound) do
+      User.find(1000)
+    end
+  end
+
+  should "allow fetching a all users with all" do
+    assert_equal @users, User.all
+  end
+
+end
