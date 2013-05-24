@@ -5,7 +5,7 @@ require 'test/support/ar_models'
 class WithModelTests < DBSchemaTests
   desc "MR with an ActiveRecord model"
   setup do
-    @user = User.new
+    @user = User.new({ :name => "Joe Test" })
   end
   teardown do
     @user.destroy rescue nil
@@ -191,6 +191,31 @@ class FinderTests < WithModelTests
 
   should "allow fetching a all users with all" do
     assert_equal @users, User.all
+  end
+
+end
+
+class InvalidTests < WithModelTests
+  desc "when saving an invalid model"
+  setup do
+    @user = User.new
+  end
+
+  should "raise a InvalidModel exception with the ActiveRecord error messages" do
+    exception = nil
+    begin
+      subject.save
+    rescue Exception => exception
+    end
+
+    assert_instance_of MR::Model::InvalidError, exception
+    assert_equal [ "can't be blank" ], exception.errors[:name]
+  end
+
+  should "return the ActiveRecord's error messages with errors" do
+    subject.valid?
+
+    assert_equal [ "can't be blank" ], subject.errors[:name]
   end
 
 end
