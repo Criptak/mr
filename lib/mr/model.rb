@@ -166,6 +166,14 @@ module MR::Model
       end
     end
 
+    def find(id)
+      self.new(self.record_class.find(id))
+    end
+
+    def all
+      self.record_class.all.map{|record| self.new(record) }
+    end
+
   end
 
   class InvalidRecordError < RuntimeError

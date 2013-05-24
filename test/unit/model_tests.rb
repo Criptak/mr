@@ -20,6 +20,7 @@ module MR::Model
     should have_cmeths :mr_config, :record_class
     should have_cmeths :fields, :field_reader, :field_writer, :field_accessor
     should have_cmeths :belongs_to, :has_many
+    should have_cmeths :find, :all
     should have_imeths :save, :destroy, :transaction
     should have_imeths :valid?, :new?
 
@@ -265,6 +266,43 @@ module MR::Model
       assert_equal nil,  subject.after_transaction_on_create_called
       assert_equal nil,  subject.after_transaction_on_destroy_called
       assert_equal true, subject.after_transaction_called
+    end
+
+  end
+
+  class FindTests < BaseTests
+    desc "find"
+    setup do
+      TestFakeRecord.stubs(:find).with(1).returns(@fake_test_record)
+      @result = TestModel.find(1)
+    end
+    teardown do
+      TestFakeRecord.unstub(:find)
+    end
+
+    should "return the matching model using AR's find method" do
+      assert_equal TestModel.new(@fake_test_record), @result
+    end
+
+  end
+
+  class AllTests < BaseTests
+    desc "all"
+    setup do
+      @records = [
+        TestFakeRecord.new({ :id => 2 }),
+        TestFakeRecord.new({ :id => 3 })
+      ]
+      TestFakeRecord.stubs(:all).returns(@records)
+      @result = TestModel.all
+    end
+    teardown do
+      TestFakeRecord.unstub(:all)
+    end
+
+    should "return the matching model using AR's find method" do
+      expected_models = @records.map{|r| TestModel.new(r) }
+      assert_equal expected_models, @result
     end
 
   end
