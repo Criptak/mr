@@ -11,7 +11,7 @@ module MR::Fields
       @klass = Class.new do
         attr_reader :record
         def initialize
-          @record = OpenStruct.new({ :some_method => 'test' })
+          @record = { :some_method => 'test' }
         end
       end
 
@@ -43,7 +43,7 @@ module MR::Fields
       instance = @klass.new
       instance.something_else = 'another'
 
-      assert_equal 'another', instance.record.something_else
+      assert_equal 'another', instance.record[:something_else]
       assert_not instance.respond_to?(:something_else)
     end
 
