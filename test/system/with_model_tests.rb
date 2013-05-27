@@ -66,11 +66,13 @@ class WithModelTests < DBSchemaTests
         :active => true
       })
     end
+    assert_not subject.destroyed?
     assert UserRecord.exists?(subject.id)
 
     assert_nothing_raised do
       subject.destroy
     end
+    assert subject.destroyed?
     assert_not UserRecord.exists?(subject.id)
   end
 

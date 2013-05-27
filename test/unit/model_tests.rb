@@ -22,7 +22,7 @@ module MR::Model
     should have_cmeths :belongs_to, :has_many
     should have_cmeths :find, :all
     should have_imeths :save, :destroy, :transaction
-    should have_imeths :errors, :valid?, :new?
+    should have_imeths :errors, :valid?, :new?, :destroyed?
 
     should "allow an optional record and fields to it's initialize" do
       fake_test_record = TestFakeRecord.new
@@ -174,6 +174,12 @@ module MR::Model
 
     should "call the record's `new_record?` with #new?" do
       assert_equal @fake_test_record.new_record?, subject.new?
+    end
+
+    should "call the record's `destroyed?` with #destroyed?" do
+      assert_equal false, subject.destroyed?
+      @fake_test_record.destroy
+      assert_equal true, subject.destroyed?
     end
 
   end
