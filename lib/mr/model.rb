@@ -95,6 +95,10 @@ module MR::Model
     @record.new_record?
   end
 
+  def destroyed?
+    @record.destroyed?
+  end
+
   def ==(other)
     if other.kind_of?(self.class)
       @record == other.record
