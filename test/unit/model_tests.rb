@@ -177,9 +177,7 @@ module MR::Model
     end
 
     should "call the record's `destroyed?` with #destroyed?" do
-      assert_equal false, subject.destroyed?
-      @fake_test_record.destroy
-      assert_equal true, subject.destroyed?
+      assert_equal @fake_test_record.destroyed?, subject.destroyed?
     end
 
   end
