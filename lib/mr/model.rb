@@ -53,8 +53,10 @@ module MR::Model
   def save(field_values = nil)
     self.fields = field_values || {}
     event = @record.new_record? ? 'create' : 'update'
-    raise InvalidError.new(self, self.errors) if !@record.valid?
     self.transaction(event) do
+      run_callback 'before_validation'
+      run_callback "before_validation_on_#{event}"
+      raise InvalidError.new(self, self.errors) if !@record.valid?
       run_callback 'before_save'
       run_callback "before_#{event}"
       @record.save!
@@ -109,6 +111,9 @@ module MR::Model
 
   private
 
+  def before_validation; end
+  def before_validation_on_create; end
+  def before_validation_on_update; end
   def before_save;    end
   def after_save;     end
   def before_create;  end
