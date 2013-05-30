@@ -193,6 +193,9 @@ module MR::Model
       assert_equal true, subject.before_transaction_on_create_called
       assert_equal nil,  subject.before_transaction_on_update_called
       assert_equal nil,  subject.before_transaction_on_destroy_called
+      assert_equal true, subject.before_validation_called
+      assert_equal true, subject.before_validation_on_create_called
+      assert_equal nil,  subject.before_validation_on_update_called
       assert_equal true, subject.before_save_called
       assert_equal true, subject.before_create_called
       assert_equal nil,  subject.before_update_called
@@ -215,6 +218,9 @@ module MR::Model
       assert_equal nil,  subject.before_transaction_on_create_called
       assert_equal true, subject.before_transaction_on_update_called
       assert_equal nil,  subject.before_transaction_on_destroy_called
+      assert_equal true, subject.before_validation_called
+      assert_equal nil,  subject.before_validation_on_create_called
+      assert_equal true, subject.before_validation_on_update_called
       assert_equal true, subject.before_save_called
       assert_equal nil,  subject.before_create_called
       assert_equal true, subject.before_update_called
@@ -236,6 +242,9 @@ module MR::Model
       assert_equal nil,  subject.before_transaction_on_create_called
       assert_equal nil,  subject.before_transaction_on_update_called
       assert_equal true, subject.before_transaction_on_destroy_called
+      assert_equal nil,  subject.before_validation_called
+      assert_equal nil,  subject.before_validation_on_create_called
+      assert_equal nil,  subject.before_validation_on_update_called
       assert_equal nil,  subject.before_save_called
       assert_equal nil,  subject.before_create_called
       assert_equal nil,  subject.before_update_called
@@ -258,6 +267,9 @@ module MR::Model
       assert_equal nil,  subject.before_transaction_on_create_called
       assert_equal nil,  subject.before_transaction_on_update_called
       assert_equal nil,  subject.before_transaction_on_destroy_called
+      assert_equal nil,  subject.before_validation_called
+      assert_equal nil,  subject.before_validation_on_create_called
+      assert_equal nil,  subject.before_validation_on_update_called
       assert_equal nil,  subject.before_save_called
       assert_equal nil,  subject.before_create_called
       assert_equal nil,  subject.before_update_called

@@ -61,6 +61,8 @@ class TestModel
   field_reader :id
   field_accessor :name
 
+  attr_reader :before_validation_called
+  attr_reader :before_validation_on_create_called, :before_validation_on_update_called
   attr_reader :before_save_called, :after_save_called
   attr_reader :before_create_called, :after_create_called
   attr_reader :before_update_called, :after_update_called
@@ -73,6 +75,10 @@ class TestModel
   attr_accessor :special
 
   protected
+
+  def before_validation; @before_validation_called = true; end
+  def before_validation_on_create; @before_validation_on_create_called = true; end
+  def before_validation_on_update; @before_validation_on_update_called = true; end
 
   def before_save;    @before_save_called    = true; end
   def after_save;     @after_save_called     = true; end
