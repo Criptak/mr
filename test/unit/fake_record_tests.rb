@@ -2,6 +2,7 @@ require 'assert'
 require 'mr/fake_record'
 require 'ns-options/assert_macros'
 require 'test/support/ar_models'
+require 'thread'
 
 module MR::FakeRecord
 
@@ -19,7 +20,7 @@ module MR::FakeRecord
     # check that it has accessors for it's has_many associations
     should have_accessors :comments
 
-    should have_cmeths :attributes, :belongs_to, :has_many
+    should have_cmeths :attributes, :belongs_to, :has_many, :mr_id_provider
 
     should have_imeths :attributes, :attributes=, :new_record?, :valid?
     should have_imeths :save!, :destroy, :transaction
@@ -84,10 +85,47 @@ module MR::FakeRecord
 
     should "set a flag when it's destroyed" do
       assert_equal false, subject.destroyed?
-
       subject.destroy
-
       assert_equal true, subject.destroyed?
+    end
+
+  end
+
+  class DefaultIdTests < BaseTests
+    desc "default ID generation"
+    setup do
+      @provider = FakeUserRecord.mr_id_provider
+      @started_at = @provider.current
+    end
+    subject{ @provider }
+
+    should have_readers :mutex, :current
+
+    should "store a mutex and it's the current id" do
+      assert_instance_of Mutex,  subject.mutex
+      assert_instance_of Fixnum, subject.current
+    end
+
+    should "increated the counter and return the value with #next" do
+      next_id = subject.next
+      assert_equal @started_at + 1, next_id
+      assert_equal @started_at + 1, subject.current
+    end
+
+    should "generate ids for each new record created" do
+      threads = [*(0..2)].map do |n|
+        Thread.new do
+          Thread.current['fake_user'] = FakeUserRecord.new.tap{|u| u.save! }
+        end
+      end
+      fake_users = threads.map do |thread|
+        thread.join
+        thread['fake_user']
+      end
+      fake_users.each_with_index do |fake_user, n|
+        expected_id = @started_at + (n + 1)
+        assert_equal expected_id, fake_user.id
+      end
     end
 
   end
