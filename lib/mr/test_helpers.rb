@@ -18,13 +18,16 @@ module MR::TestHelpers
       raise ArgumentError, "a model and field name must be provided"
     end
 
-    saved = model.send(:record).saved_attributes
+    saved = model.send(:record).saved_attributes || {}
+    has_key  = saved.key?(field_name.to_sym)
+    saved_as = saved[field_name.to_sym]
+
     if check_value
       desc = "Expected #{field_name.inspect} was saved as #{value.inspect}"
-      assert_equal args[0], saved[field_name.to_sym], desc
+      assert has_key && value == saved_as, desc
     else
       desc = "Expected #{field_name.inspect} was saved"
-      assert saved.key?(field_name.to_sym), desc
+      assert has_key && !saved_as.nil?, desc
     end
   end
 
@@ -35,22 +38,27 @@ module MR::TestHelpers
       raise ArgumentError, "a model and field name must be provided"
     end
 
-    saved = model.send(:record).saved_attributes
+    saved = model.send(:record).saved_attributes || {}
+    has_key  = saved.key?(field_name.to_sym)
+    saved_as = saved[field_name.to_sym]
+
     if check_value
       desc = "Expected #{field_name.inspect} was not saved as #{value.inspect}"
-      assert_not_equal value, saved[field_name.to_sym], desc
+      assert !has_key || value != saved_as, desc
     else
       desc = "Expected #{field_name.inspect} was not saved"
-      assert_not saved.key?(field_name.to_sym), desc
+      assert !has_key, desc
     end
   end
 
   def assert_destroyed(model)
-    assert model.send(:record).destroyed?
+    desc = "Expected the model to be destroyed"
+    assert model.send(:record).destroyed?, desc
   end
 
   def assert_not_destroyed(model)
-    assert_not model.send(:record).destroyed?
+    desc = "Expected the model to not be destroyed"
+    assert !model.send(:record).destroyed?, desc
   end
 
 end
