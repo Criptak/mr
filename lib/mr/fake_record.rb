@@ -1,7 +1,7 @@
 require 'mr/record'
 require 'ns-options'
-require 'securerandom'
 require 'set'
+require 'thread'
 
 module MR; end
 module MR::FakeRecord
@@ -19,6 +19,8 @@ module MR::FakeRecord
       attributes :id
 
       attr_reader :saved_attributes
+
+      @mr_id_provider = IDProvider.new
 
     end
   end
@@ -40,7 +42,7 @@ module MR::FakeRecord
   end
 
   def save!
-    self.id ||= ::SecureRandom.random_number(100)
+    self.id ||= self.class.mr_id_provider.next
     (self.created_at ||= Time.now) if self.respond_to?(:created_at=)
     (self.updated_at = Time.now) if self.respond_to?(:updated_at=)
     @saved_attributes = self.attributes.dup
@@ -103,6 +105,10 @@ module MR::FakeRecord
       end
     end
 
+    def mr_id_provider
+      @mr_id_provider
+    end
+
   end
 
   class BelongsTo
@@ -156,6 +162,19 @@ module MR::FakeRecord
 
         attr_writer has_many.reader_name
 
+      end
+    end
+  end
+
+  class IDProvider
+    attr_reader :mutex, :current
+    def initialize
+      @current = 0
+      @mutex   = Mutex.new
+    end
+    def next
+      @mutex.synchronize do
+        @current += 1
       end
     end
   end
