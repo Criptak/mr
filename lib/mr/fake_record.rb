@@ -91,6 +91,11 @@ module MR::FakeRecord
         attr_accessor attr_name
         self.fr_config.attributes << attr_name.to_sym
       end
+      self.fr_config.attributes
+    end
+
+    def column_names
+      self.attributes.map(&:to_s).sort
     end
 
     def belongs_to(*args)

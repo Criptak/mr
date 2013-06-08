@@ -21,10 +21,24 @@ module MR::FakeRecord
     should have_accessors :comments
 
     should have_cmeths :attributes, :belongs_to, :has_many, :mr_id_provider
+    should have_cmeths :column_names
 
     should have_imeths :attributes, :attributes=, :new_record?, :valid?
     should have_imeths :save!, :destroy, :transaction
     should have_imeths :saved_attributes, :destroyed?
+
+    should "return its attribute list when calling `attributes`" do
+      [:id, :name, :email, :active, :area_id, :created_at, :updated_at].each do |a|
+        assert_includes a, FakeUserRecord.attributes
+      end
+      assert_not_includes :other_attr, FakeUserRecord.attributes
+    end
+
+    should "mimic an AR record by exposing its `attributes` as `column_names`" do
+      assert_not_empty FakeUserRecord.attributes
+      exp_col_names = FakeUserRecord.attributes.map(&:to_s).sort
+      assert_equal exp_col_names, FakeUserRecord.column_names
+    end
 
     should "set an area_id when setting the area belongs_to association" do
       assert_nil subject.area
