@@ -330,7 +330,8 @@ module MR::Model
       errors_mock = mock("ActiveRecord::Errors")
       @fake_test_record.stubs(:valid?).returns(false)
       @fake_test_record.stubs(:errors).returns(errors_mock)
-      errors_mock.stubs(:messages).returns({ :name => [ "can't be blank" ]})
+      @fake_name_errors = [ "has some error 1", "has some error 2" ]
+      errors_mock.stubs(:messages).returns({ :name => @fake_name_errors })
     end
 
     should "raise a InvalidModel exception with the ActiveRecord error messages" do
@@ -341,13 +342,15 @@ module MR::Model
       end
 
       assert_instance_of MR::Model::InvalidError, exception
-      assert_equal [ "can't be blank" ], exception.errors[:name]
+      assert_equal @fake_name_errors, exception.errors[:name]
+
+      exp_desc = ":name has some error 1, :name has some error 2"
+      assert_includes exp_desc, exception.message
     end
 
     should "return the ActiveRecord's error messages with errors" do
       @test_model.valid?
-
-      assert_equal [ "can't be blank" ], @test_model.errors[:name]
+      assert_equal @fake_name_errors, @test_model.errors[:name]
     end
 
   end
