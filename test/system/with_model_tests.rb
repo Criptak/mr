@@ -212,6 +212,7 @@ class InvalidTests < WithModelTests
 
     assert_instance_of MR::Model::InvalidError, exception
     assert_equal [ "can't be blank" ], exception.errors[:name]
+    assert_includes ":name can't be blank", exception.message
   end
 
   should "return the ActiveRecord's error messages with errors" do

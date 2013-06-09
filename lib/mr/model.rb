@@ -194,7 +194,18 @@ module MR::Model
     attr_reader :errors
     def initialize(model, errors)
       @errors = errors
-      super "Invalid #{model.class} couldn't be saved"
+      super "Invalid #{model.class} couldn't be saved: #{errors_description}"
+    end
+
+    private
+
+    def errors_description
+      return '' if !@errors.kind_of?(::Hash)
+
+      @errors.keys.inject([]) do |details, thing|
+        (@errors[thing] || []).each{ |msg| details << "#{thing.inspect} #{msg}" }
+        details
+      end.join(', ')
     end
   end
 
