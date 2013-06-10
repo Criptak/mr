@@ -13,29 +13,6 @@ class MR::Associations::BelongsTo
     end
     subject{ @belongs_to }
 
-    should have_instance_methods :reader_method_name, :writer_method_name,
-      :association_reader_name, :association_writer_name, :read, :write,
-      :define_methods
-
-    should "build all the method names it needs" do
-      assert_equal "test_model",  subject.reader_method_name
-      assert_equal "test_model=", subject.writer_method_name
-      assert_equal "test_model_belongs_to",  subject.association_reader_name
-      assert_equal "test_model_belongs_to=", subject.association_writer_name
-    end
-
-    should "raise an error when read or write is called without a block" do
-      assert_raises(ArgumentError){ subject.read }
-      assert_raises(ArgumentError){ subject.write }
-    end
-
-    should "raise an error if the associated class name " \
-           "can't be constantized with #read" do
-      assert_raises(MR::Associations::NoAssociatedClassError) do
-        MR::Associations::BelongsTo.new(:bad, 'NotAClass').read{ TestFakeRecord.new }
-      end
-    end
-
     should "read the value of the association reader and " \
            "build an instance of the associated class with #read" do
       test_record = @klass.new.record
@@ -74,17 +51,16 @@ class MR::Associations::BelongsTo
       assert_nil test_record.test_model_belongs_to
     end
 
-    should "add a reader and writer with #define_methods" do
+    should "allow reading and writing using the association" do
       subject.define_methods(@klass)
       instance = @klass.new
-      expected_model = TestModel.new(instance.record.test_model_belongs_to)
 
+      expected_model = TestModel.new(instance.record.test_model_belongs_to)
       assert_instance_of TestModel, instance.test_model
       assert_equal expected_model, instance.test_model
 
       new_model = TestModel.new
-      instance.test_model = TestModel.new
-
+      instance.test_model = new_model
       assert_equal new_model, instance.test_model
     end
 
