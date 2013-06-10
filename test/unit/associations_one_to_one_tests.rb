@@ -79,4 +79,17 @@ class MR::Associations::OneToOne
 
   end
 
+  class HasOneTests < Assert::Context
+    desc "HasOne"
+    setup do
+      @has_one = MR::Associations::HasOne.new(:test_model, 'TestModel')
+    end
+    subject{ @has_one }
+
+    should "be a kind of OneToOne" do
+      assert_kind_of MR::Associations::OneToOne, subject
+    end
+
+  end
+
 end

@@ -19,7 +19,7 @@ module MR::Model
     should have_accessors :fields
     should have_cmeths :mr_config, :record_class
     should have_cmeths :fields, :field_reader, :field_writer, :field_accessor
-    should have_cmeths :belongs_to, :has_many
+    should have_cmeths :belongs_to, :has_many, :has_one
     should have_cmeths :find, :all
     should have_imeths :save, :destroy, :transaction
     should have_imeths :errors, :valid?, :new?, :destroyed?

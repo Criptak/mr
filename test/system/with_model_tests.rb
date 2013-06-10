@@ -120,6 +120,25 @@ class HasManyTests < WithModelTests
 
 end
 
+class HasOneTests < WithModelTests
+  desc "using a has one association"
+  setup do
+    @user.save
+    @comment = Comment.new({ :message => "Test", :favorite => true, :user => @user })
+  end
+  teardown do
+    @comment.destroy
+    @user.destroy
+  end
+
+  should "be able to read it" do
+    @comment.save
+
+    assert_equal @comment, subject.favorite_comment
+  end
+
+end
+
 class QueryTests < WithModelTests
   desc "using a MR::Query"
   setup do
