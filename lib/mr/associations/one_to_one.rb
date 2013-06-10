@@ -2,7 +2,7 @@ require 'mr/associations/base'
 
 module MR::Associations
 
-  class BelongsTo < MR::Associations::Base
+  class OneToOne < MR::Associations::Base
 
     NullModel = Struct.new(:record)
 
@@ -23,5 +23,7 @@ module MR::Associations
     end
 
   end
+
+  BelongsTo = Class.new(OneToOne)
 
 end
