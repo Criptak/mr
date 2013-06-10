@@ -2,7 +2,7 @@ require 'mr/associations/base'
 
 module MR::Associations
 
-  class HasMany < MR::Associations::Base
+  class OneToMany < MR::Associations::Base
 
     private
 
@@ -24,5 +24,7 @@ module MR::Associations
     end
 
   end
+
+  HasMany = Class.new(OneToMany)
 
 end

@@ -1,17 +1,17 @@
 require 'assert'
-require 'mr/associations/has_many'
+require 'mr/associations/one_to_many'
 require 'test/support/associations_context'
 
-class MR::Associations::HasMany
+class MR::Associations::OneToMany
 
   class BaseTests < AssociationsContext
     desc "MR::Associations::HasMany"
     setup do
-      @belongs_to = MR::Associations::HasMany.new(:test_models, 'TestModel', {
+      @one_to_many = MR::Associations::OneToMany.new(:test_models, 'TestModel', {
         :record_association => 'test_model_has_many'
       })
     end
-    subject{ @belongs_to }
+    subject{ @one_to_many }
 
     should "read the value of the association reader and build an instance" \
            "of the associated class for each record with #read" do
@@ -73,6 +73,19 @@ class MR::Associations::HasMany
       new_model = TestModel.new
       instance.test_models = [ new_model ]
       assert_equal [ new_model ], instance.test_models
+    end
+
+  end
+
+  class HasManyTests < Assert::Context
+    desc "HasMany"
+    setup do
+      @has_many = MR::Associations::HasMany.new(:test_models, 'TestModel')
+    end
+    subject{ @has_many }
+
+    should "be a kind of OneToMany" do
+      assert_kind_of MR::Associations::OneToMany, subject
     end
 
   end

@@ -1,17 +1,17 @@
 require 'assert'
-require 'mr/associations/belongs_to'
+require 'mr/associations/one_to_one'
 require 'test/support/associations_context'
 
-class MR::Associations::BelongsTo
+class MR::Associations::OneToOne
 
   class BaseTests < AssociationsContext
-    desc "MR::Associations::BelongsTo"
+    desc "MR::Associations::OneToOne"
     setup do
-      @belongs_to = MR::Associations::BelongsTo.new(:test_model, 'TestModel', {
+      @one_to_one = MR::Associations::OneToOne.new(:test_model, 'TestModel', {
         :record_association => 'test_model_belongs_to'
       })
     end
-    subject{ @belongs_to }
+    subject{ @one_to_one }
 
     should "read the value of the association reader and " \
            "build an instance of the associated class with #read" do
@@ -62,6 +62,19 @@ class MR::Associations::BelongsTo
       new_model = TestModel.new
       instance.test_model = new_model
       assert_equal new_model, instance.test_model
+    end
+
+  end
+
+  class BelongsToTests < Assert::Context
+    desc "BelongsTo"
+    setup do
+      @belongs_to = MR::Associations::BelongsTo.new(:test_model, 'TestModel')
+    end
+    subject{ @belongs_to }
+
+    should "be a kind of OneToOne" do
+      assert_kind_of MR::Associations::OneToOne, subject
     end
 
   end
