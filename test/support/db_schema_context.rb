@@ -36,6 +36,7 @@ class DBSchemaTests < Assert::Context
         create_table "comments" do |t|
           t.string  "message"
           t.integer "user_id"
+          t.boolean "favorite", :default => false
         end
 
       end

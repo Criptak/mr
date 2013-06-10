@@ -180,6 +180,12 @@ module MR::Model
       end
     end
 
+    def has_one(name, class_name, options = nil)
+      MR::Associations::HasOne.new(name, class_name, options).tap do |a|
+        a.define_methods(self)
+      end
+    end
+
     def find(id)
       self.new(self.record_class.find(id))
     end

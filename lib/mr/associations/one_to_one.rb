@@ -25,5 +25,6 @@ module MR::Associations
   end
 
   BelongsTo = Class.new(OneToOne)
+  HasOne    = Class.new(OneToOne)
 
 end

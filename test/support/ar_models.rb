@@ -33,7 +33,7 @@ class Comment
   record_class CommentRecord
 
   field_reader :id, :user_id
-  field_accessor :message
+  field_accessor :favorite, :message
 
   belongs_to :user, 'User'
 
@@ -46,6 +46,11 @@ class UserRecord < ActiveRecord::Base
   belongs_to :area, {
     :class_name  => 'AreaRecord',
     :foreign_key => 'area_id'
+  }
+  has_one :favorite_comment, {
+    :class_name => 'CommentRecord',
+    :foreign_key => 'user_id',
+    :conditions => { :favorite => true }
   }
   has_many :comments, {
     :class_name  => 'CommentRecord',
@@ -63,6 +68,7 @@ class FakeUserRecord
 
   belongs_to :area
   has_many :comments
+  has_one :favorite_comment
 
 end
 
@@ -75,6 +81,7 @@ class User
   field_accessor :name, :email, :active
 
   belongs_to :area, 'Area'
+  has_one :favorite_comment, 'Comment'
   has_many :comments, 'Comment'
 
   def self.all_of_em_query
