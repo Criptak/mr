@@ -13,29 +13,6 @@ class MR::Associations::HasMany
     end
     subject{ @belongs_to }
 
-    should have_imeths :reader_method_name, :writer_method_name
-    should have_imeths :association_reader_name, :association_writer_name
-    should have_imeths :read, :write, :define_methods
-
-    should "build all the method names it needs" do
-      assert_equal "test_models",  subject.reader_method_name
-      assert_equal "test_models=", subject.writer_method_name
-      assert_equal "test_model_has_many",  subject.association_reader_name
-      assert_equal "test_model_has_many=", subject.association_writer_name
-    end
-
-    should "raise an error when read or write is called without a block" do
-      assert_raises(ArgumentError){ subject.read }
-      assert_raises(ArgumentError){ subject.write }
-    end
-
-    should "raise an error if the associated class name " \
-           "can't be constantized with #read" do
-      assert_raises(MR::Associations::NoAssociatedClassError) do
-        MR::Associations::HasMany.new(:bad, 'NotAClass').read{ TestFakeRecord.new }
-      end
-    end
-
     should "read the value of the association reader and build an instance" \
            "of the associated class for each record with #read" do
       test_record = @klass.new.record
@@ -83,19 +60,18 @@ class MR::Associations::HasMany
       assert_equal [], test_record.test_model_has_many
     end
 
-    should "add a reader and writer with #define_methods" do
+    should "allow reading and writing using the association" do
       subject.define_methods(@klass)
       instance = @klass.new
+
       expected_models = instance.record.test_model_has_many.map do |r|
         TestModel.new(r)
       end
-
       assert_instance_of Array, instance.test_models
       assert_equal expected_models, instance.test_models
 
       new_model = TestModel.new
-      instance.test_models = [ TestModel.new ]
-
+      instance.test_models = [ new_model ]
       assert_equal [ new_model ], instance.test_models
     end
 
