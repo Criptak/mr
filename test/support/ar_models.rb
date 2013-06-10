@@ -68,6 +68,7 @@ class FakeUserRecord
 
   belongs_to :area
   has_many :comments
+  has_one :favorite_comment
 
 end
 

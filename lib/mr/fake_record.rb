@@ -110,6 +110,12 @@ module MR::FakeRecord
       end
     end
 
+    def has_one(*args)
+      args.each do |association_name|
+        HasOne.new(association_name).define_methods(self)
+      end
+    end
+
     def mr_id_provider
       @mr_id_provider
     end
@@ -167,6 +173,21 @@ module MR::FakeRecord
 
         attr_writer has_many.reader_name
 
+      end
+    end
+  end
+
+  class HasOne
+    attr_reader :reader_name, :ivar_name
+    def initialize(name)
+      @reader_name = name
+      @ivar_name = "@#{name}"
+    end
+
+    def define_methods(klass)
+      has_one = self
+      klass.class_eval do
+        attr_accessor has_one.reader_name
       end
     end
   end

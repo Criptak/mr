@@ -20,8 +20,8 @@ module MR::FakeRecord
     # check that it has accessors for it's has_many associations
     should have_accessors :comments
 
-    should have_cmeths :attributes, :belongs_to, :has_many, :mr_id_provider
-    should have_cmeths :column_names
+    should have_cmeths :attributes, :belongs_to, :has_many, :has_one
+    should have_cmeths :mr_id_provider, :column_names
 
     should have_imeths :attributes, :attributes=, :new_record?, :valid?
     should have_imeths :save!, :destroy, :transaction
@@ -55,6 +55,18 @@ module MR::FakeRecord
 
     should "default a has_many association to an empty array" do
       assert_equal [], subject.comments
+    end
+
+    should "add a reader and writer for all associations" do
+      # belongs to
+      assert subject.respond_to?(:area)
+      assert subject.respond_to?(:area=)
+      # has_many
+      assert subject.respond_to?(:comments)
+      assert subject.respond_to?(:comments=)
+      # has_one
+      assert subject.respond_to?(:favorite_comment)
+      assert subject.respond_to?(:favorite_comment=)
     end
 
     should "allow reading and writing multiple attributes" do
