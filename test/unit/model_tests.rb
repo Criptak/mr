@@ -61,7 +61,7 @@ module MR::Model
 
     should "raise an exception when initialized with an object " \
            "that isn't a kind of MR::Record" do
-      assert_raises(MR::Model::InvalidRecordError) do
+      assert_raises(MR::InvalidRecordError) do
         TestModel.new('string')
       end
     end
