@@ -33,7 +33,7 @@ module MR::Model
     if @record.kind_of?(MR::Record)
       @record.model = self
     else
-      raise InvalidRecordError.new(@record)
+      raise MR::InvalidRecordError.new(@record)
     end
     self.fields = field_values
   end
@@ -212,12 +212,6 @@ module MR::Model
         (@errors[thing] || []).each{ |msg| details << "#{thing.inspect} #{msg}" }
         details
       end.join(', ')
-    end
-  end
-
-  class InvalidRecordError < RuntimeError
-    def initialize(record)
-      super "The passed record is not a kind of MR::Record: #{record.inspect}"
     end
   end
 
