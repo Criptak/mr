@@ -33,11 +33,26 @@ module MR::ReadModel
 
     should "raise an InvalidRecordError when built without a record" do
       assert_raises MR::InvalidRecordError do
-        MyModel.new({ :name => 'test' })
+        MyModel.new('test')
       end
     end
 
     should "respond to it's record's attributes" do
+      assert subject.respond_to?(:name)
+      assert subject.respond_to?(:active)
+      assert_equal 'Joe Test', subject.name
+      assert_equal true,       subject.active
+    end
+
+  end
+
+  class FromHashTests < BaseTests
+    desc "build from a hash"
+    setup do
+      @read_model = MyModel.new({ :name => 'Joe Test', :active => true })
+    end
+
+    should "use the hash to build it's attributes" do
       assert subject.respond_to?(:name)
       assert subject.respond_to?(:active)
       assert_equal 'Joe Test', subject.name
