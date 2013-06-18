@@ -5,6 +5,10 @@ module MR::ReadModel
 
   class MyModel
     include MR::ReadModel
+
+    def area_id
+      super.to_i
+    end
   end
 
   class BaseTests < Assert::Context
@@ -12,14 +16,19 @@ module MR::ReadModel
     setup do
       @record = FakeUserRecord.new({
         :name   => 'Joe Test',
-        :active => true
+        :active => true,
+        :area_id => '1'
       })
       @read_model = MyModel.new(@record)
     end
     subject{ @read_model }
 
-    should "include MR::ReadModel" do
-      assert_includes MR::ReadModel, MyModel.included_modules
+    should have_cmeths :read_model_interface_module
+
+    should "include MR::ReadModel and it's interface module" do
+      modules = MyModel.included_modules
+      assert_includes MR::ReadModel::InstanceMethods, modules
+      assert_includes MyModel.read_model_interface_module, modules
     end
 
     should "raise an InvalidRecordError when built without a record" do

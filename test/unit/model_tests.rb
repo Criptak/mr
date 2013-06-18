@@ -24,6 +24,13 @@ module MR::Model
     should have_imeths :save, :destroy, :transaction
     should have_imeths :errors, :valid?, :new?, :destroyed?
 
+    should "include MR::Model mixins and it's interface module" do
+      modules = subject.class.included_modules
+      assert_includes MR::Model::InstanceMethods, modules
+      interface_module = subject.class.mr_config.interface_module
+      assert_includes interface_module, modules
+    end
+
     should "allow an optional record and fields to it's initialize" do
       fake_test_record = TestFakeRecord.new
       passed_fields = { :name => 'Test' }
@@ -57,6 +64,10 @@ module MR::Model
 
     should "have set the record's model with itself" do
       assert_equal subject, subject.send(:record).model
+    end
+
+    should "allow supering to field and association methods" do
+
     end
 
     should "raise an exception when initialized with an object " \

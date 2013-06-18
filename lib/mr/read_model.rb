@@ -13,7 +13,9 @@ module MR
 
     def self.included(klass)
       klass.class_eval do
-        include MR::ReadModel::InstanceMethods
+        extend ClassMethods
+        include InstanceMethods
+        include self.read_model_interface_module
       end
     end
 
@@ -29,8 +31,17 @@ module MR
         @record = record
         @record.attributes.each do |name, value|
           self.instance_variable_set("@#{name}", value)
-          self.class.class_eval{ attr_reader(name) }
+          mod = self.class.read_model_interface_module
+          mod.class_eval{ attr_reader(name) }
         end
+      end
+
+    end
+
+    module ClassMethods
+
+      def read_model_interface_module
+        @read_model_interface_module ||= Module.new
       end
 
     end
