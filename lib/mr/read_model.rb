@@ -21,15 +21,15 @@ module MR
 
     module InstanceMethods
 
-      attr_reader :record
-      protected :record
-
-      def initialize(record)
-        if !record.kind_of?(MR::Record)
-          raise MR::InvalidRecordError.new(record)
+      def initialize(record_or_attributes)
+        attributes = if record_or_attributes.kind_of?(Hash)
+          record_or_attributes
+        elsif record_or_attributes.kind_of?(MR::Record)
+          record_or_attributes.attributes
+        else
+          raise MR::InvalidRecordError.new(record_or_attributes)
         end
-        @record = record
-        @record.attributes.each do |name, value|
+        attributes.each do |name, value|
           self.instance_variable_set("@#{name}", value)
           mod = self.class.read_model_interface_module
           mod.class_eval{ attr_reader(name) }
