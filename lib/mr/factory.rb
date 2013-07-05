@@ -113,7 +113,9 @@ module MR::Factory
     private
 
     def non_association_columns(record_class)
-      associations = record_class.reflect_on_all_associations
+      associations = record_class.reflect_on_all_associations.select do |a|
+        a.macro == :belongs_to
+      end
       record_class.columns.reject do |column|
         column.primary || associations.detect{|a| a.foreign_key == column.name }
       end
@@ -129,6 +131,9 @@ module MR::Factory
       @model_class    = model_class
       @defaults       = StringKeyHash.new(defaults)
       @record_factory = MR::Factory::Record.new(model_class.record_class)
+      if @fake_record_class
+        @fake_record_factory = MR::Factory::Record.new(@fake_record_class)
+      end
     end
 
     def instance(attrs = nil)
@@ -139,8 +144,9 @@ module MR::Factory
 
     def fake(attrs = nil)
       attrs = StringKeyHash.new(attrs || {})
-      raise "A fake_record_class wasn't provided" unless @fake_record_class
-      @model_class.new(@fake_record_class.new, @defaults.merge(attrs))
+      raise "A fake_record_class wasn't provided" unless @fake_record_factory
+      fake_record = @fake_record_factory.instance
+      @model_class.new(fake_record, @defaults.merge(attrs))
     end
 
   end

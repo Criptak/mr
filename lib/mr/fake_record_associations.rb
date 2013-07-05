@@ -15,6 +15,10 @@ module MR::FakeRecord
       raise NotImplementedError
     end
 
+    def macro
+      self.type
+    end
+
     def read(record)
       record.instance_variable_get(@ivar_name)
     end
