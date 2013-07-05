@@ -1,3 +1,5 @@
+require 'mr/factory'
+require 'mr/fake_record_associations'
 require 'mr/record'
 require 'ns-options'
 require 'set'
@@ -13,15 +15,13 @@ module MR::FakeRecord
       include MR::Record
 
       options :fr_config do
-        option :attributes, Set, :default => []
+        option :attributes,   Set, :default => []
+        option :associations, Set, :default => []
       end
 
-      attributes :id
+      attribute :id, :primary_key
 
       attr_reader :saved_attributes
-
-      @mr_id_provider = IDProvider.new
-
     end
   end
 
@@ -30,8 +30,8 @@ module MR::FakeRecord
   end
 
   def attributes
-    self.class.fr_config.attributes.inject({}) do |h, attr_name|
-      h.merge({ attr_name => self.send(attr_name) })
+    self.class.attributes.inject({}) do |h, attribute|
+      h.merge(attribute.name.to_sym => self.send(attribute.name))
     end
   end
 
@@ -42,10 +42,10 @@ module MR::FakeRecord
   end
 
   def save!
-    self.id ||= self.class.mr_id_provider.next
+    self.id ||= MR::Factory.primary_key(self.class)
     (self.created_at ||= Time.now) if self.respond_to?(:created_at=)
-    (self.updated_at = Time.now) if self.respond_to?(:updated_at=)
-    @saved_attributes = self.attributes.dup
+    (self.updated_at   = Time.now) if self.respond_to?(:updated_at=)
+    @saved_attributes  = self.attributes.dup
   end
 
   def destroy
@@ -86,122 +86,57 @@ module MR::FakeRecord
 
   module ClassMethods
 
-    def attributes(*args)
-      args.each do |attr_name|
-        attr_accessor attr_name
-        self.fr_config.attributes << attr_name.to_sym
-      end
+    def attribute(name, type)
+      attribute = Attribute.new(name, type)
+      attr_accessor attribute.name
+      self.fr_config.attributes << attribute
+    end
+
+    def attributes
       self.fr_config.attributes
     end
 
     def column_names
-      self.attributes.map(&:to_s).sort
+      self.attributes.map{ |a| a.name.to_s }.sort
     end
 
-    def belongs_to(*args)
-      args.each do |association_name|
-        BelongsTo.new(association_name).define_methods(self)
-      end
+    def associations
+      self.fr_config.associations
     end
 
-    def has_many(*args)
-      args.each do |association_name|
-        HasMany.new(association_name).define_methods(self)
-      end
+    def belongs_to(name, fake_record_class_name, options = nil)
+      association = BelongsTo.new(name, fake_record_class_name, options)
+      association.define_methods(self)
+      self.fr_config.associations << association
     end
 
-    def has_one(*args)
-      args.each do |association_name|
-        HasOne.new(association_name).define_methods(self)
-      end
+    def has_many(name, fake_record_class_name)
+      association = HasMany.new(name, fake_record_class_name)
+      association.define_methods(self)
+      self.fr_config.associations << association
     end
 
-    def mr_id_provider
-      @mr_id_provider
+    def has_one(name, fake_record_class_name)
+      association = HasOne.new(name, fake_record_class_name)
+      association.define_methods(self)
+      self.fr_config.associations << association
     end
 
   end
 
-  class BelongsTo
-    attr_reader :reader_name, :writer_name, :ivar_name, :id_writer_name
-    def initialize(name)
-      @reader_name = name
-      @writer_name = "#{name}="
-
-      @ivar_name = "@#{name}"
-
-      @id_writer_name = "#{name}_id="
+  class Attribute
+    attr_reader :name, :type
+    def initialize(name, type)
+      @name = name.to_s
+      @type = type.to_sym
     end
 
-    def define_methods(klass)
-      belongs_to = self
-      klass.class_eval do
-
-        attr_reader belongs_to.reader_name
-
-        define_method(belongs_to.writer_name) do |model|
-          self.instance_variable_set(belongs_to.ivar_name, model)
-
-          if self.respond_to?(belongs_to.id_writer_name)
-            self.send(belongs_to.id_writer_name, model.try(:id))
-          end
-
-          self.instance_variable_get(belongs_to.ivar_name)
-        end
-
-      end
-    end
-  end
-
-  class HasMany
-    attr_reader :reader_name, :ivar_name
-    def initialize(name)
-      @reader_name = name
-      @ivar_name = "@#{name}"
+    def ==(other)
+      self.name == other.name
     end
 
-    def define_methods(klass)
-      has_many = self
-      klass.class_eval do
-
-        define_method(has_many.reader_name) do
-          if !self.instance_variable_get(has_many.ivar_name)
-            self.instance_variable_set(has_many.ivar_name, [])
-          end
-          self.instance_variable_get(has_many.ivar_name)
-        end
-
-        attr_writer has_many.reader_name
-
-      end
-    end
-  end
-
-  class HasOne
-    attr_reader :reader_name, :ivar_name
-    def initialize(name)
-      @reader_name = name
-      @ivar_name = "@#{name}"
-    end
-
-    def define_methods(klass)
-      has_one = self
-      klass.class_eval do
-        attr_accessor has_one.reader_name
-      end
-    end
-  end
-
-  class IDProvider
-    attr_reader :mutex, :current
-    def initialize
-      @current = 0
-      @mutex   = Mutex.new
-    end
-    def next
-      @mutex.synchronize do
-        @current += 1
-      end
+    def <=>(other)
+      self.name <=> other.name
     end
   end
 

@@ -1,5 +1,6 @@
 require 'assert'
 require 'mr/factory'
+require 'thread'
 
 require 'test/support/test_models'
 
@@ -10,11 +11,22 @@ module MR::Factory
     subject{ MR::Factory }
 
     should have_imeths :new
-    should have_imeths :integer, :float, :decimal
+    should have_imeths :primary_key, :integer, :float, :decimal
     should have_imeths :date, :datetime, :time, :timestamp
     should have_imeths :string, :text, :hex
     should have_imeths :boolean
     should have_imeths :binary
+
+    should "return unique integers for an identifier with #primary_key" do
+      threads = [*0..2].map do |n|
+        Thread.new{ Thread.current['id'] = subject.primary_key('test') }
+      end
+      primary_keys = threads.map{ |thread| thread.join; thread['id'] }
+      primary_keys.each_with_index do |primary_key, n|
+        assert_equal n + 1, primary_key
+      end
+      assert_equal 1, subject.primary_key('not_test')
+    end
 
     should "return a random Fixnum with #integer" do
       assert_instance_of Fixnum, subject.integer(10)
@@ -71,6 +83,29 @@ module MR::Factory
 
     should "return a string of bytes with #binary" do
       assert_instance_of String, subject.binary
+    end
+
+  end
+
+  class PrimaryKeyProviderTests < BaseTests
+    desc "PrimaryKeyProvider"
+    setup do
+      @provider   = PrimaryKeyProvider.new
+      @started_at = @provider.current
+    end
+    subject{ @provider }
+
+    should have_readers :mutex, :current
+
+    should "store a mutex and it's the current id" do
+      assert_instance_of Mutex,  subject.mutex
+      assert_instance_of Fixnum, subject.current
+    end
+
+    should "increated the counter and return the value with #next" do
+      next_id = subject.next
+      assert_equal @started_at + 1, next_id
+      assert_equal @started_at + 1, subject.current
     end
 
   end

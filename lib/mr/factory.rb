@@ -13,6 +13,13 @@ module MR::Factory
     end
   end
 
+  def self.primary_key(identifier = nil)
+    identifier    ||= 'MR::Factory'
+    @primary_keys ||= {}
+    @primary_keys[identifier.to_s] ||= PrimaryKeyProvider.new
+    @primary_keys[identifier.to_s].next
+  end
+
   def self.integer(max=100)
     SecureRandom.random_number(max) + 1
   end
@@ -72,6 +79,17 @@ module MR::Factory
 
   def self.binary
     SecureRandom.random_bytes
+  end
+
+  class PrimaryKeyProvider
+    attr_reader :mutex, :current
+    def initialize
+      @current = 0
+      @mutex   = Mutex.new
+    end
+    def next
+      @mutex.synchronize{ @current += 1 }
+    end
   end
 
   class Record
