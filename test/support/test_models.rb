@@ -4,7 +4,8 @@ require 'mr/fake_record'
 class TestFakeRecord
   include MR::FakeRecord
 
-  attributes :id, :name, :active
+  attribute :name,   :string
+  attribute :active, :boolean
 
   def self.scoped
     FakeActiveRecordRelation.new

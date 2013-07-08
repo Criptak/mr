@@ -64,11 +64,16 @@ end
 class FakeUserRecord
   include MR::FakeRecord
 
-  attributes :id, :name, :email, :active, :area_id, :created_at, :updated_at
+  attribute :name,       :string
+  attribute :email,      :string
+  attribute :active,     :boolean
+  attribute :area_id,    :integer
+  attribute :created_at, :time
+  attribute :updated_at, :time
 
-  belongs_to :area
-  has_many :comments
-  has_one :favorite_comment
+  belongs_to :area,          'FakeAreaRecord'
+  has_many :comments,        'FakeCommentRecord'
+  has_one :favorite_comment, 'FakeCommentRecord'
 
 end
 
