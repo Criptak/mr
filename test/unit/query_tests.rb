@@ -1,16 +1,18 @@
 require 'assert'
 require 'mr/query'
-require 'test/support/test_models'
+
+require 'test/support/models/fake_test_record'
+require 'test/support/models/test_model'
 
 class MR::Query
 
   class BaseTests < Assert::Context
     desc "MR::Query"
     setup do
-      @relation = TestFakeRecord.scoped
+      @relation = FakeTestRecord.scoped
       @relation.results = [
-        TestFakeRecord.new({ :id => 1 }),
-        TestFakeRecord.new({ :id => 2 })
+        FakeTestRecord.new({ :id => 1 }),
+        FakeTestRecord.new({ :id => 2 })
       ]
       @query = MR::Query.new(TestModel, @relation)
     end

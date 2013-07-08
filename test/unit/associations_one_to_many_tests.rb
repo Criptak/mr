@@ -1,10 +1,14 @@
 require 'assert'
 require 'mr/associations/one_to_many'
-require 'test/support/associations_context'
+
+require 'test/support/associations'
+require 'test/support/models/test_model'
 
 class MR::Associations::OneToMany
 
-  class BaseTests < AssociationsContext
+  class BaseTests < Assert::Context
+    include MR::Associations::TestHelpers
+
     desc "MR::Associations::HasMany"
     setup do
       @one_to_many = MR::Associations::OneToMany.new(:test_models, 'TestModel', {
@@ -15,7 +19,7 @@ class MR::Associations::OneToMany
 
     should "read the value of the association reader and build an instance" \
            "of the associated class for each record with #read" do
-      test_record = @klass.new.record
+      test_record = @fake_model_class.new.record
       result = subject.read{ test_record }
       expected_models = test_record.test_model_has_many.map do |r|
         TestModel.new(r)
@@ -27,7 +31,7 @@ class MR::Associations::OneToMany
 
     should "return an empty array if the association reader returns nil or " \
            "an empty array with #read" do
-      test_record = @klass.new.record.tap do |r|
+      test_record = @fake_model_class.new.record.tap do |r|
         r.test_model_has_many = nil
       end
 
@@ -41,7 +45,7 @@ class MR::Associations::OneToMany
     end
 
     should "raise an error if it isn't passed MR::Models with #write" do
-      test_record = @klass.new.record
+      test_record = @fake_model_class.new.record
 
       assert_raises(ArgumentError) do
         subject.write('test'){ test_record }
@@ -49,7 +53,7 @@ class MR::Associations::OneToMany
     end
 
     should "set the record's association with #write" do
-      test_record = @klass.new.record
+      test_record = @fake_model_class.new.record
       test_models = [ TestModel.new ]
       subject.write(test_models){ test_record }
 
@@ -61,8 +65,8 @@ class MR::Associations::OneToMany
     end
 
     should "allow reading and writing using the association" do
-      subject.define_methods(@klass)
-      instance = @klass.new
+      subject.define_methods(@fake_model_class)
+      instance = @fake_model_class.new
 
       expected_models = instance.record.test_model_has_many.map do |r|
         TestModel.new(r)

@@ -1,12 +1,14 @@
 require 'assert'
 require 'mr/factory'
 
-require 'test/support/ar_models'
-require 'test/support/db_schema_context'
+require 'test/support/setup_test_db'
+require 'test/support/models/fake_user_record'
+require 'test/support/models/user'
+require 'test/support/models/user_record'
 
 module MR::Factory
 
-  class SystemTests < DBSchemaTests
+  class SystemTests < Assert::Context
     desc "MR::Factory for records and models"
     subject{ MR::Factory }
 

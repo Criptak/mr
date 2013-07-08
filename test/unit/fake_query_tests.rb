@@ -1,6 +1,7 @@
 require 'assert'
 require 'mr/fake_query'
-require 'test/support/test_models'
+
+require 'test/support/models/test_model'
 
 class MR::FakeQuery
 

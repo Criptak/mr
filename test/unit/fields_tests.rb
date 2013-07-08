@@ -1,7 +1,5 @@
 require 'assert'
 require 'mr/fields'
-require 'ostruct'
-require 'test/support/test_models'
 
 module MR::Fields
 

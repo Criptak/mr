@@ -1,10 +1,14 @@
 require 'assert'
 require 'mr/associations/one_to_one'
-require 'test/support/associations_context'
+
+require 'test/support/associations'
+require 'test/support/models/test_model'
 
 class MR::Associations::OneToOne
 
-  class BaseTests < AssociationsContext
+  class BaseTests < Assert::Context
+    include MR::Associations::TestHelpers
+
     desc "MR::Associations::OneToOne"
     setup do
       @one_to_one = MR::Associations::OneToOne.new(:test_model, 'TestModel', {
@@ -15,7 +19,7 @@ class MR::Associations::OneToOne
 
     should "read the value of the association reader and " \
            "build an instance of the associated class with #read" do
-      test_record = @klass.new.record
+      test_record = @fake_model_class.new.record
       result = subject.read{ test_record }
 
       assert_instance_of TestModel, result
@@ -23,7 +27,7 @@ class MR::Associations::OneToOne
     end
 
     should "return nil if the association reader returns nil with #read" do
-      test_record = @klass.new.record.tap do |r|
+      test_record = @fake_model_class.new.record.tap do |r|
         r.test_model_belongs_to = nil
       end
       result = subject.read{ test_record }
@@ -32,7 +36,7 @@ class MR::Associations::OneToOne
     end
 
     should "raise an error if it isn't passed an MR::Model with #write" do
-      test_record = @klass.new.record
+      test_record = @fake_model_class.new.record
 
       assert_raises(ArgumentError) do
         subject.write('test'){ test_record }
@@ -40,7 +44,7 @@ class MR::Associations::OneToOne
     end
 
     should "set the record's association with #write" do
-      test_record = @klass.new.record
+      test_record = @fake_model_class.new.record
       test_model = TestModel.new
       subject.write(test_model){ test_record }
 
@@ -52,8 +56,8 @@ class MR::Associations::OneToOne
     end
 
     should "allow reading and writing using the association" do
-      subject.define_methods(@klass)
-      instance = @klass.new
+      subject.define_methods(@fake_model_class)
+      instance = @fake_model_class.new
 
       expected_model = TestModel.new(instance.record.test_model_belongs_to)
       assert_instance_of TestModel, instance.test_model

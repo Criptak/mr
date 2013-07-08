@@ -1,10 +1,15 @@
 require 'assert'
 require 'mr/associations/base'
-require 'test/support/associations_context'
+
+require 'test/support/associations'
+require 'test/support/models/fake_test_record'
+require 'test/support/models/test_model'
 
 class MR::Associations::Base
 
-  class BaseTests < AssociationsContext
+  class BaseTests < Assert::Context
+    include MR::Associations::TestHelpers
+
     desc "MR::Associations::Base"
     setup do
       @association = MR::Associations::Base.new(:test_model, 'TestModel', {
@@ -42,13 +47,13 @@ class MR::Associations::Base
     should "raise an error if the associated class name " \
            "can't be constantized with #read" do
       assert_raises(MR::Associations::NoAssociatedClassError) do
-        MR::Associations::Base.new(:bad, 'NotAClass').read{ TestFakeRecord.new }
+        MR::Associations::Base.new(:bad, 'NotAClass').read{ FakeTestRecord.new }
       end
     end
 
     should "add a reader and writer with #define_methods" do
-      subject.define_methods(@klass)
-      instance = @klass.new
+      subject.define_methods(@fake_model_class)
+      instance = @fake_model_class.new
 
       assert instance.respond_to?(:test_model)
       assert instance.respond_to?(:test_model=)
