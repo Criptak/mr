@@ -68,8 +68,8 @@ class FakeUserRecord
   attribute :email,      :string
   attribute :active,     :boolean
   attribute :area_id,    :integer
-  attribute :created_at, :time
-  attribute :updated_at, :time
+  attribute :created_at, :datetime
+  attribute :updated_at, :datetime
 
   belongs_to :area,          'FakeAreaRecord'
   has_many :comments,        'FakeCommentRecord'

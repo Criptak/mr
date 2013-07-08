@@ -18,7 +18,7 @@ class MR::FakeRecord::Association
     subject{ @association }
 
     should have_readers :name, :ivar_name, :fake_record_class_name
-    should have_imeths :type, :read, :write, :define_methods
+    should have_imeths :type, :macro, :read, :write, :define_methods
 
     should "know it's name, ivar name and fake record class name" do
       assert_equal :user,            subject.name

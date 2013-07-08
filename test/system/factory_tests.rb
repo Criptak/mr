@@ -49,6 +49,7 @@ module MR::Factory
       assert_instance_of DateTime, user_record.created_at
       assert_instance_of DateTime, user_record.updated_at
       assert_equal MR::Factory.boolean, user_record.active
+      assert_nil user_record.area_id
 
       user_record = subject.instance(:name => nil, :active => false)
       assert_equal nil,   user_record.name
@@ -61,6 +62,18 @@ module MR::Factory
       assert_equal 'Test', user_record.name
       assert_equal false,  user_record.active
       assert_not_nil user_record.email
+    end
+
+    should "work with a fake record" do
+      factory = MR::Factory::Record.new(FakeUserRecord)
+      fake_user_record = factory.instance
+      assert fake_user_record.new_record?
+      assert_instance_of String, fake_user_record.name
+      assert_instance_of String, fake_user_record.email
+      assert_instance_of DateTime, fake_user_record.created_at
+      assert_instance_of DateTime, fake_user_record.updated_at
+      assert_equal MR::Factory.boolean, fake_user_record.active
+      assert_nil fake_user_record.area_id
     end
 
   end
@@ -82,6 +95,10 @@ module MR::Factory
       fake_user = factory.fake
       assert_instance_of User,           fake_user
       assert_instance_of FakeUserRecord, fake_user.send(:record)
+      # should use the factory and default the column values
+      assert_not_nil fake_user.name
+      assert_not_nil fake_user.active
+      assert_not_nil fake_user.email
 
       fake_user = factory.fake(:name => 'Test')
       assert_equal 'Test', fake_user.name

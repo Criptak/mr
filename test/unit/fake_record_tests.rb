@@ -26,8 +26,9 @@ module MR::FakeRecord
     # should add accessors for all associations
     should have_accessors :parent, :children, :thing
 
-    should have_cmeths :attribute, :attributes, :column_names
+    should have_cmeths :attribute, :attributes, :columns, :column_names
     should have_cmeths :associations, :belongs_to, :has_many, :has_one
+    should have_cmeths :reflect_on_all_associations
 
     should have_imeths :attributes, :attributes=, :new_record?, :valid?
     should have_imeths :save!, :destroy, :transaction
@@ -129,6 +130,26 @@ module MR::FakeRecord
 
     should have_option :attributes,   Set, :default => []
     should have_option :associations, Set, :default => []
+
+  end
+
+  class AttributeTests < BaseTests
+    desc "Attribute"
+    setup do
+      @attribute = MR::FakeRecord::Attribute.new(:name, :string)
+    end
+    subject{ @attribute }
+
+    should have_readers :name, :type
+
+    should "know it's name, type and whether it's a primary key" do
+      assert_equal 'name',  subject.name
+      assert_equal :string, subject.type
+      assert_equal false,   subject.primary
+
+      attribute = MR::FakeRecord::Attribute.new(:id, :primary_key)
+      assert_equal true, attribute.primary
+    end
 
   end
 

@@ -95,6 +95,7 @@ module MR::FakeRecord
     def attributes
       self.fr_config.attributes
     end
+    alias :columns :attributes
 
     def column_names
       self.attributes.map{ |a| a.name.to_s }.sort
@@ -103,6 +104,7 @@ module MR::FakeRecord
     def associations
       self.fr_config.associations
     end
+    alias :reflect_on_all_associations :associations
 
     def belongs_to(name, fake_record_class_name, options = nil)
       association = BelongsTo.new(name, fake_record_class_name, options)
@@ -125,10 +127,11 @@ module MR::FakeRecord
   end
 
   class Attribute
-    attr_reader :name, :type
+    attr_reader :name, :type, :primary
     def initialize(name, type)
       @name = name.to_s
       @type = type.to_sym
+      @primary = (@type == :primary_key)
     end
 
     def ==(other)
