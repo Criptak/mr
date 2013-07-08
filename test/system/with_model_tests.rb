@@ -1,8 +1,14 @@
 require 'assert'
-require 'test/support/db_schema_context'
-require 'test/support/ar_models'
+require 'mr'
 
-class WithModelTests < DBSchemaTests
+require 'test/support/setup_test_db'
+require 'test/support/models/area'
+require 'test/support/models/comment'
+require 'test/support/models/custom_user'
+require 'test/support/models/user'
+require 'test/support/models/user_record'
+
+class WithModelTests < Assert::Context
   desc "MR with an ActiveRecord model"
   setup do
     @user = User.new({ :name => "Joe Test" })

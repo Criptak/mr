@@ -1,8 +1,7 @@
 require 'assert'
 require 'mr/factory'
-require 'thread'
 
-require 'test/support/test_models'
+require 'thread'
 
 module MR::Factory
 

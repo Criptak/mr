@@ -1,5 +1,6 @@
 require 'ns-options'
 require 'set'
+require 'mr'
 require 'mr/associations/one_to_one'
 require 'mr/associations/one_to_many'
 require 'mr/fields'

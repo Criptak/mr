@@ -1,6 +1,9 @@
 require 'assert'
 require 'mr/test_helpers'
-require 'test/support/ar_models'
+
+require 'test/support/models/fake_user_record'
+require 'test/support/models/user'
+
 
 module MR::TestHelpers
 

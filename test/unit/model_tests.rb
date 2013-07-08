@@ -1,8 +1,11 @@
 require 'assert'
 require 'mr/model'
+
 require 'mr/test_helpers'
 require 'ns-options/assert_macros'
-require 'test/support/test_models'
+require 'set'
+require 'test/support/models/fake_test_record'
+require 'test/support/models/test_model'
 
 module MR::Model
 
@@ -11,7 +14,7 @@ module MR::Model
 
     desc "MR::Model"
     setup do
-      @fake_test_record = TestFakeRecord.new({ :id => 1 })
+      @fake_test_record = FakeTestRecord.new({ :id => 1 })
       @test_model = TestModel.new(@fake_test_record)
     end
     subject{ @test_model }
@@ -32,7 +35,7 @@ module MR::Model
     end
 
     should "allow an optional record and fields to it's initialize" do
-      fake_test_record = TestFakeRecord.new
+      fake_test_record = FakeTestRecord.new
       passed_fields = { :name => 'Test' }
       empty_fields = { :id => nil, :name => nil }
       set_fields = { :id => nil, :name => 'Test' }
@@ -40,7 +43,7 @@ module MR::Model
       # pass nothing
       test_model = TestModel.new
 
-      assert_instance_of TestFakeRecord, test_model.send(:record)
+      assert_instance_of FakeTestRecord, test_model.send(:record)
       assert_equal empty_fields, test_model.fields
 
       # pass just a record
@@ -52,7 +55,7 @@ module MR::Model
       # pass just fields
       test_model = TestModel.new(passed_fields)
 
-      assert_instance_of TestFakeRecord, test_model.send(:record)
+      assert_instance_of FakeTestRecord, test_model.send(:record)
       assert_equal set_fields, test_model.fields
 
       # pass both a record and fields
@@ -79,7 +82,7 @@ module MR::Model
 
     should "be comparable" do
       matching_model = TestModel.new(@fake_test_record)
-      non_matching_model = TestModel.new(TestFakeRecord.new)
+      non_matching_model = TestModel.new(FakeTestRecord.new)
 
       assert_equal     matching_model,     subject
       assert_not_equal non_matching_model, subject
@@ -100,7 +103,7 @@ module MR::Model
     should have_option :fields, Set, :default => []
 
     should "return the configured record class" do
-      assert_equal TestFakeRecord, subject.record_class
+      assert_equal FakeTestRecord, subject.record_class
     end
 
     should "return the configured fields" do
@@ -300,11 +303,11 @@ module MR::Model
   class FindTests < BaseTests
     desc "find"
     setup do
-      TestFakeRecord.stubs(:find).with(1).returns(@fake_test_record)
+      FakeTestRecord.stubs(:find).with(1).returns(@fake_test_record)
       @result = TestModel.find(1)
     end
     teardown do
-      TestFakeRecord.unstub(:find)
+      FakeTestRecord.unstub(:find)
     end
 
     should "return the matching model using AR's find method" do
@@ -317,14 +320,14 @@ module MR::Model
     desc "all"
     setup do
       @records = [
-        TestFakeRecord.new({ :id => 2 }),
-        TestFakeRecord.new({ :id => 3 })
+        FakeTestRecord.new({ :id => 2 }),
+        FakeTestRecord.new({ :id => 3 })
       ]
-      TestFakeRecord.stubs(:all).returns(@records)
+      FakeTestRecord.stubs(:all).returns(@records)
       @result = TestModel.all
     end
     teardown do
-      TestFakeRecord.unstub(:all)
+      FakeTestRecord.unstub(:all)
     end
 
     should "return the matching model using AR's find method" do

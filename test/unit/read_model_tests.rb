@@ -1,6 +1,8 @@
 require 'assert'
 require 'mr/read_model'
 
+require 'test/support/models/fake_user_record'
+
 module MR::ReadModel
 
   class MyModel

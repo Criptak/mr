@@ -1,5 +1,6 @@
 require 'assert'
 require 'mr/fake_record'
+
 require 'ns-options/assert_macros'
 
 module MR::FakeRecord

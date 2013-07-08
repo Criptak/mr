@@ -1,7 +1,7 @@
 require 'assert'
 require 'mr/fake_record_associations'
 
-require 'test/support/test_models'
+require 'test/support/models/fake_test_record'
 
 class MR::FakeRecord::Association
 
@@ -13,7 +13,7 @@ class MR::FakeRecord::Association
         attr_accessor :users
       end
       @record = record_class.new
-      @association = MR::FakeRecord::Association.new(:user, 'TestFakeRecord')
+      @association = MR::FakeRecord::Association.new(:user, 'FakeTestRecord')
     end
     subject{ @association }
 
@@ -23,7 +23,7 @@ class MR::FakeRecord::Association
     should "know it's name, ivar name and fake record class name" do
       assert_equal :user,            subject.name
       assert_equal '@user',          subject.ivar_name
-      assert_equal 'TestFakeRecord', subject.fake_record_class_name
+      assert_equal 'FakeTestRecord', subject.fake_record_class_name
     end
 
     should "raise a NotImplementedError with #type" do
@@ -31,7 +31,7 @@ class MR::FakeRecord::Association
     end
 
     should "read and write the record's ivar with #read and #write" do
-      associated_record = TestFakeRecord.new
+      associated_record = FakeTestRecord.new
       assert_nothing_raised{ subject.write(@record, associated_record) }
       assert_equal associated_record, @record.user
       assert_equal associated_record, subject.read(@record)
@@ -49,7 +49,7 @@ class MR::FakeRecord::Association
   class BelongsToTests < BaseTests
     desc "BelongsTo"
     setup do
-      @belongs_to = MR::FakeRecord::BelongsTo.new(:user, 'TestFakeRecord', {
+      @belongs_to = MR::FakeRecord::BelongsTo.new(:user, 'FakeTestRecord', {
         :foreign_key => :created_by_id
       })
     end
@@ -59,7 +59,7 @@ class MR::FakeRecord::Association
 
     should "know it's foreign_key" do
       assert_equal "created_by_id", subject.foreign_key
-      belongs_to = MR::FakeRecord::BelongsTo.new(:user, 'TestFakeRecord')
+      belongs_to = MR::FakeRecord::BelongsTo.new(:user, 'FakeTestRecord')
       assert_equal "user_id", belongs_to.foreign_key
     end
 
@@ -68,7 +68,7 @@ class MR::FakeRecord::Association
     end
 
     should "set the created_by_id when setting the user belongs_to association" do
-      associated_record = TestFakeRecord.new.tap{ |r| r.save! }
+      associated_record = FakeTestRecord.new.tap{ |r| r.save! }
       assert_nil @record.user
       assert_nil @record.created_by_id
       subject.write(@record, associated_record)
@@ -81,7 +81,7 @@ class MR::FakeRecord::Association
   class HasManyTests < BaseTests
     desc "HasMany"
     setup do
-      @has_many = MR::FakeRecord::HasMany.new(:users, 'TestFakeRecord')
+      @has_many = MR::FakeRecord::HasMany.new(:users, 'FakeTestRecord')
     end
     subject{ @has_many }
 
@@ -95,7 +95,7 @@ class MR::FakeRecord::Association
     end
 
     should "allow writing a non-array value with #write" do
-      associated_record = TestFakeRecord.new.tap{ |r| r.save! }
+      associated_record = FakeTestRecord.new.tap{ |r| r.save! }
       assert_nothing_raised{ subject.write(@record, associated_record) }
       assert_equal [ associated_record ], @record.users
     end
@@ -105,7 +105,7 @@ class MR::FakeRecord::Association
   class HasOneTests < BaseTests
     desc "HasOne"
     setup do
-      @has_one = MR::FakeRecord::HasOne.new(:user, 'TestFakeRecord')
+      @has_one = MR::FakeRecord::HasOne.new(:user, 'FakeTestRecord')
     end
     subject{ @has_one }
 

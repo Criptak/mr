@@ -1,3 +1,4 @@
+require 'mr'
 require 'mr/record'
 
 module MR

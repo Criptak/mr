@@ -1,13 +1,14 @@
 require 'assert'
 require 'mr/record'
-require 'test/support/test_models'
+
+require 'test/support/models/fake_test_record'
 
 module MR::Record
 
   class BaseTests < Assert::Context
     desc "MR::Record"
     setup do
-      @record = TestFakeRecord.new
+      @record = FakeTestRecord.new
     end
     subject{ @record }
 
