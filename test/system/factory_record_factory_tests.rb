@@ -15,7 +15,7 @@ class MR::Factory::RecordFactory
     end
     subject{ @factory }
 
-    should have_imeths :instance, :default_attributes
+    should have_imeths :instance, :instance_stack, :default_attributes
 
     should "return values for non-association attributes on a UserRecord " \
            "with #default_attributes" do
@@ -53,6 +53,20 @@ class MR::Factory::RecordFactory
       assert_not_nil user_record.email
     end
 
+    should "return a UserRecord stack with #instance_stack" do
+      factory = MR::Factory::RecordFactory.new(UserRecord, {
+        :name   => nil,
+        :active => false
+      })
+      stack = factory.instance_stack(:name => 'Test')
+      assert_instance_of MR::Stack::RecordStack, stack
+      user_record = stack.record
+      assert_instance_of UserRecord, user_record
+      assert_equal 'Test', user_record.name
+      assert_equal false,  user_record.active
+      assert_not_nil user_record.email
+    end
+
     should "work with a fake record" do
       factory = MR::Factory::RecordFactory.new(FakeUserRecord)
       fake_user_record = factory.instance
@@ -63,6 +77,11 @@ class MR::Factory::RecordFactory
       assert_instance_of DateTime, fake_user_record.updated_at
       assert_equal MR::Factory.boolean, fake_user_record.active
       assert_nil fake_user_record.area_id
+
+      fake_stack = factory.instance_stack
+      assert_instance_of MR::Stack::RecordStack, fake_stack
+      fake_user_record = fake_stack.record
+      assert_instance_of FakeUserRecord, fake_user_record
     end
 
   end

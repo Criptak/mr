@@ -15,7 +15,7 @@ class MR::Factory::ModelFactory
     end
     subject{ @factory }
 
-    should have_imeths :instance, :fake
+    should have_imeths :instance, :instance_stack, :fake, :fake_stack
 
     should "build an instance of the model with the fake record class and "\
           "allow setting fields with #fake" do
@@ -63,6 +63,35 @@ class MR::Factory::ModelFactory
       fake_user = factory.fake(:active => true)
       assert_equal nil,  fake_user.name
       assert_equal true, fake_user.active
+    end
+
+    should "return a User stack with #instance_stack" do
+      factory = MR::Factory::ModelFactory.new(User, {
+        :name   => nil,
+        :active => false
+      })
+      stack = factory.instance_stack(:name => 'Test')
+      assert_instance_of MR::Stack::ModelStack, stack
+      user = stack.model
+      assert_instance_of User, user
+      assert_equal 'Test', user.name
+      assert_equal false,  user.active
+      assert_not_nil user.email
+    end
+
+    should "return a fake User stack with #fake_stack" do
+      factory = MR::Factory::ModelFactory.new(User, FakeUserRecord, {
+        :name   => nil,
+        :active => false
+      })
+      stack = factory.fake_stack(:name => 'Test')
+      assert_instance_of MR::Stack::ModelStack, stack
+      user = stack.model
+      assert_instance_of User, user
+      assert_instance_of FakeUserRecord, user.send(:record)
+      assert_equal 'Test', user.name
+      assert_equal false,  user.active
+      assert_not_nil user.email
     end
 
   end

@@ -85,7 +85,7 @@ module MR::Stack
     def initialize(record_class)
       @record_class = record_class
       @associations = belongs_to_associations(@record_class)
-      @instance = MR::Factory.new(@record_class).instance
+      @instance = MR::Factory::RecordFactory.new(@record_class).instance
     end
 
     def set_association(name, stack_record)
