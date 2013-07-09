@@ -18,7 +18,9 @@ class MR::FakeRecord::Association
     subject{ @association }
 
     should have_readers :name, :ivar_name, :fake_record_class_name
-    should have_imeths :type, :macro, :read, :write, :define_methods
+    should have_imeths :type, :macro
+    should have_imeths :fake_record_class, :klass
+    should have_imeths :read, :write, :define_methods
 
     should "know it's name, ivar name and fake record class name" do
       assert_equal :user,            subject.name
@@ -28,6 +30,10 @@ class MR::FakeRecord::Association
 
     should "raise a NotImplementedError with #type" do
       assert_raises(NotImplementedError){ subject.type }
+    end
+
+    should "constantize the fake record class name and return it with #fake_record_class" do
+      assert_equal FakeTestRecord, subject.fake_record_class
     end
 
     should "read and write the record's ivar with #read and #write" do
@@ -42,6 +48,12 @@ class MR::FakeRecord::Association
       subject.define_methods(@my_class)
       assert_respond_to :user, @my_class.new
       assert_respond_to :user=, @my_class.new
+    end
+
+    should "support ActiveRecord's association interface" do
+      subject.stubs(:type).returns(:test)
+      assert_equal subject.type, subject.macro
+      assert_equal subject.fake_record_class, subject.klass
     end
 
   end

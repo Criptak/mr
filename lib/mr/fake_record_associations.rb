@@ -9,6 +9,7 @@ module MR::FakeRecord
       @name      = name
       @ivar_name = "@#{name}"
       @fake_record_class_name = fake_record_class_name
+      @fake_record_class      = nil
     end
 
     def type
@@ -18,6 +19,11 @@ module MR::FakeRecord
     def macro
       self.type
     end
+
+    def fake_record_class
+      @fake_record_class ||= @fake_record_class_name.constantize
+    end
+    alias :klass :fake_record_class
 
     def read(record)
       record.instance_variable_get(@ivar_name)
