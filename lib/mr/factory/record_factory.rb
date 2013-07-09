@@ -22,8 +22,8 @@ module MR::Factory
     end
 
     def default_attributes
-      columns = non_association_columns(@record_class)
-      column_defaults = columns.inject({}) do |a, column|
+      @columns ||= non_association_columns(@record_class)
+      column_defaults = @columns.inject({}) do |a, column|
         a.merge(column.name => MR::Factory.send(column.type))
       end
       column_defaults.merge(@defaults)

@@ -1,6 +1,5 @@
 require 'mr/factory/model_factory'
 require 'mr/factory/record_factory'
-require 'securerandom'
 
 module MR; end
 module MR::Factory
@@ -23,12 +22,12 @@ module MR::Factory
   end
 
   def self.integer(max=100)
-    SecureRandom.random_number(max) + 1
+    rand(max) + 1
   end
 
-  # `random_number` with no args gives a float between 0 and 1
+  # `rand` with no args gives a float between 0 and 1
   def self.float(max=100)
-    self.integer + SecureRandom.random_number
+    self.integer(max) + rand
   end
 
   def self.decimal(*args)
@@ -57,12 +56,11 @@ module MR::Factory
   DICTIONARY = [*'a'..'z'].freeze
   def self.string(length=10)
     [*0..(length - 1)].map do |n|
-      index = SecureRandom.random_number(DICTIONARY.size)
-      DICTIONARY[index]
+      DICTIONARY[rand(DICTIONARY.size)]
     end.join
   end
 
-  def self.text(length=30)
+  def self.text(length=20)
     self.string(length)
   end
 
@@ -72,7 +70,7 @@ module MR::Factory
   end
 
   def self.hex(length=10)
-    SecureRandom.hex(length / 2.0)
+    self.string(length).unpack('H*').first[0, length]
   end
 
   def self.boolean
@@ -80,7 +78,7 @@ module MR::Factory
   end
 
   def self.binary
-    SecureRandom.random_bytes
+    [ self.integer(10000) ].pack('N*')
   end
 
   class PrimaryKeyProvider
