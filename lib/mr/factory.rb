@@ -96,7 +96,10 @@ module MR::Factory
 
   module StringKeyHash
     def self.new(hash)
-      hash.inject({}){ |h, (k, v)| h.merge(k.to_s => v) }
+      hash.inject({}) do |h, (k, v)|
+        value = v.kind_of?(Hash) ? StringKeyHash.new(v) : v
+        h.merge(k.to_s => value)
+      end
     end
   end
 

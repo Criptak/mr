@@ -3,6 +3,7 @@ require 'active_support/core_ext/string'
 module MR::Associations
 
   class Base
+    attr_reader :name
 
     def initialize(name, associated_class_name, options = nil)
       options ||= {}

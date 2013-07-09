@@ -1,3 +1,4 @@
+require 'mr/associations/one_to_one'
 require 'mr/factory'
 require 'mr/factory/record_factory'
 require 'mr/stack/model_stack'
@@ -20,34 +21,56 @@ module MR::Factory
       end
     end
 
-    def instance(fields = nil)
+    def instance(args = nil)
       record = @record_factory.instance
-      @model_class.new(record, build_fields(fields))
+      @model_class.new(record).tap{ |model| apply_args(model, args) }
     end
 
-    def instance_stack(fields = nil)
+    def instance_stack(args = nil)
       MR::Stack::ModelStack.new(@model_class).tap do |stack|
-        stack.model.fields = build_fields(fields)
+        apply_args(stack.model, args)
       end
     end
 
-    def fake(fields = nil)
+    def fake(args = nil)
       raise "A fake_record_class wasn't provided" unless @fake_record_factory
       fake_record = @fake_record_factory.instance
-      @model_class.new(fake_record, build_fields(fields))
+      @model_class.new(fake_record).tap{ |model| apply_args(model, args) }
     end
 
-    def fake_stack(fields = nil)
+    def fake_stack(args = nil)
       MR::Stack::ModelStack.new(@model_class, @fake_record_class).tap do |stack|
-        stack.model.fields = build_fields(fields)
+        apply_args(stack.model, args)
       end
     end
 
     private
 
-    def build_fields(fields)
-      fields = StringKeyHash.new(fields || {})
-      @defaults.merge(fields)
+    def apply_args(model, args)
+      args = StringKeyHash.new(args || {})
+      @defaults.merge(args)
+      apply_args!(model, @defaults.merge(args))
+    end
+
+    def apply_args!(model, args)
+      args = args.dup
+      apply_args_to_associations(model, args)
+      args.each{ |name, value| model.send("#{name}=", value) }
+    end
+
+    def apply_args_to_associations(model, args)
+      model.class.associations.select do |association|
+        one_to_one_with_args?(association, args)
+      end.each do |association|
+        associated_model = model.send(association.name)
+        association_args = args.delete(association.name.to_s)
+        apply_args!(associated_model, association_args) if associated_model
+      end
+    end
+
+    def one_to_one_with_args?(association, args)
+      args[association.name.to_s].kind_of?(Hash) &&
+        association.kind_of?(MR::Associations::OneToOne)
     end
 
   end

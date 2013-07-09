@@ -16,7 +16,8 @@ module MR::Model
       options :mr_config do
         option :record_class
         option :interface_module
-        option :fields, Set, :default => []
+        option :fields,       Set, :default => []
+        option :associations, Set, :default => []
       end
       self.mr_config.interface_module = Module.new
 
@@ -177,21 +178,28 @@ module MR::Model
       end
     end
 
+    def associations
+      self.mr_config.associations
+    end
+
     def belongs_to(name, class_name, options = nil)
       MR::Associations::BelongsTo.new(name, class_name, options).tap do |a|
         a.define_methods(self.mr_config.interface_module)
+        self.associations << a
       end
     end
 
     def has_many(name, class_name, options = nil)
       MR::Associations::HasMany.new(name, class_name, options).tap do |a|
         a.define_methods(self.mr_config.interface_module)
+        self.associations << a
       end
     end
 
     def has_one(name, class_name, options = nil)
       MR::Associations::HasOne.new(name, class_name, options).tap do |a|
         a.define_methods(self.mr_config.interface_module)
+        self.associations << a
       end
     end
 
