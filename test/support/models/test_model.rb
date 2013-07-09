@@ -1,4 +1,5 @@
 require 'mr'
+require 'test/support/models/area'
 require 'test/support/models/fake_test_record'
 
 class TestModel
@@ -7,7 +8,9 @@ class TestModel
   record_class FakeTestRecord
 
   field_reader :id
-  field_accessor :name
+  field_accessor :name, :active
+
+  belongs_to :area, 'Area'
 
   attr_reader :before_validation_called
   attr_reader :before_validation_on_create_called, :before_validation_on_update_called
@@ -21,6 +24,14 @@ class TestModel
   attr_reader :before_transaction_on_destroy_called, :after_transaction_on_destroy_called
 
   attr_accessor :special
+
+  def active
+    super ? 'Yes' : 'No'
+  end
+
+  def area
+    super || raise('no area')
+  end
 
   protected
 

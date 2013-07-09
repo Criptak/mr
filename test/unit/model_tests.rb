@@ -4,6 +4,7 @@ require 'mr/model'
 require 'mr/test_helpers'
 require 'ns-options/assert_macros'
 require 'set'
+require 'test/support/models/fake_area_record'
 require 'test/support/models/fake_test_record'
 require 'test/support/models/test_model'
 
@@ -37,8 +38,8 @@ module MR::Model
     should "allow an optional record and fields to it's initialize" do
       fake_test_record = FakeTestRecord.new
       passed_fields = { :name => 'Test' }
-      empty_fields = { :id => nil, :name => nil }
-      set_fields = { :id => nil, :name => 'Test' }
+      empty_fields = { :id => nil, :name => nil, :active => "No" }
+      set_fields = { :id => nil, :name => 'Test', :active => "No" }
 
       # pass nothing
       test_model = TestModel.new
@@ -70,7 +71,15 @@ module MR::Model
     end
 
     should "allow supering to field and association methods" do
+      @fake_test_record.active = true
+      assert_equal 'Yes', subject.active
+      @fake_test_record.active = false
+      assert_equal 'No', subject.active
 
+      @fake_test_record.area = nil
+      assert_raises(RuntimeError){ subject.area }
+      @fake_test_record.area = FakeAreaRecord.new
+      assert_nothing_raised{ subject.area }
     end
 
     should "raise an exception when initialized with an object " \
@@ -107,7 +116,7 @@ module MR::Model
     end
 
     should "return the configured fields" do
-      expected = Set.new([ :id, :name ])
+      expected = Set.new([ :id, :name, :active ])
       assert_equal expected, subject.fields
     end
 
