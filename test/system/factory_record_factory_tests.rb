@@ -84,6 +84,30 @@ class MR::Factory::RecordFactory
       assert_instance_of FakeUserRecord, fake_user_record
     end
 
+    should "allow passing deeply nested args to records and stacks" do
+      factory = MR::Factory::RecordFactory.new(UserRecord, {
+        :area  => { :name => 'test' }
+      })
+
+      record = nil
+      assert_nothing_raised{ record = factory.instance }
+      assert_nil record.area
+
+      stack = factory.instance_stack(:area => { :name => 'test'})
+      assert_equal 'test', stack.record.area.name
+
+      factory = MR::Factory::RecordFactory.new(FakeUserRecord, {
+        :area  => { :name => 'test' }
+      })
+
+      fake_record = nil
+      assert_nothing_raised{ fake_record = factory.instance }
+      assert_nil fake_record.area
+
+      fake_stack = factory.instance_stack(:area => { :name => 'not test'})
+      assert_equal 'not test', fake_stack.record.area.name
+    end
+
   end
 
 end

@@ -94,6 +94,26 @@ class MR::Factory::ModelFactory
       assert_not_nil user.email
     end
 
+    should "allow passing deeply nested args to models and stacks" do
+      factory = MR::Factory::ModelFactory.new(User, FakeUserRecord, {
+        :area  => { :name => 'test' }
+      })
+
+      model = nil
+      assert_nothing_raised{ model = factory.instance }
+      assert_nil model.area
+
+      fake_model = nil
+      assert_nothing_raised{ fake_model = factory.fake }
+      assert_nil fake_model.area
+
+      fake_stack = factory.fake_stack
+      assert_equal 'test', fake_stack.model.area.name
+
+      stack = factory.instance_stack(:area => { :name => 'not test'})
+      assert_equal 'not test', stack.model.area.name
+    end
+
   end
 
 end
