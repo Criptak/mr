@@ -1,6 +1,7 @@
 require 'assert'
 require 'mr/model'
 
+require 'mr/fake_record'
 require 'mr/test_helpers'
 require 'ns-options/assert_macros'
 require 'set'
@@ -11,6 +12,62 @@ require 'test/support/models/test_model'
 module MR::Model
 
   class BaseTests < Assert::Context
+    desc "MR::Model"
+    setup do
+      @fake_record_class = Class.new do
+        include MR::FakeRecord
+      end
+      @test_model_class = Class.new do
+        include MR::Model
+      end
+      @fake_record = @fake_record_class.new(:id => 1)
+      @test_model  = @test_model_class.new(@fake_record)
+    end
+    subject{ @test_model }
+
+    should have_accessors :fields
+    should have_imeths :save, :destroy, :transaction
+    should have_imeths :valid?, :errors
+    should have_imeths :new?, :destroyed?
+    should have_cmeths :mr_config, :record_class, :record_class=
+    should have_cmeths :fields, :field_reader, :field_writer, :field_accessor
+    should have_cmeths :associations, :belongs_to, :has_many, :has_one
+    should have_cmeths :find, :all
+
+    should "include MR::Model mixins and it's interface module" do
+      modules = subject.class.included_modules
+      assert_includes MR::Model::InstanceMethods, modules
+      interface_module = subject.class.mr_config.interface_module
+      assert_includes interface_module, modules
+    end
+
+    should "allow reading and writing it's record class" do
+      assert_raises(ArgumentError) do
+        @test_model_class.record_class = 'test'
+      end
+      @test_model_class.record_class = @fake_record_class
+      assert_equal @fake_record_class, @test_model_class.record_class
+      assert_equal @test_model_class,  @fake_record_class.model_class
+    end
+
+  end
+
+  class ConfigTests < BaseTests
+    include NsOptions::AssertMacros
+
+    desc "mr_config"
+    setup do
+      @config = @test_model_class.mr_config
+    end
+    subject{ @config }
+
+    should have_options :record_class, :interface_module
+    should have_option :fields,       Set, :default => []
+    should have_option :associations, Set, :default => []
+
+  end
+
+  class TestModelTests < Assert::Context
     include MR::TestHelpers
 
     desc "MR::Model"
@@ -20,22 +77,7 @@ module MR::Model
     end
     subject{ @test_model }
 
-    should have_accessors :fields
-    should have_cmeths :mr_config, :record_class
-    should have_cmeths :fields, :field_reader, :field_writer, :field_accessor
-    should have_cmeths :belongs_to, :has_many, :has_one
-    should have_cmeths :find, :all
-    should have_imeths :save, :destroy, :transaction
-    should have_imeths :errors, :valid?, :new?, :destroyed?
-
-    should "include MR::Model mixins and it's interface module" do
-      modules = subject.class.included_modules
-      assert_includes MR::Model::InstanceMethods, modules
-      interface_module = subject.class.mr_config.interface_module
-      assert_includes interface_module, modules
-    end
-
-    should "allow an optional record and fields to it's initialize" do
+    should "allow an optional record and fields when initialized" do
       fake_test_record = FakeTestRecord.new
       passed_fields = { :name => 'Test' }
       empty_fields = { :id => nil, :name => nil, :active => "No" }
@@ -99,30 +141,7 @@ module MR::Model
 
   end
 
-  class ConfigTests < BaseTests
-    include NsOptions::AssertMacros
-
-    desc "mr_config"
-    setup do
-      @config = TestModel.mr_config
-    end
-    subject{ @config }
-
-    should have_options :record_class
-    should have_option :fields, Set, :default => []
-
-    should "return the configured record class" do
-      assert_equal FakeTestRecord, subject.record_class
-    end
-
-    should "return the configured fields" do
-      expected = Set.new([ :id, :name, :active ])
-      assert_equal expected, subject.fields
-    end
-
-  end
-
-  class FieldsAccessorTests < BaseTests
+  class FieldsAccessorTests < TestModelTests
     desc "fields reading and writing"
 
     should "return any keys in the fields configuration with #fields" do
@@ -158,7 +177,7 @@ module MR::Model
 
   end
 
-  class PersistenceMethodsTests < BaseTests
+  class PersistenceMethodsTests < TestModelTests
     desc "persistence methods"
 
     should "call the save! method on it's record with #save" do
@@ -205,7 +224,7 @@ module MR::Model
 
   end
 
-  class CallbacksTests < BaseTests
+  class CallbacksTests < TestModelTests
     desc "callbacks"
 
     should "call the save, create, and transaction ones when a new record" do
@@ -309,7 +328,7 @@ module MR::Model
 
   end
 
-  class FindTests < BaseTests
+  class FindTests < TestModelTests
     desc "find"
     setup do
       FakeTestRecord.stubs(:find).with(1).returns(@fake_test_record)
@@ -325,7 +344,7 @@ module MR::Model
 
   end
 
-  class AllTests < BaseTests
+  class AllTests < TestModelTests
     desc "all"
     setup do
       @records = [
@@ -346,8 +365,7 @@ module MR::Model
 
   end
 
-
-  class InvalidTests < BaseTests
+  class InvalidTests < TestModelTests
     desc "when saving an invalid record"
     setup do
       errors_mock = mock("ActiveRecord::Errors")

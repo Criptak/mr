@@ -148,8 +148,15 @@ module MR::Model
 
   module ClassMethods
 
-    def record_class(*args)
-      self.mr_config.record_class *args
+    def record_class(value = nil)
+      (self.record_class = value) if value
+      self.mr_config.record_class
+    end
+
+    def record_class=(value)
+      raise ArgumentError, "must be a MR::Record" unless value < MR::Record
+      self.mr_config.record_class = value
+      value.model_class = self
     end
 
     def fields
