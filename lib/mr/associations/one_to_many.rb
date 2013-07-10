@@ -4,11 +4,17 @@ module MR::Associations
 
   class OneToMany < MR::Associations::Base
 
+    def initialize(name, associated_class_name, options = nil)
+      options ||= {}
+      options[:class_name] = associated_class_name
+      super(name, options)
+    end
+
     private
 
     def read!(record)
       (record.send(association_reader_name) || []).map do |record|
-        @associated_class.new(record)
+        self.associated_class.new(record)
       end
     end
 
