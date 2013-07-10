@@ -5,10 +5,10 @@ module MR::Associations
   class Base
     attr_reader :name
 
-    def initialize(name, associated_class_name, options = nil)
+    def initialize(name, options = nil)
       options ||= {}
       @name = name.to_s
-      @associated_class_name = associated_class_name.to_s
+      @associated_class_name   = options[:class_name]
       @record_association_name = (options[:record_association] || @name).to_s
       @associated_class = nil
       # this will be lazily set, it's used to cache the result of finding a
@@ -34,11 +34,15 @@ module MR::Associations
       "#{@record_association_name}="
     end
 
+    def associated_class
+      return if !@associated_class_name
+      @associated_class ||= constantize(@associated_class_name, @name)
+    end
+
     def read(&record_provider)
       if !record_provider
         raise ArgumentError, 'requires a block to provide the record instance'
       end
-      @associated_class ||= constantize(@associated_class_name, @name)
       read!(record_provider.call)
     end
 

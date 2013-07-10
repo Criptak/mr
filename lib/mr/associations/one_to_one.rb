@@ -6,11 +6,17 @@ module MR::Associations
 
     NullModel = Struct.new(:record)
 
+    def initialize(name, associated_class_name, options = nil)
+      options ||= {}
+      options[:class_name] = associated_class_name
+      super(name, options)
+    end
+
     private
 
     def read!(record)
       if associated_record = record.send(association_reader_name)
-        @associated_class.new(associated_record)
+        self.associated_class.new(associated_record)
       end
     end
 
