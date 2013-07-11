@@ -18,9 +18,9 @@ class MR::FakeRecord::Association
     subject{ @association }
 
     should have_readers :name, :ivar_name, :fake_record_class_name
-    should have_imeths :type, :macro
-    should have_imeths :fake_record_class, :klass
+    should have_imeths :fake_record_class
     should have_imeths :read, :write, :define_methods
+    should have_imeths :belongs_to?, :collection?, :klass
 
     should "know it's name, ivar name and fake record class name" do
       assert_equal :user,            subject.name
@@ -28,8 +28,16 @@ class MR::FakeRecord::Association
       assert_equal 'FakeTestRecord', subject.fake_record_class_name
     end
 
-    should "raise a NotImplementedError with #type" do
-      assert_raises(NotImplementedError){ subject.type }
+    should "return false with #belongs_to?" do
+      assert_equal false, subject.belongs_to?
+    end
+
+    should "return false with #collection?" do
+      assert_equal false, subject.collection?
+    end
+
+    should "return it's fake record class with #klass" do
+      assert_equal subject.fake_record_class, subject.klass
     end
 
     should "constantize the fake record class name and return it with #fake_record_class" do
@@ -50,12 +58,6 @@ class MR::FakeRecord::Association
       assert_respond_to :user=, @my_class.new
     end
 
-    should "support ActiveRecord's association interface" do
-      subject.stubs(:type).returns(:test)
-      assert_equal subject.type, subject.macro
-      assert_equal subject.fake_record_class, subject.klass
-    end
-
   end
 
   class BelongsToTests < BaseTests
@@ -69,14 +71,18 @@ class MR::FakeRecord::Association
 
     should have_readers :foreign_key
 
+    should "be a kind of fake association" do
+      assert subject.kind_of?(MR::FakeRecord::Association)
+    end
+
     should "know it's foreign_key" do
       assert_equal "created_by_id", subject.foreign_key
       belongs_to = MR::FakeRecord::BelongsTo.new(:user, 'FakeTestRecord')
       assert_equal "user_id", belongs_to.foreign_key
     end
 
-    should "return belongs_to with #type" do
-      assert_equal :belongs_to, subject.type
+    should "return true with #belongs_to?" do
+      assert_equal true, subject.belongs_to?
     end
 
     should "set the created_by_id when setting the user belongs_to association" do
@@ -97,8 +103,12 @@ class MR::FakeRecord::Association
     end
     subject{ @has_many }
 
-    should "return has_many with #type" do
-      assert_equal :has_many, subject.type
+    should "be a kind of fake association" do
+      assert subject.kind_of?(MR::FakeRecord::Association)
+    end
+
+    should "return true with #collection?" do
+      assert_equal true, subject.collection?
     end
 
     should "default the value to an empty array with #read" do
@@ -121,8 +131,8 @@ class MR::FakeRecord::Association
     end
     subject{ @has_one }
 
-    should "return has_one with #type" do
-      assert_equal :has_one, subject.type
+    should "be a kind of fake association" do
+      assert subject.kind_of?(MR::FakeRecord::Association)
     end
 
   end

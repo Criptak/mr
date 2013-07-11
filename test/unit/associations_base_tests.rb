@@ -22,6 +22,7 @@ class MR::Associations::Base
     should have_imeths :reader_method_name, :writer_method_name
     should have_imeths :association_reader_name, :association_writer_name
     should have_imeths :associated_class
+    should have_imeths :one_to_one?, :one_to_many?
     should have_imeths :read, :write
     should have_imeths :define_methods
 
@@ -30,6 +31,11 @@ class MR::Associations::Base
       assert_equal "test_model=", subject.writer_method_name
       assert_equal "test_model_association",  subject.association_reader_name
       assert_equal "test_model_association=", subject.association_writer_name
+    end
+
+    should "return false with one_to_one? and one_to_many?" do
+      assert_equal false, subject.one_to_one?
+      assert_equal false, subject.one_to_many?
     end
 
     should "raise an error when read or write is called without a block" do
