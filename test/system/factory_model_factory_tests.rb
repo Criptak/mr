@@ -16,6 +16,7 @@ class MR::Factory::ModelFactory
     subject{ @factory }
 
     should have_imeths :instance, :instance_stack, :fake, :fake_stack
+    should have_imeths :apply_args
 
     should "build an instance of the model with the fake record class and "\
           "allow setting fields with #fake" do
@@ -29,9 +30,6 @@ class MR::Factory::ModelFactory
       assert_not_nil fake_user.name
       assert_not_nil fake_user.active
       assert_not_nil fake_user.email
-
-      fake_user = factory.fake(:name => 'Test')
-      assert_equal 'Test', fake_user.name
     end
 
     should "build an instance of the model and allow setting fields " \
@@ -45,9 +43,6 @@ class MR::Factory::ModelFactory
       assert_instance_of DateTime, user.created_at
       assert_instance_of DateTime, user.updated_at
       assert_equal MR::Factory.boolean, user.active
-
-      user = subject.instance(:name => 'Test')
-      assert_equal 'Test', user.name
     end
 
     should "allow specifying default fields when building the factory" do
@@ -94,24 +89,16 @@ class MR::Factory::ModelFactory
       assert_not_nil user.email
     end
 
-    should "allow passing deeply nested args to models and stacks" do
-      factory = MR::Factory::ModelFactory.new(User, FakeUserRecord, {
-        :area  => { :name => 'test' }
+    should "set the model's and it's association's attributes with #apply_to" do
+      user = User.new.tap{ |record| record.area = Area.new }
+      subject.apply_args(user, {
+        :name   => 'Test',
+        :active => false,
+        :area   => { :name => 'Awesome' }
       })
-
-      model = nil
-      assert_nothing_raised{ model = factory.instance }
-      assert_nil model.area
-
-      fake_model = nil
-      assert_nothing_raised{ fake_model = factory.fake }
-      assert_nil fake_model.area
-
-      fake_stack = factory.fake_stack
-      assert_equal 'test', fake_stack.model.area.name
-
-      stack = factory.instance_stack(:area => { :name => 'not test'})
-      assert_equal 'not test', stack.model.area.name
+      assert_equal 'Test',    user.name
+      assert_equal false,     user.active
+      assert_equal 'Awesome', user.area.name
     end
 
   end

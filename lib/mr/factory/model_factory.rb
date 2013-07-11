@@ -1,4 +1,5 @@
 require 'mr/factory'
+require 'mr/factory/apply_args'
 require 'mr/factory/record_factory'
 require 'mr/stack/model_stack'
 
@@ -6,14 +7,16 @@ module MR; end
 module MR::Factory
 
   class ModelFactory
+    include ApplyArgs
 
     def initialize(model_class, *args)
-      defaults, @fake_record_class = [
+      default_args, @fake_record_class = [
         args.last.kind_of?(Hash) ? args.pop : {},
         args.last
       ]
-      @model_class    = model_class
-      @defaults       = StringKeyHash.new(defaults)
+      @model_class = model_class
+      @default_args = symbolize_hash(default_args)
+
       @record_factory = MR::Factory::RecordFactory.new(model_class.record_class)
       if @fake_record_class
         @fake_record_factory = MR::Factory::RecordFactory.new(@fake_record_class)
@@ -43,32 +46,25 @@ module MR::Factory
       end
     end
 
+    def apply_args(model, args = nil)
+      args ||= {}
+      super model, @default_args.merge(symbolize_hash(args))
+    end
+
     private
 
-    def apply_args(model, args)
-      args = StringKeyHash.new(args || {})
-      @defaults.merge(args)
-      apply_args!(model, @defaults.merge(args))
-    end
-
-    def apply_args!(model, args)
-      args = args.dup
-      apply_args_to_associations(model, args)
-      args.each{ |name, value| model.send("#{name}=", value) }
-    end
-
-    def apply_args_to_associations(model, args)
-      model.class.associations.select do |association|
-        one_to_one_with_args?(association, args)
-      end.each do |association|
+    def apply_args_to_associations!(model, args)
+      one_to_one_associations_with_args(model, args).each do |association|
         associated_model = model.send(association.name)
-        association_args = args.delete(association.name.to_s)
+        association_args = args.delete(association.name.to_sym)
         apply_args!(associated_model, association_args) if associated_model
       end
     end
 
-    def one_to_one_with_args?(association, args)
-      args[association.name.to_s].kind_of?(Hash) && association.one_to_one?
+    def one_to_one_associations_with_args(model, args)
+      model.class.associations.select do |association|
+        hash_key?(args, association.name) && association.one_to_one?
+      end
     end
 
   end
