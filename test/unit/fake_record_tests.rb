@@ -34,6 +34,7 @@ module MR::FakeRecord
     should have_imeths :attributes, :attributes=, :new_record?, :valid?
     should have_imeths :save!, :destroy, :transaction
     should have_imeths :saved_attributes, :destroyed?
+    should have_imeths :association
 
     should "return it's attribute list with #attributes" do
       assert_instance_of Set, @fake_record_class.attributes
@@ -116,6 +117,12 @@ module MR::FakeRecord
       assert_equal false, subject.destroyed?
       subject.destroy
       assert_equal true, subject.destroyed?
+    end
+
+    should "return the association with the matching name with #association" do
+      association = subject.association(:parent)
+      assert_instance_of MR::FakeRecord::BelongsTo, association
+      assert_equal :parent, association.name
     end
 
   end

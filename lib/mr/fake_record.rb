@@ -76,6 +76,10 @@ module MR::FakeRecord
     self.send("#{attribute_name}=", value)
   end
 
+  def association(name)
+    self.class.associations.detect{ |a| a.name.to_s == name.to_s }
+  end
+
   def ==(other)
     if other.kind_of?(self.class)
       self.id == other.id
