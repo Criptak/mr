@@ -32,12 +32,14 @@ module MR::Factory
     private
 
     def non_association_columns(record_class)
-      associations = record_class.reflect_on_all_associations.select do |a|
-        a.macro == :belongs_to
-      end
+      association_columns = belongs_to_association_columns(record_class)
       record_class.columns.reject do |column|
-        column.primary || associations.detect{|a| a.foreign_key == column.name }
+        column.primary || association_columns.include?(column.name)
       end
+    end
+
+    def belongs_to_association_columns(record_class)
+      record_class.reflect_on_all_associations.select(&:belongs_to?).map(&:foreign_key)
     end
 
     def apply_args(record, args)
@@ -52,18 +54,17 @@ module MR::Factory
     end
 
     def apply_args_to_associations(record, args)
-      record.class.reflect_on_all_associations.select do |association|
-        one_to_one_with_args?(association, args)
-      end.each do |association|
-        associated_record = record.send(association.name)
-        association_args  = args.delete(association.name.to_s)
+      record.class.reflect_on_all_associations.select do |reflection|
+        one_to_one_with_args?(reflection, args)
+      end.each do |reflection|
+        associated_record = record.send(reflection.name)
+        association_args  = args.delete(reflection.name.to_s)
         apply_args!(associated_record, association_args) if associated_record
       end
     end
 
-    def one_to_one_with_args?(association, args)
-      args[association.name.to_s].kind_of?(Hash) &&
-        [ :belongs_to, :has_one ].include?(association.macro)
+    def one_to_one_with_args?(reflection, args)
+      args[reflection.name.to_s].kind_of?(Hash) && !reflection.collection?
     end
 
   end

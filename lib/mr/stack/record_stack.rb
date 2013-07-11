@@ -104,7 +104,7 @@ module MR::Stack
 
     def belongs_to_associations(record_class)
       record_class.reflect_on_all_associations.map do |reflection|
-        next if reflection.macro != :belongs_to
+        next unless reflection.belongs_to?
         Association.new(reflection.klass, reflection.name)
       end.compact
     end

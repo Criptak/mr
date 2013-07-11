@@ -17,6 +17,14 @@ class MR::Associations::OneToMany
     end
     subject{ @one_to_many }
 
+    should "be a kind of base association" do
+      assert_kind_of MR::Associations::Base, subject
+    end
+
+    should "return true with one_to_many?" do
+      assert_equal true, subject.one_to_many?
+    end
+
     should "read the value of the association reader and build an instance" \
            "of the associated class for each record with #read" do
       test_record = @fake_model_class.new.record

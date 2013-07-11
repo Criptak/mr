@@ -34,6 +34,14 @@ module MR::Associations
       "#{@record_association_name}="
     end
 
+    def one_to_one?
+      false
+    end
+
+    def one_to_many?
+      false
+    end
+
     def associated_class
       return if !@associated_class_name
       @associated_class ||= constantize(@associated_class_name, @name)

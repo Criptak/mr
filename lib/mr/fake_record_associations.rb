@@ -12,12 +12,12 @@ module MR::FakeRecord
       @fake_record_class      = nil
     end
 
-    def type
-      raise NotImplementedError
+    def belongs_to?
+      false
     end
 
-    def macro
-      self.type
+    def collection?
+      false
     end
 
     def fake_record_class
@@ -48,14 +48,14 @@ module MR::FakeRecord
     end
 
     def ==(other)
-      self.type == other.type && self.name == other.name
+      self.class == other.class && self.name == other.name
     end
 
     def <=>(other)
-      if self.type == other.type
+      if self.class == other.class
         self.name <=> other.name
       else
-        self.type <=> other.type
+        self.class <=> other.class
       end
     end
 
@@ -70,8 +70,8 @@ module MR::FakeRecord
       @foreign_key = (options[:foreign_key] || "#{name}_id").to_s
     end
 
-    def type
-      :belongs_to
+    def belongs_to?
+      true
     end
 
     def write(record, associated_record)
@@ -87,8 +87,8 @@ module MR::FakeRecord
 
   class HasMany < Association
 
-    def type
-      :has_many
+    def collection?
+      true
     end
 
     def read(record)
@@ -104,12 +104,6 @@ module MR::FakeRecord
 
   end
 
-  class HasOne < Association
-
-    def type
-      :has_one
-    end
-
-  end
+  HasOne = Class.new(Association)
 
 end

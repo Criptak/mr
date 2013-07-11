@@ -60,12 +60,12 @@ module MR::FakeRecord
         assert_kind_of MR::FakeRecord::Association, association
       end
       expected = [
-        [ 'parent',   :belongs_to, 'FakeParentRecord' ],
-        [ 'children', :has_many,   'FakeChildRecord' ],
-        [ 'thing',    :has_one,    'FakeThingRecord' ]
+        [ 'parent',   MR::FakeRecord::BelongsTo, 'FakeParentRecord' ],
+        [ 'children', MR::FakeRecord::HasMany,   'FakeChildRecord' ],
+        [ 'thing',    MR::FakeRecord::HasOne,    'FakeThingRecord' ]
       ].sort
       actual = @fake_record_class.associations.map do |a|
-        [ a.name.to_s, a.type, a.fake_record_class_name ]
+        [ a.name.to_s, a.class, a.fake_record_class_name ]
       end.sort
       assert_equal expected, actual
     end

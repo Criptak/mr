@@ -1,4 +1,3 @@
-require 'mr/associations/one_to_one'
 require 'mr/factory'
 require 'mr/factory/record_factory'
 require 'mr/stack/model_stack'
@@ -69,8 +68,7 @@ module MR::Factory
     end
 
     def one_to_one_with_args?(association, args)
-      args[association.name.to_s].kind_of?(Hash) &&
-        association.kind_of?(MR::Associations::OneToOne)
+      args[association.name.to_s].kind_of?(Hash) && association.one_to_one?
     end
 
   end

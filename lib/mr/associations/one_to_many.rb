@@ -10,6 +10,10 @@ module MR::Associations
       super(name, options)
     end
 
+    def one_to_many?
+      true
+    end
+
     private
 
     def read!(record)
