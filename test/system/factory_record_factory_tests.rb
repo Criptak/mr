@@ -15,17 +15,7 @@ class MR::Factory::RecordFactory
     end
     subject{ @factory }
 
-    should have_imeths :instance, :instance_stack, :default_attributes
-
-    should "return values for non-association attributes on a UserRecord " \
-           "with #default_attributes" do
-      attrs = subject.default_attributes
-      assert_instance_of String, attrs['name']
-      assert_instance_of String, attrs['email']
-      assert_instance_of DateTime, attrs['created_at']
-      assert_instance_of DateTime, attrs['updated_at']
-      assert_equal MR::Factory.boolean, attrs['active']
-    end
+    should have_imeths :instance, :instance_stack, :apply_args
 
     should "return a UserRecord with it's columns defaulted with #instance" do
       user_record = subject.instance
@@ -36,10 +26,6 @@ class MR::Factory::RecordFactory
       assert_instance_of DateTime, user_record.updated_at
       assert_equal MR::Factory.boolean, user_record.active
       assert_nil user_record.area_id
-
-      user_record = subject.instance(:name => nil, :active => false)
-      assert_equal nil,   user_record.name
-      assert_equal false, user_record.active
     end
 
     should "allow providing defaults when building a new factory" do
@@ -84,28 +70,16 @@ class MR::Factory::RecordFactory
       assert_instance_of FakeUserRecord, fake_user_record
     end
 
-    should "allow passing deeply nested args to records and stacks" do
-      factory = MR::Factory::RecordFactory.new(UserRecord, {
-        :area  => { :name => 'test' }
+    should "set the record's and it's association's attributes with #apply_to" do
+      user_record = UserRecord.new.tap{ |record| record.area = AreaRecord.new }
+      subject.apply_args(user_record, {
+        :name   => 'Test',
+        :active => false,
+        :area   => { :name => 'Awesome' }
       })
-
-      record = nil
-      assert_nothing_raised{ record = factory.instance }
-      assert_nil record.area
-
-      stack = factory.instance_stack(:area => { :name => 'test'})
-      assert_equal 'test', stack.record.area.name
-
-      factory = MR::Factory::RecordFactory.new(FakeUserRecord, {
-        :area  => { :name => 'test' }
-      })
-
-      fake_record = nil
-      assert_nothing_raised{ fake_record = factory.instance }
-      assert_nil fake_record.area
-
-      fake_stack = factory.instance_stack(:area => { :name => 'not test'})
-      assert_equal 'not test', fake_stack.record.area.name
+      assert_equal 'Test',    user_record.name
+      assert_equal false,     user_record.active
+      assert_equal 'Awesome', user_record.area.name
     end
 
   end
