@@ -40,15 +40,24 @@ module MR::Factory
 
     def apply_args_to_associations!(record, args)
       one_to_one_associations_with_args(record, args).each do |association|
-        associated_record = record.send(association.name)
-        association_args  = args.delete(association.name.to_sym)
+        associated_record = get_associated_record(record, association)
+        association_args  = args.delete(association.reflection.name.to_sym)
         apply_args!(associated_record, association_args) if associated_record
+      end
+    end
+
+    def get_associated_record(record, association)
+      record.send(association.reflection.name) || begin
+        new_record = RecordFactory.new(association.klass).instance
+        record.send("#{association.reflection.name}=", new_record)
       end
     end
 
     def one_to_one_associations_with_args(record, args)
       record.class.reflect_on_all_associations.select do |reflection|
         hash_key?(args, reflection.name) && !reflection.collection?
+      end.map do |reflection|
+        record.association(reflection.name)
       end
     end
 

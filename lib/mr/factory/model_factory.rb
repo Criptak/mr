@@ -55,9 +55,16 @@ module MR::Factory
 
     def apply_args_to_associations!(model, args)
       one_to_one_associations_with_args(model, args).each do |association|
-        associated_model = model.send(association.name)
+        associated_model = get_associated_model(model, association)
         association_args = args.delete(association.name.to_sym)
         apply_args!(associated_model, association_args) if associated_model
+      end
+    end
+
+    def get_associated_model(model, association)
+      model.send(association.name) || begin
+        new_model = MR::Factory.new(association.associated_class).instance
+        model.send("#{association.name}=", new_model)
       end
     end
 

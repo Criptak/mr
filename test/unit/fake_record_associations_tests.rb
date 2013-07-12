@@ -36,6 +36,10 @@ class MR::FakeRecord::Association
       assert_equal false, subject.collection?
     end
 
+    should "return itself with #reflection" do
+      assert_equal subject, subject.reflection
+    end
+
     should "return it's fake record class with #klass" do
       assert_equal subject.fake_record_class, subject.klass
     end

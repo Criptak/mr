@@ -89,7 +89,7 @@ class MR::Factory::ModelFactory
       assert_not_nil user.email
     end
 
-    should "set the model's and it's association's attributes with #apply_to" do
+    should "set the model's and it's association's attributes with #apply_args" do
       user = User.new.tap{ |record| record.area = Area.new }
       subject.apply_args(user, {
         :name   => 'Test',
@@ -98,6 +98,12 @@ class MR::Factory::ModelFactory
       })
       assert_equal 'Test',    user.name
       assert_equal false,     user.active
+      assert_equal 'Awesome', user.area.name
+    end
+
+    should "automatically build association's with #apply_args" do
+      user = User.new
+      subject.apply_args(user, :area => { :name => 'Awesome' })
       assert_equal 'Awesome', user.area.name
     end
 

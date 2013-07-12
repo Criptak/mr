@@ -20,6 +20,10 @@ module MR::FakeRecord
       false
     end
 
+    def reflection
+      self
+    end
+
     def fake_record_class
       @fake_record_class ||= @fake_record_class_name.constantize
     end

@@ -70,7 +70,7 @@ class MR::Factory::RecordFactory
       assert_instance_of FakeUserRecord, fake_user_record
     end
 
-    should "set the record's and it's association's attributes with #apply_to" do
+    should "set the record's and it's association's attributes with #apply_args" do
       user_record = UserRecord.new.tap{ |record| record.area = AreaRecord.new }
       subject.apply_args(user_record, {
         :name   => 'Test',
@@ -79,6 +79,12 @@ class MR::Factory::RecordFactory
       })
       assert_equal 'Test',    user_record.name
       assert_equal false,     user_record.active
+      assert_equal 'Awesome', user_record.area.name
+    end
+
+    should "automatically build association's with #apply_args" do
+      user_record = UserRecord.new
+      subject.apply_args(user_record, :area => { :name => 'Awesome' })
       assert_equal 'Awesome', user_record.area.name
     end
 
