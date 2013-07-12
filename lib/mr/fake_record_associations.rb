@@ -2,14 +2,13 @@ module MR; end
 module MR::FakeRecord
 
   class Association
-    attr_reader :name, :fake_record_class_name
-    attr_reader :ivar_name
+    attr_reader :name, :options, :ivar_name, :fake_record_class_name
 
-    def initialize(name, fake_record_class_name)
-      @name      = name
-      @ivar_name = "@#{name}"
-      @fake_record_class_name = fake_record_class_name
-      @fake_record_class      = nil
+    def initialize(name, options = nil)
+      @name       = name
+      @options    = options || {}
+      @ivar_name  = "@#{name}"
+      @fake_record_class_name = @options[:class_name]
     end
 
     def belongs_to?
@@ -46,6 +45,7 @@ module MR::FakeRecord
         end
         define_method("#{association.name}=") do |value|
           association.write(self, value)
+          association.read(self)
         end
 
       end
@@ -68,10 +68,9 @@ module MR::FakeRecord
   class BelongsTo < Association
     attr_reader :foreign_key
 
-    def initialize(name, fake_record_class_name, options = nil)
-      options ||= {}
-      super(name, fake_record_class_name)
-      @foreign_key = (options[:foreign_key] || "#{name}_id").to_s
+    def initialize(name, options = nil)
+      super
+      @foreign_key = (@options[:foreign_key] || "#{name}_id").to_s
     end
 
     def belongs_to?
@@ -79,12 +78,12 @@ module MR::FakeRecord
     end
 
     def write(record, associated_record)
-      super
-      if record.respond_to?(@foreign_key)
+      return_value = super
+      if record.respond_to?("#{@foreign_key}=")
         associated_id = associated_record ? associated_record.id : nil
         record.send("#{@foreign_key}=", associated_id)
       end
-      read(record)
+      return_value
     end
 
   end
