@@ -31,4 +31,16 @@ module MR::Associations
   BelongsTo = Class.new(OneToOne)
   HasOne    = Class.new(OneToOne)
 
+  class PolymorphicBelongsTo < OneToOne
+
+    private
+
+    def read!(record)
+      if associated_record = record.send(association_reader_name)
+        associated_record.class.model_class.new(associated_record)
+      end
+    end
+
+  end
+
 end

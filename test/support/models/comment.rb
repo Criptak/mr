@@ -7,9 +7,10 @@ class Comment
 
   record_class CommentRecord
 
-  field_reader :id, :user_id
-  field_accessor :favorite, :message
+  field_reader :id, :user_id, :parent_id
+  field_accessor :favorite, :message, :parent_type
 
+  polymorphic_belongs_to :parent
   belongs_to :user, 'User'
 
 end

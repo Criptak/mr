@@ -145,6 +145,41 @@ class HasOneTests < WithModelTests
 
 end
 
+class PolymorphicBelongsToTests < WithModelTests
+  desc "using a polymorphic belongs to association"
+  setup do
+    @user.save
+    @area = Area.new(:name => 'Alpha')
+    @area.save
+    @comment = Comment.new(:message => "Test")
+  end
+  teardown do
+    @comment.destroy
+    @area.destroy
+    @user.destroy
+  end
+  subject{ @comment }
+
+  should "be able to read it and write to it" do
+    assert_nil subject.parent
+
+    assert_nothing_raised do
+      subject.parent = @area
+    end
+    assert_equal @area,        subject.parent
+    assert_equal @area.id,     subject.parent_id
+    assert_equal 'AreaRecord', subject.parent_type
+
+    assert_nothing_raised do
+      subject.parent = @user
+    end
+    assert_equal @user,        subject.parent
+    assert_equal @user.id,     subject.parent_id
+    assert_equal 'UserRecord', subject.parent_type
+  end
+
+end
+
 class QueryTests < WithModelTests
   desc "using a MR::Query"
   setup do

@@ -79,7 +79,7 @@ class MR::Associations::OneToOne
 
   end
 
-  class BelongsToTests < Assert::Context
+  class BelongsToTests < BaseTests
     desc "BelongsTo"
     setup do
       @belongs_to = MR::Associations::BelongsTo.new(:test_model, 'TestModel')
@@ -92,7 +92,7 @@ class MR::Associations::OneToOne
 
   end
 
-  class HasOneTests < Assert::Context
+  class HasOneTests < BaseTests
     desc "HasOne"
     setup do
       @has_one = MR::Associations::HasOne.new(:test_model, 'TestModel')
@@ -101,6 +101,34 @@ class MR::Associations::OneToOne
 
     should "be a kind of OneToOne" do
       assert_kind_of MR::Associations::OneToOne, subject
+    end
+
+  end
+
+  class PolymorphicBelongsToTests < BaseTests
+    desc "PolymorphicBelongsTo"
+    setup do
+      @association_class = MR::Associations::PolymorphicBelongsTo
+      @polymorphic_belongs_to = @association_class.new(:test_model, {
+        :record_association => 'test_model_polymorphic_belongs_to'
+      })
+    end
+    subject{ @polymorphic_belongs_to }
+
+    should "read the value of the association reader and " \
+           "build an instance of the record class's model class with #read" do
+      test_record = @fake_model_class.new.record
+      result = subject.read{ test_record }
+      assert_instance_of TestModel, result
+      assert_equal test_record.test_model_polymorphic_belongs_to, result.send(:record)
+    end
+
+    should "return nil if the association reader returns nil with #read" do
+      test_record = @fake_model_class.new.record.tap do |r|
+        r.test_model_polymorphic_belongs_to = nil
+      end
+      result = subject.read{ test_record }
+      assert_nil result
     end
 
   end

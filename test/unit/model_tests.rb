@@ -32,6 +32,7 @@ module MR::Model
     should have_cmeths :mr_config, :record_class, :record_class=
     should have_cmeths :fields, :field_reader, :field_writer, :field_accessor
     should have_cmeths :associations, :belongs_to, :has_many, :has_one
+    should have_cmeths :polymorphic_belongs_to
     should have_cmeths :find, :all
 
     should "include MR::Model mixins and it's interface module" do

@@ -77,7 +77,8 @@ module MR::FakeRecord
   end
 
   def association(name)
-    self.class.associations.detect{ |a| a.name.to_s == name.to_s }
+    association = self.class.associations.detect{ |a| a.name.to_s == name.to_s }
+    association.dup.tap{ |a| a.record = self }
   end
 
   def ==(other)
@@ -131,6 +132,12 @@ module MR::FakeRecord
 
     def has_one(name, fake_record_class_name)
       association = HasOne.new(name, :class_name => fake_record_class_name)
+      association.define_methods(self)
+      self.fr_config.associations << association
+    end
+
+    def polymorphic_belongs_to(name, options = nil)
+      association = PolymorphicBelongsTo.new(name, options)
       association.define_methods(self)
       self.fr_config.associations << association
     end

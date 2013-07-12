@@ -19,7 +19,8 @@ module MR::Associations
         def initialize
           @record = OpenStruct.new({
             :test_model_belongs_to => FakeTestRecord.new(:id => 3),
-            :test_model_has_many   => [ FakeTestRecord.new(:id => 4) ]
+            :test_model_has_many   => [ FakeTestRecord.new(:id => 4) ],
+            :test_model_polymorphic_belongs_to => FakeTestRecord.new(:id => 5)
           })
         end
       end

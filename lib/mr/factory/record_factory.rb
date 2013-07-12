@@ -66,7 +66,9 @@ module MR::Factory
     end
 
     def belongs_to_association_columns(record_class)
-      record_class.reflect_on_all_associations.select(&:belongs_to?).map(&:foreign_key)
+      associations = record_class.reflect_on_all_associations.select(&:belongs_to?)
+      polymorphic_associations = associations.select{|a| a.options[:polymorphic] }
+      associations.map(&:foreign_key) + polymorphic_associations.map(&:foreign_type)
     end
 
   end
