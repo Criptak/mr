@@ -2,6 +2,7 @@ require 'assert'
 require 'mr/fake_record'
 
 require 'ns-options/assert_macros'
+require 'test/support/models/test_model'
 
 module MR::FakeRecord
 
@@ -30,6 +31,7 @@ module MR::FakeRecord
     should have_cmeths :attribute, :attributes, :columns, :column_names
     should have_cmeths :associations, :belongs_to, :has_many, :has_one
     should have_cmeths :reflect_on_all_associations
+    should have_cmeths :model_class
 
     should have_imeths :attributes, :attributes=, :new_record?, :valid?
     should have_imeths :save!, :destroy, :transaction
@@ -123,6 +125,11 @@ module MR::FakeRecord
       association = subject.association(:parent)
       assert_instance_of MR::FakeRecord::BelongsTo, association
       assert_equal :parent, association.name
+    end
+
+    should "allow configuring a model class with #model_class" do
+      assert_nothing_raised{ @fake_record_class.model_class(TestModel) }
+      assert_equal TestModel, @fake_record_class.model_class
     end
 
   end

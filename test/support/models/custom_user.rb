@@ -6,7 +6,7 @@ require 'test/support/models/user_record'
 class CustomUser
   include MR::Model
 
-  record_class UserRecord
+  record_class CustomUserRecord
 
   field_reader :created_at
 
