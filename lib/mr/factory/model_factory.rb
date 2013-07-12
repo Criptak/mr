@@ -1,7 +1,7 @@
 require 'mr/factory'
 require 'mr/factory/apply_args'
 require 'mr/factory/record_factory'
-require 'mr/stack/model_stack'
+require 'mr/factory/model_stack'
 
 module MR; end
 module MR::Factory
@@ -29,7 +29,7 @@ module MR::Factory
     end
 
     def instance_stack(args = nil)
-      MR::Stack::ModelStack.new(self.instance(args))
+      MR::Factory::ModelStack.new(self.instance(args))
     end
 
     def fake(args = nil)
@@ -39,7 +39,7 @@ module MR::Factory
     end
 
     def fake_stack(args = nil)
-      MR::Stack::ModelStack.new(self.fake(args))
+      MR::Factory::ModelStack.new(self.fake(args))
     end
 
     def apply_args(model, args = nil)

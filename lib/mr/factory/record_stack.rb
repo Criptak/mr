@@ -1,7 +1,7 @@
 require 'mr/factory'
 
 module MR; end
-module MR::Stack
+module MR::Factory
 
   class RecordStack
     attr_reader :record

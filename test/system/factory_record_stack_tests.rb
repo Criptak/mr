@@ -1,5 +1,5 @@
 require 'assert'
-require 'mr/stack/record_stack'
+require 'mr/factory/record_stack'
 
 require 'test/support/setup_test_db'
 require 'test/support/models/area_record'
@@ -7,13 +7,13 @@ require 'test/support/models/comment_record'
 require 'test/support/models/fake_comment_record'
 require 'test/support/models/user_record'
 
-class MR::Stack::RecordStack
+class MR::Factory::RecordStack
 
   class BaseTests < Assert::Context
-    desc "MR::Stack::RecordStack"
+    desc "MR::Factory::RecordStack"
     setup do
       @comment_record = CommentRecord.new
-      @record_stack = MR::Stack::RecordStack.new(@comment_record)
+      @record_stack = MR::Factory::RecordStack.new(@comment_record)
     end
     teardown do
       @record_stack.destroy rescue nil
@@ -78,7 +78,7 @@ class MR::Stack::RecordStack
     desc "with a fake record"
     setup do
       @fake_comment_record = FakeCommentRecord.new
-      @record_stack = MR::Stack::RecordStack.new(@fake_comment_record)
+      @record_stack = MR::Factory::RecordStack.new(@fake_comment_record)
     end
     teardown do
       @record_stack.destroy rescue nil
@@ -136,10 +136,10 @@ class MR::Stack::RecordStack
   end
 
   class StackRecordTests < Assert::Context
-    desc "MR::Stack::Record"
+    desc "MR::Factory::Record"
     setup do
       @user_record  = UserRecord.new(:name => 'test')
-      @stack_record = MR::Stack::Record.new(@user_record)
+      @stack_record = MR::Factory::Record.new(@user_record)
     end
     teardown do
       @stack_record.destroy rescue nil
@@ -155,13 +155,13 @@ class MR::Stack::RecordStack
       assert_equal 1, associations.size
 
       association = associations.first
-      assert_instance_of MR::Stack::Record::Association, association
+      assert_instance_of MR::Factory::Record::Association, association
       assert_equal AreaRecord, association.record_class
       assert_equal :area,      association.name
     end
 
     should "set the record's association given another Record with #set_association" do
-      stack_record = MR::Stack::Record.new(AreaRecord.new)
+      stack_record = MR::Factory::Record.new(AreaRecord.new)
       assert_nothing_raised{ subject.set_association(:area, stack_record) }
       assert_equal stack_record.instance, subject.instance.area
     end

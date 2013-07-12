@@ -1,7 +1,7 @@
-require 'mr/stack/record_stack'
+require 'mr/factory/record_stack'
 
 module MR; end
-module MR::Stack
+module MR::Factory
 
   class ModelStack
 
@@ -9,7 +9,7 @@ module MR::Stack
 
     def initialize(model)
       @model = model
-      @record_stack = MR::Stack::RecordStack.new(model.send(:record))
+      @record_stack = MR::Factory::RecordStack.new(model.send(:record))
     end
 
     def create;  @record_stack.create;  end

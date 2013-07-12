@@ -1,17 +1,17 @@
 require 'assert'
-require 'mr/stack/model_stack'
+require 'mr/factory/model_stack'
 
 require 'test/support/setup_test_db'
 require 'test/support/models/comment'
 require 'test/support/models/fake_comment_record'
 
-class MR::Stack::ModelStack
+class MR::Factory::ModelStack
 
   class BaseTests < Assert::Context
-    desc "MR::Stack::ModelStack"
+    desc "MR::Factory::ModelStack"
     setup do
       @comment     = Comment.new
-      @model_stack = MR::Stack::ModelStack.new(@comment)
+      @model_stack = MR::Factory::ModelStack.new(@comment)
     end
     teardown do
       @model_stack.destroy rescue nil
@@ -74,7 +74,7 @@ class MR::Stack::ModelStack
     desc "with a fake record"
     setup do
       @fake_comment = Comment.new(FakeCommentRecord.new)
-      @model_stack  = MR::Stack::ModelStack.new(@fake_comment)
+      @model_stack  = MR::Factory::ModelStack.new(@fake_comment)
     end
     teardown do
       @model_stack.destroy rescue nil
