@@ -7,10 +7,9 @@ module MR::Stack
 
     attr_reader :model
 
-    def initialize(model_class, record_class = nil)
-      record_class ||= model_class.record_class
-      @record_stack = MR::Stack::RecordStack.new(record_class)
-      @model = model_class.new(@record_stack.record)
+    def initialize(model)
+      @model = model
+      @record_stack = MR::Stack::RecordStack.new(model.send(:record))
     end
 
     def create;  @record_stack.create;  end

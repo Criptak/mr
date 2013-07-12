@@ -29,9 +29,7 @@ module MR::Factory
     end
 
     def instance_stack(args = nil)
-      MR::Stack::ModelStack.new(@model_class).tap do |stack|
-        apply_args(stack.model, args)
-      end
+      MR::Stack::ModelStack.new(self.instance(args))
     end
 
     def fake(args = nil)
@@ -41,14 +39,11 @@ module MR::Factory
     end
 
     def fake_stack(args = nil)
-      MR::Stack::ModelStack.new(@model_class, @fake_record_class).tap do |stack|
-        apply_args(stack.model, args)
-      end
+      MR::Stack::ModelStack.new(self.fake(args))
     end
 
     def apply_args(model, args = nil)
-      args ||= {}
-      super model, @default_args.merge(symbolize_hash(args))
+      super model, @default_args.merge(symbolize_hash(args || {}))
     end
 
     private
