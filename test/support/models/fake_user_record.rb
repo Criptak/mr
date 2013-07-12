@@ -1,9 +1,11 @@
 require 'mr/fake_record'
 require 'test/support/models/fake_area_record'
 require 'test/support/models/fake_comment_record'
+require 'test/support/models/user'
 
 class FakeUserRecord
   include MR::FakeRecord
+  model_class User
 
   attribute :name,       :string
   attribute :email,      :string

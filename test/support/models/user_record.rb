@@ -24,3 +24,8 @@ class UserRecord < ActiveRecord::Base
 
   validates_presence_of :name
 end
+
+class CustomUserRecord < UserRecord
+  # this is so the `CustomUser` model has a seperate record class to be
+  # linked to, instead of it linking itself to `UserRecord`
+end

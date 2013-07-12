@@ -10,9 +10,9 @@ module MR::FakeRecord
 
   def self.included(klass)
     klass.class_eval do
+      include MR::Record
       include NsOptions
       extend ClassMethods
-      include MR::Record
 
       options :fr_config do
         option :attributes,   Set, :default => []
@@ -89,6 +89,11 @@ module MR::FakeRecord
   end
 
   module ClassMethods
+
+    def model_class(value = nil)
+      (@model_class = value) if value
+      @model_class
+    end
 
     def attribute(name, type)
       attribute = Attribute.new(name, type)
