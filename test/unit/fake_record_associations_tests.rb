@@ -13,17 +13,20 @@ class MR::FakeRecord::Association
         attr_accessor :users
       end
       @record = record_class.new
-      @association = MR::FakeRecord::Association.new(:user, 'FakeTestRecord')
+      @association = MR::FakeRecord::Association.new(:user, {
+        :class_name => 'FakeTestRecord'
+      })
     end
     subject{ @association }
 
-    should have_readers :name, :ivar_name, :fake_record_class_name
+    should have_readers :name, :options, :ivar_name, :fake_record_class_name
     should have_imeths :fake_record_class
     should have_imeths :read, :write, :define_methods
-    should have_imeths :belongs_to?, :collection?, :klass
+    should have_imeths :belongs_to?, :collection?, :reflection, :klass
 
     should "know it's name, ivar name and fake record class name" do
       assert_equal :user,            subject.name
+      assert_instance_of Hash,       subject.options
       assert_equal '@user',          subject.ivar_name
       assert_equal 'FakeTestRecord', subject.fake_record_class_name
     end
@@ -67,7 +70,8 @@ class MR::FakeRecord::Association
   class BelongsToTests < BaseTests
     desc "BelongsTo"
     setup do
-      @belongs_to = MR::FakeRecord::BelongsTo.new(:user, 'FakeTestRecord', {
+      @belongs_to = MR::FakeRecord::BelongsTo.new(:user, {
+        :class_name  => 'FakeTestRecord',
         :foreign_key => :created_by_id
       })
     end
@@ -103,7 +107,9 @@ class MR::FakeRecord::Association
   class HasManyTests < BaseTests
     desc "HasMany"
     setup do
-      @has_many = MR::FakeRecord::HasMany.new(:users, 'FakeTestRecord')
+      @has_many = MR::FakeRecord::HasMany.new(:users, {
+        :class_name => 'FakeTestRecord'
+      })
     end
     subject{ @has_many }
 
@@ -131,7 +137,9 @@ class MR::FakeRecord::Association
   class HasOneTests < BaseTests
     desc "HasOne"
     setup do
-      @has_one = MR::FakeRecord::HasOne.new(:user, 'FakeTestRecord')
+      @has_one = MR::FakeRecord::HasOne.new(:user, {
+        :class_name => 'FakeTestRecord'
+      })
     end
     subject{ @has_one }
 

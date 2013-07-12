@@ -116,19 +116,21 @@ module MR::FakeRecord
     alias :reflect_on_all_associations :associations
 
     def belongs_to(name, fake_record_class_name, options = nil)
-      association = BelongsTo.new(name, fake_record_class_name, options)
+      options ||= {}
+      options[:class_name] = fake_record_class_name
+      association = BelongsTo.new(name, options)
       association.define_methods(self)
       self.fr_config.associations << association
     end
 
     def has_many(name, fake_record_class_name)
-      association = HasMany.new(name, fake_record_class_name)
+      association = HasMany.new(name, :class_name => fake_record_class_name)
       association.define_methods(self)
       self.fr_config.associations << association
     end
 
     def has_one(name, fake_record_class_name)
-      association = HasOne.new(name, fake_record_class_name)
+      association = HasOne.new(name, :class_name => fake_record_class_name)
       association.define_methods(self)
       self.fr_config.associations << association
     end
