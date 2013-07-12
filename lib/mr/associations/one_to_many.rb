@@ -4,12 +4,6 @@ module MR::Associations
 
   class OneToMany < MR::Associations::Base
 
-    def initialize(name, associated_class_name, options = nil)
-      options ||= {}
-      options[:class_name] = associated_class_name
-      super(name, options)
-    end
-
     def one_to_many?
       true
     end

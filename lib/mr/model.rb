@@ -190,21 +190,27 @@ module MR::Model
     end
 
     def belongs_to(name, class_name, options = nil)
-      MR::Associations::BelongsTo.new(name, class_name, options).tap do |a|
+      options ||= {}
+      options[:class_name] = class_name
+      MR::Associations::BelongsTo.new(name, options).tap do |a|
         a.define_methods(self.mr_config.interface_module)
         self.associations << a
       end
     end
 
     def has_many(name, class_name, options = nil)
-      MR::Associations::HasMany.new(name, class_name, options).tap do |a|
+      options ||= {}
+      options[:class_name] = class_name
+      MR::Associations::HasMany.new(name, options).tap do |a|
         a.define_methods(self.mr_config.interface_module)
         self.associations << a
       end
     end
 
     def has_one(name, class_name, options = nil)
-      MR::Associations::HasOne.new(name, class_name, options).tap do |a|
+      options ||= {}
+      options[:class_name] = class_name
+      MR::Associations::HasOne.new(name, options).tap do |a|
         a.define_methods(self.mr_config.interface_module)
         self.associations << a
       end

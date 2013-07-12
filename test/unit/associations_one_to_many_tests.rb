@@ -11,7 +11,8 @@ class MR::Associations::OneToMany
 
     desc "MR::Associations::HasMany"
     setup do
-      @one_to_many = MR::Associations::OneToMany.new(:test_models, 'TestModel', {
+      @one_to_many = MR::Associations::OneToMany.new(:test_models, {
+        :class_name         => 'TestModel',
         :record_association => 'test_model_has_many'
       })
     end
