@@ -11,7 +11,8 @@ class MR::Associations::OneToOne
 
     desc "MR::Associations::OneToOne"
     setup do
-      @one_to_one = MR::Associations::OneToOne.new(:test_model, 'TestModel', {
+      @one_to_one = MR::Associations::OneToOne.new(:test_model, {
+        :class_name         => 'TestModel',
         :record_association => 'test_model_belongs_to'
       })
     end
