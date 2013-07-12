@@ -1,6 +1,6 @@
 require 'mr/factory'
 require 'mr/factory/apply_args'
-require 'mr/stack/record_stack'
+require 'mr/factory/record_stack'
 
 module MR; end
 module MR::Factory
@@ -18,14 +18,11 @@ module MR::Factory
     end
 
     def instance_stack(args = nil)
-      MR::Stack::RecordStack.new(@record_class).tap do |stack|
-        apply_args(stack.record, args)
-      end
+      MR::Factory::RecordStack.new(self.instance(args))
     end
 
     def apply_args(record, args = nil)
-      args ||= {}
-      super record, default_args.merge(symbolize_hash(args))
+      super record, default_args.merge(symbolize_hash(args || {}))
     end
 
     private

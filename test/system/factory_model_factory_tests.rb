@@ -66,7 +66,7 @@ class MR::Factory::ModelFactory
         :active => false
       })
       stack = factory.instance_stack(:name => 'Test')
-      assert_instance_of MR::Stack::ModelStack, stack
+      assert_instance_of MR::Factory::ModelStack, stack
       user = stack.model
       assert_instance_of User, user
       assert_equal 'Test', user.name
@@ -80,7 +80,7 @@ class MR::Factory::ModelFactory
         :active => false
       })
       stack = factory.fake_stack(:name => 'Test')
-      assert_instance_of MR::Stack::ModelStack, stack
+      assert_instance_of MR::Factory::ModelStack, stack
       user = stack.model
       assert_instance_of User, user
       assert_instance_of FakeUserRecord, user.send(:record)

@@ -45,7 +45,7 @@ class MR::Factory::RecordFactory
         :active => false
       })
       stack = factory.instance_stack(:name => 'Test')
-      assert_instance_of MR::Stack::RecordStack, stack
+      assert_instance_of MR::Factory::RecordStack, stack
       user_record = stack.record
       assert_instance_of UserRecord, user_record
       assert_equal 'Test', user_record.name
@@ -65,7 +65,7 @@ class MR::Factory::RecordFactory
       assert_nil fake_user_record.area_id
 
       fake_stack = factory.instance_stack
-      assert_instance_of MR::Stack::RecordStack, fake_stack
+      assert_instance_of MR::Factory::RecordStack, fake_stack
       fake_user_record = fake_stack.record
       assert_instance_of FakeUserRecord, fake_user_record
     end

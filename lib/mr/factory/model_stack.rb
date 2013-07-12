@@ -1,16 +1,15 @@
-require 'mr/stack/record_stack'
+require 'mr/factory/record_stack'
 
 module MR; end
-module MR::Stack
+module MR::Factory
 
   class ModelStack
 
     attr_reader :model
 
-    def initialize(model_class, record_class = nil)
-      record_class ||= model_class.record_class
-      @record_stack = MR::Stack::RecordStack.new(record_class)
-      @model = model_class.new(@record_stack.record)
+    def initialize(model)
+      @model = model
+      @record_stack = MR::Factory::RecordStack.new(model.send(:record))
     end
 
     def create;  @record_stack.create;  end
