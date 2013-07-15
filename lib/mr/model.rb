@@ -216,6 +216,13 @@ module MR::Model
       end
     end
 
+    def polymorphic_belongs_to(name, options = nil)
+      MR::Associations::PolymorphicBelongsTo.new(name, options).tap do |a|
+        a.define_methods(self.mr_config.interface_module)
+        self.associations << a
+      end
+    end
+
     def find(id)
       self.new(self.record_class.find(id))
     end

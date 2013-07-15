@@ -12,7 +12,7 @@ class MR::Factory::RecordStack
   class BaseTests < Assert::Context
     desc "MR::Factory::RecordStack"
     setup do
-      @comment_record = CommentRecord.new
+      @comment_record = CommentRecord.new(:parent_type => 'AreaRecord')
       @record_stack = MR::Factory::RecordStack.new(@comment_record)
     end
     teardown do
@@ -32,22 +32,27 @@ class MR::Factory::RecordStack
       assert @comment_record.user.new_record?
       assert_instance_of AreaRecord, @comment_record.user.area
       assert @comment_record.user.area.new_record?
+      assert_instance_of AreaRecord, @comment_record.parent
+      assert @comment_record.parent.new_record?
     end
 
     should "create all the dependencies for the record with #create_dependencies" do
       assert_nothing_raised{ subject.create_dependencies }
 
+      assert_not @comment_record.parent.new_record?
+      assert_equal @comment_record.parent.id, @comment_record.parent_id
       assert_not @comment_record.user.area.new_record?
-      assert_not @comment_record.user.new_record?
       assert_equal @comment_record.user.area.id, @comment_record.user.area_id
-      assert @comment_record.new_record?
+      assert_not @comment_record.user.new_record?
       assert_equal @comment_record.user.id, @comment_record.user_id
+      assert @comment_record.new_record?
     end
 
     should "remove all the dependencies for the record with #destroy_dependencies" do
       subject.create_dependencies
       assert_nothing_raised{ subject.destroy_dependencies }
 
+      assert @comment_record.parent.destroyed?
       assert @comment_record.user.area.destroyed?
       assert @comment_record.user.destroyed?
       assert @comment_record.new_record?
@@ -56,17 +61,20 @@ class MR::Factory::RecordStack
     should "create all the dependencies and the record with #create" do
       assert_nothing_raised{ subject.create }
 
+      assert_not @comment_record.parent.new_record?
+      assert_equal @comment_record.parent.id, @comment_record.parent_id
       assert_not @comment_record.user.area.new_record?
-      assert_not @comment_record.user.new_record?
       assert_equal @comment_record.user.area.id, @comment_record.user.area_id
-      assert_not @comment_record.new_record?
+      assert_not @comment_record.user.new_record?
       assert_equal @comment_record.user.id, @comment_record.user_id
+      assert_not @comment_record.new_record?
     end
 
     should "remove all the dependencies and the record with #destroy" do
       subject.create
       assert_nothing_raised{ subject.destroy }
 
+      assert @comment_record.parent.destroyed?
       assert @comment_record.user.area.destroyed?
       assert @comment_record.user.destroyed?
       assert @comment_record.destroyed?
@@ -77,7 +85,7 @@ class MR::Factory::RecordStack
   class FakeRecordTests < BaseTests
     desc "with a fake record"
     setup do
-      @fake_comment_record = FakeCommentRecord.new
+      @fake_comment_record = FakeCommentRecord.new(:parent_type => 'FakeAreaRecord')
       @record_stack = MR::Factory::RecordStack.new(@fake_comment_record)
     end
     teardown do
@@ -93,22 +101,27 @@ class MR::Factory::RecordStack
       assert @fake_comment_record.user.new_record?
       assert_instance_of FakeAreaRecord, @fake_comment_record.user.area
       assert @fake_comment_record.user.area.new_record?
+      assert_instance_of FakeAreaRecord, @fake_comment_record.parent
+      assert @fake_comment_record.parent.new_record?
     end
 
     should "create all the dependencies for the record with #create_dependencies" do
       assert_nothing_raised{ subject.create_dependencies }
 
+      assert_not @fake_comment_record.parent.new_record?
+      assert_equal @fake_comment_record.parent.id, @fake_comment_record.parent_id
       assert_not @fake_comment_record.user.area.new_record?
-      assert_not @fake_comment_record.user.new_record?
       assert_equal @fake_comment_record.user.area.id, @fake_comment_record.user.area_id
-      assert @fake_comment_record.new_record?
+      assert_not @fake_comment_record.user.new_record?
       assert_equal @fake_comment_record.user.id, @fake_comment_record.user_id
+      assert @fake_comment_record.new_record?
     end
 
     should "remove all the dependencies for the record with #destroy_dependencies" do
       subject.create_dependencies
       assert_nothing_raised{ subject.destroy_dependencies }
 
+      assert @fake_comment_record.parent.destroyed?
       assert @fake_comment_record.user.area.destroyed?
       assert @fake_comment_record.user.destroyed?
       assert @fake_comment_record.new_record?
@@ -117,17 +130,20 @@ class MR::Factory::RecordStack
     should "create all the dependencies and the record with #create" do
       assert_nothing_raised{ subject.create }
 
+      assert_not @fake_comment_record.parent.new_record?
+      assert_equal @fake_comment_record.parent.id, @fake_comment_record.parent_id
       assert_not @fake_comment_record.user.area.new_record?
-      assert_not @fake_comment_record.user.new_record?
       assert_equal @fake_comment_record.user.area.id, @fake_comment_record.user.area_id
-      assert_not @fake_comment_record.new_record?
+      assert_not @fake_comment_record.user.new_record?
       assert_equal @fake_comment_record.user.id, @fake_comment_record.user_id
+      assert_not @fake_comment_record.new_record?
     end
 
     should "remove all the dependencies and the record with #destroy" do
       subject.create
       assert_nothing_raised{ subject.destroy }
 
+      assert @fake_comment_record.parent.destroyed?
       assert @fake_comment_record.user.area.destroyed?
       assert @fake_comment_record.user.destroyed?
       assert @fake_comment_record.destroyed?

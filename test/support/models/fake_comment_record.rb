@@ -6,10 +6,13 @@ class FakeCommentRecord
   include MR::FakeRecord
   model_class Comment
 
-  attribute :message,  :string
-  attribute :user_id,  :integer
-  attribute :favorite, :boolean
+  attribute :message,     :string
+  attribute :user_id,     :integer
+  attribute :favorite,    :boolean
+  attribute :parent_id,   :integer
+  attribute :parent_type, :string
 
+  polymorphic_belongs_to :parent
   belongs_to :user, 'FakeUserRecord'
 
 end

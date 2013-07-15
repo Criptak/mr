@@ -3,6 +3,7 @@ module MR::FakeRecord
 
   class Association
     attr_reader :name, :options, :ivar_name, :fake_record_class_name
+    attr_accessor :record
 
     def initialize(name, options = nil)
       @name       = name
@@ -108,5 +109,29 @@ module MR::FakeRecord
   end
 
   HasOne = Class.new(Association)
+
+  class PolymorphicBelongsTo < BelongsTo
+    attr_reader :foreign_type
+
+    def initialize(name, options = nil)
+      super
+      @foreign_type = (@options[:foreign_type] || "#{name}_type").to_s
+    end
+
+    def fake_record_class
+      @record ? @record.send(@foreign_type).constantize : super
+    end
+    alias :klass :fake_record_class
+
+    def write(record, associated_record)
+      return_value = super
+      if record.respond_to?("#{@foreign_type}=")
+        associated_type = associated_record ? associated_record.class.to_s : nil
+        record.send("#{@foreign_type}=", associated_type)
+      end
+      return_value
+    end
+
+  end
 
 end

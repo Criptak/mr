@@ -28,6 +28,8 @@ ActiveRecord::Schema.define(:version => 1) do
     t.string  "message"
     t.integer "user_id"
     t.boolean "favorite", :default => false
+    t.string  "parent_type"
+    t.integer "parent_id"
   end
 
 end
