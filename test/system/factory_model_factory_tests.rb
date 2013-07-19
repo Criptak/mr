@@ -53,6 +53,18 @@ class MR::Factory::ModelFactory
       assert_equal 'Test', user.name
     end
 
+    should "allow applying proc values to a model with #apply_args" do
+      area_factory = MR::Factory::ModelFactory.new(Area)
+      args = { :area => proc{ area_factory.instance } }
+      user = User.new
+      subject.apply_args(user, args)
+      assert_instance_of Area, user.area
+      other_user = User.new
+      subject.apply_args(other_user, args)
+      assert_instance_of Area, other_user.area
+      assert_not_same user.area, other_user.area
+    end
+
     should "allow applying hash args to an associated model with #apply_args" do
       user = User.new.tap{ |u| u.area = Area.new }
       subject.apply_args(user, :area => { :name => 'Test' })

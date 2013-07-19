@@ -12,7 +12,10 @@ module MR::Factory
 
     def apply_args!(object, args)
       apply_args_to_associations!(object, args)
-      args.each{ |name, value| object.send("#{name}=", value) }
+      args.each do |name, value|
+        proc = value.kind_of?(Proc) ? value : proc{ value }
+        object.send("#{name}=", proc.call)
+      end
     end
 
     def apply_args_to_associations!(object, args)
