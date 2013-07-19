@@ -21,6 +21,14 @@ module MR::Factory
       assert_instance_of MR::Factory::ModelFactory, factory
     end
 
+    should "pass args and blocks through to the individual factories" do
+      factory = subject.new(User, FakeUserRecord) do
+        default_args :test => true
+      end
+      assert_equal FakeUserRecord,    factory.instance_variable_get("@fake_record_class")
+      assert_equal({ :test => true }, factory.default_args)
+    end
+
   end
 
 end
