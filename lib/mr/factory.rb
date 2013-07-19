@@ -4,11 +4,11 @@ require 'mr/factory/record_factory'
 module MR; end
 module MR::Factory
 
-  def self.new(object_class, *args)
+  def self.new(object_class, *args, &block)
     if object_class < MR::Model
-      ModelFactory.new(object_class, *args)
+      ModelFactory.new(object_class, *args, &block)
     elsif object_class < MR::Record
-      RecordFactory.new(object_class, *args)
+      RecordFactory.new(object_class, *args, &block)
     else
       raise ArgumentError, "takes a MR::Model or MR::Record"
     end
