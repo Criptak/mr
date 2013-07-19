@@ -9,13 +9,13 @@ module MR::Factory
   class ModelFactory
     include ApplyArgs
 
-    def initialize(model_class, *args)
-      default_args, @fake_record_class = [
-        args.last.kind_of?(Hash) ? args.pop : {},
-        args.last
-      ]
-      @model_class = model_class
-      @default_args = symbolize_hash(default_args)
+    def initialize(model_class, fake_record_class = nil, &block)
+      @model_class       = model_class
+      @fake_record_class = fake_record_class
+      @defaults          = {}
+      @instance_defaults = {}
+      @fake_defaults     = {}
+      self.instance_eval(&block) if block
 
       @record_factory = MR::Factory::RecordFactory.new(model_class.record_class)
       if @fake_record_class
@@ -25,6 +25,7 @@ module MR::Factory
 
     def instance(args = nil)
       record = @record_factory.instance
+      args   = @instance_defaults.merge(symbolize_hash(args))
       @model_class.new(record).tap{ |model| apply_args(model, args) }
     end
 
@@ -35,6 +36,7 @@ module MR::Factory
     def fake(args = nil)
       raise "A fake_record_class wasn't provided" unless @fake_record_factory
       fake_record = @fake_record_factory.instance
+      args        = @fake_defaults.merge(symbolize_hash(args))
       @model_class.new(fake_record).tap{ |model| apply_args(model, args) }
     end
 
@@ -43,7 +45,22 @@ module MR::Factory
     end
 
     def apply_args(model, args = nil)
-      super model, @default_args.merge(symbolize_hash(args || {}))
+      super model, @defaults.merge(symbolize_hash(args || {}))
+    end
+
+    def default_args(value = nil)
+      @defaults = symbolize_hash(value) if value
+      @defaults
+    end
+
+    def default_instance_args(value = nil)
+      @instance_defaults = symbolize_hash(value) if value
+      @instance_defaults
+    end
+
+    def default_fake_args(value = nil)
+      @fake_defaults = symbolize_hash(value) if value
+      @fake_defaults
     end
 
     private

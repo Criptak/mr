@@ -15,77 +15,181 @@ class MR::Factory::RecordFactory
     end
     subject{ @factory }
 
-    should have_imeths :instance, :instance_stack, :apply_args
+    should have_imeths :instance, :instance_stack, :apply_args, :default_args
 
-    should "return a UserRecord with it's columns defaulted with #instance" do
+    should "allow reading and writing default args with #default_args" do
+      subject.default_args(:test => true)
+      assert_equal({ :test => true }, subject.default_args)
+    end
+
+    should "allow passing a block when it's initialized" do
+      factory = MR::Factory::ModelFactory.new(User) do
+        default_args :test => true
+      end
+      assert_equal({ :test => true }, factory.default_args)
+    end
+
+    should "allow applying hash args to a record with #apply_args" do
+      user_record = UserRecord.new
+      subject.apply_args(user_record, :name => 'Test')
+      assert_equal 'Test', user_record.name
+    end
+
+    should "allow applying hash args to an associated record with #apply_args" do
+      user_record = UserRecord.new.tap{ |u| u.area = AreaRecord.new }
+      subject.apply_args(user_record, :area => { :name => 'Test' })
+      assert_equal 'Test', user_record.area.name
+    end
+
+    should "build and apply args to an associated record with #apply_args" do
+      user_record = UserRecord.new
+      subject.apply_args(user_record, :area => { :name => 'Test' })
+      assert_equal 'Test', user_record.area.name
+    end
+
+    should "build an instance of the record with it's attributes set, " \
+           "using #instance" do
       user_record = subject.instance
+      assert_instance_of UserRecord, user_record
       assert user_record.new_record?
-      assert_instance_of String, user_record.name
-      assert_instance_of String, user_record.email
+      assert_instance_of String,   user_record.name
+      assert_instance_of String,   user_record.email
       assert_instance_of DateTime, user_record.created_at
       assert_instance_of DateTime, user_record.updated_at
       assert_equal MR::Factory.boolean, user_record.active
-      assert_nil user_record.area_id
     end
 
-    should "allow providing defaults when building a new factory" do
-      factory = MR::Factory::RecordFactory.new(UserRecord, {
-        :name   => nil,
-        :active => false
-      })
-      user_record = factory.instance(:name => 'Test')
-      assert_equal 'Test', user_record.name
-      assert_equal false,  user_record.active
-      assert_not_nil user_record.email
-    end
-
-    should "return a UserRecord stack with #instance_stack" do
-      factory = MR::Factory::RecordFactory.new(UserRecord, {
-        :name   => nil,
-        :active => false
-      })
-      stack = factory.instance_stack(:name => 'Test')
+    should "build an instance stack for the record with it's attributes set, " \
+           "using #instance_stack" do
+      stack = subject.instance_stack
       assert_instance_of MR::Factory::RecordStack, stack
       user_record = stack.record
       assert_instance_of UserRecord, user_record
+      assert user_record.new_record?
+      assert_instance_of String,   user_record.name
+      assert_instance_of String,   user_record.email
+      assert_instance_of DateTime, user_record.created_at
+      assert_instance_of DateTime, user_record.updated_at
+      assert_equal MR::Factory.boolean, user_record.active
+    end
+
+  end
+
+  class FakeRecordTests < BaseTests
+    desc "with a fake record"
+    setup do
+      @factory = MR::Factory::RecordFactory.new(FakeUserRecord)
+    end
+
+    should "allow passing a block when it's initialized" do
+      factory = MR::Factory::ModelFactory.new(User) do
+        default_args :test => true
+      end
+      assert_equal({ :test => true }, factory.default_args)
+    end
+
+    should "allow applying hash args to a record with #apply_args" do
+      user_record = FakeUserRecord.new
+      subject.apply_args(user_record, :name => 'Test')
       assert_equal 'Test', user_record.name
-      assert_equal false,  user_record.active
-      assert_not_nil user_record.email
     end
 
-    should "work with a fake record" do
-      factory = MR::Factory::RecordFactory.new(FakeUserRecord)
-      fake_user_record = factory.instance
-      assert fake_user_record.new_record?
-      assert_instance_of String, fake_user_record.name
-      assert_instance_of String, fake_user_record.email
-      assert_instance_of DateTime, fake_user_record.created_at
-      assert_instance_of DateTime, fake_user_record.updated_at
-      assert_equal MR::Factory.boolean, fake_user_record.active
-      assert_nil fake_user_record.area_id
-
-      fake_stack = factory.instance_stack
-      assert_instance_of MR::Factory::RecordStack, fake_stack
-      fake_user_record = fake_stack.record
-      assert_instance_of FakeUserRecord, fake_user_record
+    should "allow applying hash args to an associated record with #apply_args" do
+      user_record = FakeUserRecord.new.tap{ |u| u.area = AreaRecord.new }
+      subject.apply_args(user_record, :area => { :name => 'Test' })
+      assert_equal 'Test', user_record.area.name
     end
 
-    should "set the record's and it's association's attributes with #apply_args" do
-      user_record = UserRecord.new.tap{ |record| record.area = AreaRecord.new }
-      subject.apply_args(user_record, {
-        :name   => 'Test',
-        :active => false,
-        :area   => { :name => 'Awesome' }
-      })
-      assert_equal 'Test',    user_record.name
-      assert_equal false,     user_record.active
-      assert_equal 'Awesome', user_record.area.name
+    should "build and apply args to an associated record with #apply_args" do
+      user_record = FakeUserRecord.new
+      subject.apply_args(user_record, :area => { :name => 'Test' })
+      assert_equal 'Test', user_record.area.name
     end
 
-    should "automatically build association's with #apply_args" do
+    should "build an instance of the record with it's attributes set, " \
+           "using #instance" do
+      user_record = subject.instance
+      assert_instance_of FakeUserRecord, user_record
+      assert user_record.new_record?
+      assert_instance_of String,   user_record.name
+      assert_instance_of String,   user_record.email
+      assert_instance_of DateTime, user_record.created_at
+      assert_instance_of DateTime, user_record.updated_at
+      assert_equal MR::Factory.boolean, user_record.active
+    end
+
+    should "build an instance stack for the record with it's attributes set, " \
+           "using #instance_stack" do
+      stack = subject.instance_stack
+      assert_instance_of MR::Factory::RecordStack, stack
+      user_record = stack.record
+      assert_instance_of FakeUserRecord, user_record
+      assert user_record.new_record?
+      assert_instance_of String,   user_record.name
+      assert_instance_of String,   user_record.email
+      assert_instance_of DateTime, user_record.created_at
+      assert_instance_of DateTime, user_record.updated_at
+      assert_equal MR::Factory.boolean, user_record.active
+    end
+
+  end
+
+  class WithDefaultArgsTests < BaseTests
+    desc "with default args"
+    setup do
+      @factory = MR::Factory::RecordFactory.new(UserRecord) do
+        default_args({
+          :name   => 'Test',
+          :email  => 'test@example.com',
+          :active => true
+        })
+      end
+    end
+
+    should "use the default args with #apply_args" do
       user_record = UserRecord.new
-      subject.apply_args(user_record, :area => { :name => 'Awesome' })
-      assert_equal 'Awesome', user_record.area.name
+      subject.apply_args(user_record)
+      assert_equal 'Test',             user_record.name
+      assert_equal 'test@example.com', user_record.email
+      assert_equal true,               user_record.active
+    end
+
+    should "use the default args with #instance" do
+      user_record = subject.instance
+      assert_equal 'Test',             user_record.name
+      assert_equal 'test@example.com', user_record.email
+      assert_equal true,               user_record.active
+    end
+
+    should "use the default args with #instance_stack" do
+      stack = subject.instance_stack
+      user_record = stack.record
+      assert_equal 'Test',             user_record.name
+      assert_equal 'test@example.com', user_record.email
+      assert_equal true,               user_record.active
+    end
+
+    should "allow overwriting the defaults by passing args to #apply_args" do
+      user_record = UserRecord.new
+      subject.apply_args(user_record, :name => 'Not Test')
+      assert_equal 'Not Test',         user_record.name
+      assert_equal 'test@example.com', user_record.email
+      assert_equal true,               user_record.active
+    end
+
+    should "allow overwriting the defaults by passing args to #instance" do
+      user_record = subject.instance(:name => 'Not Test')
+      assert_equal 'Not Test',         user_record.name
+      assert_equal 'test@example.com', user_record.email
+      assert_equal true,               user_record.active
+    end
+
+    should "allow overwriting the defaults by passing args to #instance_stack" do
+      stack = subject.instance_stack(:name => 'Not Test')
+      user_record = stack.record
+      assert_equal 'Not Test',         user_record.name
+      assert_equal 'test@example.com', user_record.email
+      assert_equal true,               user_record.active
     end
 
   end
