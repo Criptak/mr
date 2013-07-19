@@ -35,6 +35,18 @@ class MR::Factory::RecordFactory
       assert_equal 'Test', user_record.name
     end
 
+    should "allow applying proc values to a record with #apply_args" do
+      area_factory = MR::Factory::RecordFactory.new(AreaRecord)
+      args = { :area => proc{ area_factory.instance } }
+      user_record = UserRecord.new
+      subject.apply_args(user_record, args)
+      assert_instance_of AreaRecord, user_record.area
+      other_user_record = UserRecord.new
+      subject.apply_args(other_user_record, args)
+      assert_instance_of AreaRecord, other_user_record.area
+      assert_not_same user_record.area, other_user_record.area
+    end
+
     should "allow applying hash args to an associated record with #apply_args" do
       user_record = UserRecord.new.tap{ |u| u.area = AreaRecord.new }
       subject.apply_args(user_record, :area => { :name => 'Test' })
@@ -94,8 +106,20 @@ class MR::Factory::RecordFactory
       assert_equal 'Test', user_record.name
     end
 
+    should "allow applying proc values to a record with #apply_args" do
+      area_factory = MR::Factory::RecordFactory.new(FakeAreaRecord)
+      args = { :area => proc{ area_factory.instance } }
+      user_record = FakeUserRecord.new
+      subject.apply_args(user_record, args)
+      assert_instance_of FakeAreaRecord, user_record.area
+      other_user_record = FakeUserRecord.new
+      subject.apply_args(other_user_record, args)
+      assert_instance_of FakeAreaRecord, other_user_record.area
+      assert_not_same user_record.area, other_user_record.area
+    end
+
     should "allow applying hash args to an associated record with #apply_args" do
-      user_record = FakeUserRecord.new.tap{ |u| u.area = AreaRecord.new }
+      user_record = FakeUserRecord.new.tap{ |u| u.area = FakeAreaRecord.new }
       subject.apply_args(user_record, :area => { :name => 'Test' })
       assert_equal 'Test', user_record.area.name
     end
