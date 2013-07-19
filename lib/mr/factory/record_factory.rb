@@ -8,9 +8,10 @@ module MR::Factory
   class RecordFactory
     include ApplyArgs
 
-    def initialize(record_class, defaults = nil)
+    def initialize(record_class, &block)
       @record_class = record_class
-      @passed_default_args = symbolize_hash(defaults || {})
+      @defaults     = {}
+      self.instance_eval(&block) if block
     end
 
     def instance(args = nil)
@@ -22,17 +23,22 @@ module MR::Factory
     end
 
     def apply_args(record, args = nil)
-      super record, default_args.merge(symbolize_hash(args || {}))
+      super record, build_defaults.merge(symbolize_hash(args || {}))
+    end
+
+    def default_args(value = nil)
+      @defaults = symbolize_hash(value) if value
+      @defaults
     end
 
     private
 
-    def default_args
+    def build_defaults
       @columns ||= non_association_columns(@record_class)
       column_defaults = @columns.inject({}) do |a, column|
         a.merge(column.name.to_sym => MR::Factory.send(column.type))
       end
-      column_defaults.merge(@passed_default_args)
+      column_defaults.merge(@defaults)
     end
 
     def apply_args_to_associations!(record, args)
