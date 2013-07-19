@@ -11,6 +11,7 @@ Gem::Specification.new do |gem|
   gem.description = %q{Model-record pattern}
   gem.summary     = %q{Model-record pattern}
   gem.homepage    = "http://github.com/redding/mr"
+  gem.license     = 'MIT'
 
   gem.files         = `git ls-files`.split($/)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
