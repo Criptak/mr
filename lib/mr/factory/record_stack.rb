@@ -40,11 +40,15 @@ module MR::Factory
     def initialize(stack_record, lookup)
       @stack_record = stack_record
       @lookup       = lookup
-      @children = @stack_record.associations.map do |association|
-        @lookup[association.key] ||= Record.new(association.get_record)
-        association_stack_record = @lookup[association.key]
-        @stack_record.set_association(association.name, association_stack_record)
-        TreeNode.new(association_stack_record, @lookup)
+      @children = associations_with_preset_first.map do |association|
+        associated_stack_record = if association.preset?
+          Record.new(association.preset_record)
+        else
+          @lookup[association.key] || Record.new(association.build_record)
+        end
+        @lookup[association.key] ||= associated_stack_record
+        @stack_record.set_association(association.name, associated_stack_record)
+        TreeNode.new(associated_stack_record, @lookup)
       end
     end
 
@@ -55,7 +59,7 @@ module MR::Factory
 
     def create_children
       @children.each(&:create)
-      refresh_associations
+      @stack_record.refresh_associations
     end
 
     def destroy
@@ -69,17 +73,14 @@ module MR::Factory
 
     private
 
-    # to make sure record's have their dependencies ids set, it's necessary to
-    # "refresh" the associations for this node's stack_record.
-    def refresh_associations
-      @stack_record.associations.each do |association|
-        @stack_record.set_association(association.name, @lookup[association.key])
-      end
+    # preset associations are sorted first, these should be used first by stacks
+    # so it will build
+    def associations_with_preset_first
+      @stack_record.associations.sort_by{ |a| a.preset? ? 1 : 2 }
     end
   end
 
   class Record
-
     attr_reader :instance, :associations
 
     def initialize(record)
@@ -99,27 +100,49 @@ module MR::Factory
       @instance.destroy
     end
 
+    # ensures record's have their dependencies ids set, this is done by
+    # "resetting" the association to it's current value
+    def refresh_associations
+      @associations.each do |association|
+        associated = @instance.send(association.name)
+        @instance.send("#{association.name}=", associated)
+      end
+    end
+
     private
 
     def belongs_to_associations(record)
       record.class.reflect_on_all_associations.map do |reflection|
         next unless reflection.belongs_to?
         Association.new(record, record.association(reflection.name))
-      end.compact
+      end.compact.sort
     end
 
     class Association
-      attr_reader :name, :record_class, :key
+      attr_reader :name, :record_class, :key, :preset_record
       def initialize(record, association)
         @owner_record = record
         @name         = association.reflection.name
         @record_class = association.klass
         @key          = @record_class.to_s
+
+        @preset_record = @owner_record.send(@name)
       end
 
-      def get_record
-        record = @owner_record.send(@name)
-        record || MR::Factory::RecordFactory.new(@record_class).instance
+      def preset?
+        !!@preset_record
+      end
+
+      def build_record
+        MR::Factory::RecordFactory.new(@record_class).instance
+      end
+
+      def <=>(other)
+        if other.kind_of?(self.class)
+          self.name.to_s <=> other.name.to_s
+        else
+          super
+        end
       end
     end
 
