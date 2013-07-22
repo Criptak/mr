@@ -93,11 +93,11 @@ module MR::Factory
     end
 
     def create
-      @instance.save!
+      @instance.save! if @instance.new_record?
     end
 
     def destroy
-      @instance.destroy
+      @instance.destroy unless @instance.destroyed?
     end
 
     # ensures record's have their dependencies ids set, this is done by
