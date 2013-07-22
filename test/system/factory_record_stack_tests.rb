@@ -151,6 +151,38 @@ class MR::Factory::RecordStack
 
   end
 
+  class PresetAssociationsTests < BaseTests
+    desc "when provided preset associations"
+    setup do
+      @user_record    = UserRecord.new.tap{ |u| u.save }
+      @comment_record = CommentRecord.new({
+        :parent_type => 'AreaRecord',
+        :user        => @user_record
+      })
+      @record_factory = MR::Factory::RecordStack.new(@comment_record)
+    end
+
+    should "use a preset association for other cases of the record class" do
+      assert_same @user_record, @comment_record.user
+      assert_same @user_record, @comment_record.created_by
+    end
+
+    should "always use the preset value for the association" do
+      created_by_record = UserRecord.new.tap{ |u| u.save }
+      comment_record    = CommentRecord.new({
+        :parent_type => 'AreaRecord',
+        :created_by  => created_by_record,
+        :user        => @user_record
+      })
+      MR::Factory::RecordStack.new(comment_record)
+
+      assert_not_same created_by_record, @user_record
+      assert_same @user_record,      comment_record.user
+      assert_same created_by_record, comment_record.created_by
+    end
+
+  end
+
   class StackRecordTests < Assert::Context
     desc "MR::Factory::Record"
     setup do
@@ -163,7 +195,7 @@ class MR::Factory::RecordStack
     subject{ @stack_record }
 
     should have_readers :instance, :associations
-    should have_imeths :set_association, :create, :destroy
+    should have_imeths :set_association, :create, :destroy, :refresh_associations
 
     should "build a list of association objects " \
            "for every ActiveRecord belongs to association" do

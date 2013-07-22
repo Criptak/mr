@@ -30,6 +30,7 @@ ActiveRecord::Schema.define(:version => 1) do
     t.boolean "favorite", :default => false
     t.string  "parent_type"
     t.integer "parent_id"
+    t.integer "created_by_id"
   end
 
 end
