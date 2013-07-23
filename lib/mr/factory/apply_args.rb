@@ -26,6 +26,16 @@ module MR::Factory
       args[key.to_sym].kind_of?(Hash)
     end
 
+    def deep_merge(hash1, hash2)
+       hash1.merge(hash2) do |key, value1, value2|
+        if value1.kind_of?(Hash) && value2.kind_of?(Hash)
+          deep_merge(value1, value2)
+        else
+          value2
+        end
+      end
+    end
+
     def symbolize_hash(hash)
       hash ||= {}
       raise ArgumentError, "must be a kind of Hash" unless hash.kind_of?(Hash)

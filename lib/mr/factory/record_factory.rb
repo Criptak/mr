@@ -23,7 +23,7 @@ module MR::Factory
     end
 
     def apply_args(record, args = nil)
-      super record, build_defaults.merge(symbolize_hash(args || {}))
+      super record, deep_merge(build_defaults, symbolize_hash(args || {}))
     end
 
     def default_args(value = nil)

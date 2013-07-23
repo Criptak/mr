@@ -25,7 +25,7 @@ module MR::Factory
 
     def instance(args = nil)
       record = @record_factory.instance
-      args   = @instance_defaults.merge(symbolize_hash(args))
+      args   = deep_merge(@instance_defaults, symbolize_hash(args))
       @model_class.new(record).tap{ |model| apply_args(model, args) }
     end
 
@@ -36,7 +36,7 @@ module MR::Factory
     def fake(args = nil)
       raise "A fake_record_class wasn't provided" unless @fake_record_factory
       fake_record = @fake_record_factory.instance
-      args        = @fake_defaults.merge(symbolize_hash(args))
+      args        = deep_merge(@fake_defaults, symbolize_hash(args))
       @model_class.new(fake_record).tap{ |model| apply_args(model, args) }
     end
 
@@ -45,7 +45,7 @@ module MR::Factory
     end
 
     def apply_args(model, args = nil)
-      super model, @defaults.merge(symbolize_hash(args || {}))
+      super model, deep_merge(@defaults, symbolize_hash(args || {}))
     end
 
     def default_args(value = nil)
