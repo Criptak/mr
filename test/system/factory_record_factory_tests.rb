@@ -2,6 +2,7 @@ require 'assert'
 require 'mr/factory/record_factory'
 
 require 'test/support/setup_test_db'
+require 'test/support/models/comment_record'
 require 'test/support/models/fake_user_record'
 require 'test/support/models/user'
 require 'test/support/models/user_record'
@@ -214,6 +215,26 @@ class MR::Factory::RecordFactory
       assert_equal 'Not Test',         user_record.name
       assert_equal 'test@example.com', user_record.email
       assert_equal true,               user_record.active
+    end
+
+  end
+
+  class DeepMergeTests < BaseTests
+    desc "with deeply nested args"
+    setup do
+      @factory = MR::Factory::RecordFactory.new(CommentRecord) do
+        default_args :user => { :name => 'Test' }
+      end
+    end
+
+    should "deeply merge the args preserving both the defaults and " \
+           "what was passed when applying args" do
+      comment_record = @factory.instance({
+        :user => { :email => 'test@example.com' }
+      })
+      user_record = comment_record.user
+      assert_equal 'Test',             user_record.name
+      assert_equal 'test@example.com', user_record.email
     end
 
   end
