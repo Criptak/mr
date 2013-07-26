@@ -5,12 +5,13 @@ module MR::Factory
 
     def apply_args(object, args = nil)
       args ||= {}
-      apply_args!(object, args.dup)
+      apply_args!(object, args)
     end
 
     private
 
     def apply_args!(object, args)
+      args = args.dup
       apply_args_to_associations!(object, args)
       args.each do |name, value|
         proc = value.kind_of?(Proc) ? value : proc{ value }

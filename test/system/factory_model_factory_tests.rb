@@ -407,4 +407,19 @@ class MR::Factory::ModelFactory
 
   end
 
+  class DupArgsTests < BaseTests
+    desc "using a factory multiple times"
+    setup do
+      @factory = MR::Factory::ModelFactory.new(Comment) do
+        default_args :user => { :area => { :name => 'Test' } }
+      end
+    end
+
+    should "not alter the defaults hash when applying args" do
+      assert_equal 'Test', @factory.instance.user.area.name
+      assert_equal 'Test', @factory.instance.user.area.name
+    end
+
+  end
+
 end
