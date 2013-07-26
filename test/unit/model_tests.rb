@@ -78,6 +78,12 @@ module MR::Model
     end
     subject{ @test_model }
 
+    should have_readers :id
+    should have_accessors :name, :active
+    should have_imeths :name_changed?, :active_changed?
+
+    should have_accessors :area
+
     should "allow an optional record and fields when initialized" do
       fake_test_record = FakeTestRecord.new
       passed_fields = { :name => 'Test' }
@@ -140,6 +146,20 @@ module MR::Model
       assert_not_equal non_matching_model, subject
     end
 
+    should "detect when it's fields have changed" do
+      test_model = TestModel.new(FakeTestRecord.new)
+      assert test_model.new?
+      assert_not test_model.name_changed?
+      test_model.name = 'Test'
+      assert test_model.name_changed?
+
+      test_model.save
+      assert_not test_model.new?
+      assert_not test_model.name_changed?
+      test_model.name = 'New Test'
+      assert test_model.name_changed?
+    end
+
   end
 
   class FieldsAccessorTests < TestModelTests
@@ -182,24 +202,21 @@ module MR::Model
     desc "persistence methods"
 
     should "call the save! method on it's record with #save" do
-      assert_nil @fake_test_record.saved_attributes
-
-      subject.save
-
-      assert_not_nil @fake_test_record.saved_attributes
+      expected = { :active => nil, :name => nil, :id => nil }
+      assert_equal expected, @fake_test_record.saved_attributes
+      subject.save(:name => 'test', :active => true)
+      expected = { :id => 1, :name => 'test', :active => true }
+      assert_equal expected, @fake_test_record.saved_attributes
     end
 
     should "allow setting fields when saved" do
       subject.save({ :name => 'Test' })
-
       assert_field_saved subject, :name, 'Test'
     end
 
     should "call the destroy method on it's record with #destroy" do
       assert_not_destroyed subject
-
       subject.destroy
-
       assert_destroyed subject
     end
 
@@ -207,7 +224,6 @@ module MR::Model
       value = nil
       # a fake record's transaction just yields
       subject.transaction{ value = true }
-
       assert_equal true, value
     end
 

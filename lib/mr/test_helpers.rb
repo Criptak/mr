@@ -19,16 +19,17 @@ module MR::TestHelpers
         raise ArgumentError, "a model and field name must be provided"
       end
 
-      saved = model.send(:record).saved_attributes || {}
-      has_key  = saved.key?(field_name.to_sym)
-      saved_as = saved[field_name.to_sym]
+      previous_attrs = model.send(:record).previous_attributes || {}
+      saved_attrs    = model.send(:record).saved_attributes || {}
+      changed  = previous_attrs[field_name.to_sym] != saved_attrs[field_name.to_sym]
+      saved_as = saved_attrs[field_name.to_sym]
 
       if check_value
         desc = "Expected #{field_name.inspect} was saved as #{value.inspect}"
-        assert has_key && value == saved_as, desc
+        assert changed && value == saved_as, desc
       else
         desc = "Expected #{field_name.inspect} was saved"
-        assert has_key && !saved_as.nil?, desc
+        assert changed, desc
       end
     end
   end
@@ -41,16 +42,17 @@ module MR::TestHelpers
         raise ArgumentError, "a model and field name must be provided"
       end
 
-      saved = model.send(:record).saved_attributes || {}
-      has_key  = saved.key?(field_name.to_sym)
-      saved_as = saved[field_name.to_sym]
+      previous_attrs = model.send(:record).previous_attributes || {}
+      saved_attrs    = model.send(:record).saved_attributes || {}
+      changed  = previous_attrs[field_name.to_sym] != saved_attrs[field_name.to_sym]
+      saved_as = saved_attrs[field_name.to_sym]
 
       if check_value
         desc = "Expected #{field_name.inspect} was not saved as #{value.inspect}"
-        assert !has_key || value != saved_as, desc
+        assert !changed || value != saved_as, desc
       else
         desc = "Expected #{field_name.inspect} was not saved"
-        assert !has_key, desc
+        assert !changed, desc
       end
     end
   end

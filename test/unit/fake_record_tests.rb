@@ -6,7 +6,7 @@ require 'test/support/models/test_model'
 
 module MR::FakeRecord
 
-  class BaseTests < Assert::Context
+  class UnitTests < Assert::Context
     desc "FakeRecord"
     setup do
       @fake_record_class = Class.new do
@@ -24,6 +24,11 @@ module MR::FakeRecord
       @fake_record = @fake_record_class.new
     end
     subject{ @fake_record }
+
+    # should add accessors for all attributes
+    should have_accessors :name, :active, :parent_id, :created_at, :updated_at
+    should have_imeths :name_changed?, :active_changed?, :parent_id_changed?
+    should have_imeths :created_at_changed?, :updated_at_changed?
 
     # should add accessors for all associations
     should have_accessors :parent, :children, :thing
@@ -132,9 +137,22 @@ module MR::FakeRecord
       assert_equal TestModel, @fake_record_class.model_class
     end
 
+    should "detect when it's attributes have changed" do
+      assert subject.new_record?
+      assert_not subject.name_changed?
+      subject.name = 'Test'
+      assert subject.name_changed?
+
+      subject.save!
+      assert_not subject.new_record?
+      assert_not subject.name_changed?
+      subject.name = 'New Test'
+      assert subject.name_changed?
+    end
+
   end
 
-  class ConfigTests < BaseTests
+  class ConfigTests < UnitTests
     include NsOptions::AssertMacros
 
     desc "fr_config"
@@ -148,7 +166,7 @@ module MR::FakeRecord
 
   end
 
-  class AttributeTests < BaseTests
+  class AttributeTests < UnitTests
     desc "Attribute"
     setup do
       @attribute = MR::FakeRecord::Attribute.new(:name, :string)

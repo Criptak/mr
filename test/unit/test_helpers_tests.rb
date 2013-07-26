@@ -72,7 +72,7 @@ module MR::TestHelpers
       assert_result_is(false, @model){ |m| assert_field_saved m, :name, 'Test' }
       assert_result_is(true,  @model){ |m| assert_not_field_saved m, :name, 'Test' }
 
-      @model.save({ :name => 'Joe' })
+      @model.save(:name => 'Joe')
 
       assert_result_is(true,  @model){ |m| assert_field_saved m, :name }
       assert_result_is(true,  @model){ |m| assert_field_saved m, :name, 'Joe' }

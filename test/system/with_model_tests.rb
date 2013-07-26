@@ -84,6 +84,26 @@ class WithModelTests < Assert::Context
 
 end
 
+class DetectChangedFieldsTests < WithModelTests
+  setup do
+    @user = User.new
+  end
+
+  should "detect when it's fields have changed" do
+    assert subject.new?
+    assert_not subject.name_changed?
+    subject.name = 'Test'
+    assert subject.name_changed?
+
+    subject.save
+    assert_not subject.new?
+    assert_not subject.name_changed?
+    subject.name = 'New Test'
+    assert subject.name_changed?
+  end
+
+end
+
 class BelongsToTests < WithModelTests
   desc "using a belongs to association"
   setup do

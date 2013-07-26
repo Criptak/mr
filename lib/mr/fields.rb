@@ -9,6 +9,10 @@ module MR::Fields
           record.send(:[], method_name)
         end
 
+        define_method("#{method_name}_changed?") do
+          record.send("#{method_name}_changed?")
+        end
+
       end
     end
   end

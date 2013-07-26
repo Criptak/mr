@@ -21,12 +21,14 @@ module MR::FakeRecord
 
       attribute :id, :primary_key
 
-      attr_reader :saved_attributes
+      attr_reader :saved_attributes, :previous_attributes
     end
   end
 
   def initialize(attrs = nil)
-    self.attributes = attrs || {}
+    @previous_attributes = {}
+    @saved_attributes = self.attributes.dup
+    self.attributes   = attrs || {}
   end
 
   def attributes
@@ -45,7 +47,8 @@ module MR::FakeRecord
     self.id ||= MR::Factory.primary_key(self.class)
     (self.created_at ||= Time.now) if self.respond_to?(:created_at=)
     (self.updated_at   = Time.now) if self.respond_to?(:updated_at=)
-    @saved_attributes  = self.attributes.dup
+    @previous_attributes = @saved_attributes.dup
+    @saved_attributes.merge!(self.attributes.dup)
   end
 
   def destroy
@@ -99,6 +102,9 @@ module MR::FakeRecord
     def attribute(name, type)
       attribute = Attribute.new(name, type)
       attr_accessor attribute.name
+      define_method("#{attribute.name}_changed?") do
+        self[attribute.name] != @saved_attributes[attribute.name.to_sym]
+      end
       self.fr_config.attributes << attribute
     end
 
