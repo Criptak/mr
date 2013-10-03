@@ -56,7 +56,7 @@ module MR::FakeRecord
   end
 
   def transaction(&block)
-    yield
+    self.class.transaction(&block)
   end
 
   def new_record?
@@ -146,6 +146,10 @@ module MR::FakeRecord
       association = PolymorphicBelongsTo.new(name, options)
       association.define_methods(self)
       self.fr_config.associations << association
+    end
+
+    def transaction(&block)
+      yield
     end
 
   end

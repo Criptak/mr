@@ -22,7 +22,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency("activerecord",  ["~> 3.2"])
   gem.add_dependency("activesupport", ["~> 3.2"])
 
-  gem.add_development_dependency("assert",       ["~> 2.2"])
+  gem.add_development_dependency("assert",       ["~> 2.3"])
   gem.add_development_dependency("assert-mocha", ["~> 1.0"])
   gem.add_development_dependency("sqlite3",      ["~> 1.3"])
 
