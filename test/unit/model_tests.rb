@@ -34,6 +34,7 @@ module MR::Model
     should have_cmeths :associations, :belongs_to, :has_many, :has_one
     should have_cmeths :polymorphic_belongs_to
     should have_cmeths :find, :all
+    should have_cmeths :transaction
 
     should "include MR::Model mixins and it's interface module" do
       modules = subject.class.included_modules
@@ -158,6 +159,13 @@ module MR::Model
       assert_not test_model.name_changed?
       test_model.name = 'New Test'
       assert test_model.name_changed?
+    end
+
+    should "call its record class's transaction method with it's class transaction method" do
+      value = nil
+      # a fake record's transaction just yields
+      subject.class.transaction{ value = true }
+      assert_equal true, value
     end
 
   end

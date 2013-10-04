@@ -231,6 +231,10 @@ module MR::Model
       self.record_class.all.map{|record| self.new(record) }
     end
 
+    def transaction(&block)
+      self.record_class.transaction(&block)
+    end
+
   end
 
   class InvalidError < RuntimeError
