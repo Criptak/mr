@@ -13,6 +13,7 @@ module Bench
       @logger.puts "Benchmarking MR"
       benchmark = Benchmark.measure do
         require 'mr'
+        require 'mr/model/configuration'
         require 'bench/setup_activerecord'
         profile_model_configuration
         profile_model_initialize
@@ -35,7 +36,7 @@ module Bench
     def profile_model_configuration
       @logger.puts "benchmarking MR::Model configuration"
       model_class = Class.new do
-        include MR::Model
+        include MR::Model::Configuration
         record_class AreaRecord
       end
 
