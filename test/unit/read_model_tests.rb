@@ -1,80 +1,74 @@
 require 'assert'
 require 'mr/read_model'
 
-require 'test/support/models/fake_user_record'
+require 'mr/fake_record'
 
 module MR::ReadModel
 
-  class MyModel
-    include MR::ReadModel
-
-    def area_id
-      super.to_i
-    end
-  end
-
-  class BaseTests < Assert::Context
+  class UnitTests < Assert::Context
     desc "MR::ReadModel"
     setup do
-      @record = FakeUserRecord.new({
-        :name   => 'Joe Test',
-        :active => true,
-        :area_id => '1'
-      })
-      @read_model = MyModel.new(@record)
-    end
-    subject{ @read_model }
-
-    should have_cmeths :read_model_interface_module
-
-    should "include MR::ReadModel and it's interface module" do
-      modules = MyModel.included_modules
-      assert_includes MR::ReadModel::InstanceMethods, modules
-      assert_includes MyModel.read_model_interface_module, modules
-    end
-
-    should "raise an InvalidRecordError when built without a record" do
-      assert_raises MR::InvalidRecordError do
-        MyModel.new('test')
+      @read_model_class = Class.new do
+        include MR::ReadModel
+        field :name, :string
       end
-    end
-
-    should "respond to it's record's attributes" do
-      assert subject.respond_to?(:name)
-      assert subject.respond_to?(:active)
-      assert_equal 'Joe Test', subject.name
-      assert_equal true,       subject.active
-    end
-
-  end
-
-  class FromHashTests < BaseTests
-    desc "build from a hash"
-    setup do
-      @read_model = MyModel.new({ :name => 'Joe Test', :active => true })
-    end
-
-    should "use the hash to build it's attributes" do
-      assert subject.respond_to?(:name)
-      assert subject.respond_to?(:active)
-      assert_equal 'Joe Test', subject.name
-      assert_equal true,       subject.active
-    end
-
-  end
-
-  class GeneratorTests < BaseTests
-    desc "generator"
-    setup do
-      @read_model_class = MR::ReadModel.new
     end
     subject{ @read_model_class }
 
-    should "generate a class that includes MR::ReadModel" do
-      assert_kind_of Class, subject
-      assert_includes MR::ReadModel, subject.included_modules
+    should "include the Data, Fields and Querying mixins" do
+      assert_includes MR::ReadModel::Data, subject
+      assert_includes MR::ReadModel::Fields, subject
+      assert_includes MR::ReadModel::Querying, subject
     end
 
+  end
+
+  class InstanceTests < UnitTests
+    desc "instance"
+    setup do
+      @data = { 'name' => 'Name' }
+      @read_model = @read_model_class.new(@data)
+    end
+    subject{ @read_model }
+
+    should "set it's data and allow reading from it" do
+      assert_equal @data['name'], subject.name
+    end
+
+    should "be comparable" do
+      equal_read_model = @read_model_class.new({ 'name' => 'Name' })
+      assert_equal equal_read_model, subject
+      not_equal_read_model = @read_model_class.new({ 'name' => 'Test' })
+      assert_not_equal not_equal_read_model, subject
+    end
+
+    should "have a readable inspect" do
+      object_hex = (subject.object_id << 1).to_s(16)
+      values_inspect = @read_model_class.fields.map do |field|
+        "#{field.ivar_name}=#{field.read(@data).inspect}"
+      end
+      expected = "#<#{@read_model_class}:0x#{object_hex} #{values_inspect}>"
+      assert_equal expected, subject.inspect
+    end
+
+  end
+
+  class FakeRecordTests < InstanceTests
+    desc "with a fake record as data"
+    setup do
+      @fake_record = FakeTestRecord.new(:name => 'Name')
+      @read_model = @read_model_class.new(@fake_record)
+    end
+
+    should "set allow reading from the fake record" do
+      assert_equal @data['name'], subject.name
+    end
+
+  end
+
+  class FakeTestRecord
+    include MR::FakeRecord
+    attribute :name, :string
   end
 
 end

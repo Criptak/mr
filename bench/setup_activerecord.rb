@@ -67,12 +67,13 @@ end
 class UserWithAreaData
   include MR::ReadModel
 
-  def self.all
-    scope = UserRecord.scoped
-    scope = scope.select("users.name AS user_name")
-    scope = scope.select("areas.name AS area_name")
-    scope = scope.joins(:area)
+  field :user_name, :string, 'users.name'
+  field :area_name, :string, 'areas.name'
+  from UserRecord
+  joins :area
 
-    scope.all.map{ |record| self.new(record) }
+  def self.all
+    self.query.results
   end
+
 end

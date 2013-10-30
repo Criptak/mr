@@ -6,7 +6,7 @@ require 'test/support/models/test_model'
 
 class MR::Query
 
-  class BaseTests < Assert::Context
+  class UnitTests < Assert::Context
     desc "MR::Query"
     setup do
       @relation = FakeTestRecord.scoped
@@ -19,7 +19,7 @@ class MR::Query
     subject{ @query }
 
     should have_readers :model_class, :relation
-    should have_instance_methods :models, :count
+    should have_imeths :models, :results, :count
 
     should "call count om the relation with #count" do
       assert_equal 2, subject.count
@@ -42,7 +42,7 @@ class MR::Query
 
   end
 
-  class PagedQueryTests < BaseTests
+  class PagedQueryTests < UnitTests
     desc "MR::PagedQuery"
     setup do
       @paged_query = MR::PagedQuery.new(@query, 1, 1)

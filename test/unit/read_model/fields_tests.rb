@@ -69,14 +69,66 @@ module MR::ReadModel::Fields
 
   end
 
+  class InstanceTests < UnitTests
+    desc "for a read model instance"
+    setup do
+      @data = {
+        'name'        => 'test',
+        'active'      => true,
+        'description' => 'desc'
+      }
+      @read_model_class.class_eval do
+        field :name,        :string
+        field :active,      :boolean
+        field :description, :string
+      end
+      @read_model = @read_model_class.new(@data)
+    end
+    subject{ @read_model }
+
+    should have_imeths :fields
+
+    should "allow reading all the fields using `fields`" do
+      expected = {
+        'name'        => 'test',
+        'active'      => true,
+        'description' => 'desc'
+      }
+      assert_equal expected, subject.fields
+    end
+
+  end
+
   class FieldSetTests < UnitTests
     desc "FieldSet"
     setup do
-      @field_set = MR::ReadModel::FieldSet.new
+      @field_set = MR::ReadModel::FieldSet.new.tap do |s|
+        s.add :name,   :string
+        s.add :active, :boolean
+      end
     end
     subject{ @field_set }
 
-    should have_imeths :find, :add
+    should have_imeths :find, :read_all
+    should have_imeths :add
+    should have_imeths :each
+
+    should "be enumerable" do
+      assert_includes Enumerable, MR::ReadModel::FieldSet
+    end
+
+    should "return all of it's fields values using `read_all`" do
+      @data = { 'name' => 'Name', 'active' => 'true' }
+      expected = { 'name' => 'Name', 'active' => true }
+      assert_equal expected, subject.read_all(@data)
+    end
+
+    should "yield it's fields using `each`" do
+      yielded_fields = []
+      subject.each{ |f| yielded_fields << f }
+      assert_includes subject.find(:name), yielded_fields
+      assert_includes subject.find(:active), yielded_fields
+    end
 
   end
 

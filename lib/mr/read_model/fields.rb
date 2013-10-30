@@ -18,6 +18,10 @@ module MR::ReadModel
       end
     end
 
+    def fields
+      self.class.fields.read_all(data)
+    end
+
     module ClassMethods
 
       def fields
@@ -40,6 +44,7 @@ module MR::ReadModel
   end
 
   class FieldSet
+    include Enumerable
 
     def initialize
       @fields = []
@@ -49,10 +54,20 @@ module MR::ReadModel
       @fields.detect{ |f| f.name == name.to_s }
     end
 
+    def read_all(data)
+      inject({}) do |h, field|
+        h.merge({ field.name => field.read(data) })
+      end
+    end
+
     def add(name, type, model_class = nil)
       @fields << Field.new(name, type).tap do |field|
         field.define_on(model_class) if model_class
       end
+    end
+
+    def each(&block)
+      @fields.each(&block)
     end
 
   end
