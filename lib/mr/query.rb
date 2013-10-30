@@ -5,7 +5,6 @@ module MR
   class Query
 
     attr_reader :model_class, :relation
-    protected :model_class, :relation
 
     def initialize(model_class, relation)
       @model_class = model_class
@@ -13,7 +12,7 @@ module MR
     end
 
     def models
-      @relation.all.map{|record| @model_class.new(record) }
+      @relation.all.map{ |record| @model_class.new(record) }
     end
 
     def count

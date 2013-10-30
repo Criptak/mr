@@ -18,6 +18,7 @@ class MR::Query
     end
     subject{ @query }
 
+    should have_readers :model_class, :relation
     should have_instance_methods :models, :count
 
     should "call count om the relation with #count" do
