@@ -12,14 +12,14 @@ module MR::ReadModel
     end
   end
 
-  class UsersWithAreaDataQueryTests < SystemTests
-    desc "UsersWithAreaData query"
+  class UserWithAreaDataQueryTests < SystemTests
+    desc "UserWithAreaData query"
     setup do
       @matching_user_stack = @user_factory.instance_stack.tap{ |s| s.create }
       @matching_user = @matching_user_stack.record
       @not_matching_user_stack = @user_factory.instance_stack.tap{ |s| s.create }
       @not_matching_user = @not_matching_user_stack.record
-      @query = UsersWithAreaData.query(@matching_user.area_id)
+      @query = UserWithAreaData.query(@matching_user.area_id)
     end
     teardown do
       @not_matching_user_stack.destroy
@@ -40,12 +40,12 @@ module MR::ReadModel
 
   end
 
-  class UsersWithAreaDataFieldsTests < SystemTests
-    desc "UsersWithAreaData fields"
+  class UserWithAreaDataFieldsTests < SystemTests
+    desc "UserWithAreaData fields"
     setup do
       @user_stack = @user_factory.instance_stack.tap{ |s| s.create }
       @user       = @user_stack.record
-      query = UsersWithAreaData.query(@user.area_id)
+      query = UserWithAreaData.query(@user.area_id)
       @user_with_area_data = query.results.first
     end
     teardown do
@@ -65,7 +65,7 @@ module MR::ReadModel
 
   end
 
-  class UsersWithAreaData
+  class UserWithAreaData
     include MR::ReadModel
 
     field :user_id,   :integer, 'users.id'

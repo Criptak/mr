@@ -23,19 +23,19 @@ class MR::Factory::ModelFactory
 
     should "allow reading and writing default args with #default_args" do
       subject.default_args(:test => true)
-      assert_equal({ :test => true }, subject.default_args)
+      assert_equal({ 'test' => true }, subject.default_args)
     end
 
     should "allow reading and writing default instance args " \
            "with #default_instance_args" do
       subject.default_instance_args(:test => true)
-      assert_equal({ :test => true }, subject.default_instance_args)
+      assert_equal({ 'test' => true }, subject.default_instance_args)
     end
 
     should "allow reading and writing default instance args " \
            "with #default_fake_args" do
       subject.default_fake_args(:test => true)
-      assert_equal({ :test => true }, subject.default_fake_args)
+      assert_equal({ 'test' => true }, subject.default_fake_args)
     end
 
     should "allow passing a block when it's initialized" do
@@ -44,9 +44,9 @@ class MR::Factory::ModelFactory
         default_instance_args :instance => true
         default_fake_args :fake => true
       end
-      assert_equal({ :test => true }, factory.default_args)
-      assert_equal({ :instance => true }, factory.default_instance_args)
-      assert_equal({ :fake => true }, factory.default_fake_args)
+      assert_equal({ 'test' => true }, factory.default_args)
+      assert_equal({ 'instance' => true }, factory.default_instance_args)
+      assert_equal({ 'fake' => true }, factory.default_fake_args)
     end
 
     should "allow applying hash args to a model with #apply_args" do

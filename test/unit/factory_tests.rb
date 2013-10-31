@@ -5,7 +5,7 @@ require 'thread'
 
 module MR::Factory
 
-  class BaseTests < Assert::Context
+  class UnitTests < Assert::Context
     desc "MR::Factory"
     subject{ MR::Factory }
 
@@ -86,7 +86,7 @@ module MR::Factory
 
   end
 
-  class PrimaryKeyProviderTests < BaseTests
+  class PrimaryKeyProviderTests < UnitTests
     desc "PrimaryKeyProvider"
     setup do
       @provider   = PrimaryKeyProvider.new

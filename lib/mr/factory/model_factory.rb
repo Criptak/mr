@@ -25,7 +25,7 @@ module MR::Factory
 
     def instance(args = nil)
       record = @record_factory.instance
-      args   = deep_merge(@instance_defaults, symbolize_hash(args))
+      args   = deep_merge(@instance_defaults, stringify_hash(args))
       @model_class.new(record).tap{ |model| apply_args(model, args) }
     end
 
@@ -36,7 +36,7 @@ module MR::Factory
     def fake(args = nil)
       raise "A fake_record_class wasn't provided" unless @fake_record_factory
       fake_record = @fake_record_factory.instance
-      args        = deep_merge(@fake_defaults, symbolize_hash(args))
+      args        = deep_merge(@fake_defaults, stringify_hash(args))
       @model_class.new(fake_record).tap{ |model| apply_args(model, args) }
     end
 
@@ -45,21 +45,21 @@ module MR::Factory
     end
 
     def apply_args(model, args = nil)
-      super model, deep_merge(@defaults, symbolize_hash(args || {}))
+      super model, deep_merge(@defaults, stringify_hash(args || {}))
     end
 
     def default_args(value = nil)
-      @defaults = symbolize_hash(value) if value
+      @defaults = stringify_hash(value) if value
       @defaults
     end
 
     def default_instance_args(value = nil)
-      @instance_defaults = symbolize_hash(value) if value
+      @instance_defaults = stringify_hash(value) if value
       @instance_defaults
     end
 
     def default_fake_args(value = nil)
-      @fake_defaults = symbolize_hash(value) if value
+      @fake_defaults = stringify_hash(value) if value
       @fake_defaults
     end
 
@@ -68,7 +68,7 @@ module MR::Factory
     def apply_args_to_associations!(model, args)
       one_to_one_associations_with_args(model, args).each do |association|
         associated_model = get_associated_model(model, association)
-        association_args = args.delete(association.name.to_sym)
+        association_args = args.delete(association.name.to_s)
         apply_args!(associated_model, association_args) if associated_model
       end
     end
