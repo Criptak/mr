@@ -14,6 +14,7 @@ module Bench
       benchmark = Benchmark.measure do
         require 'mr'
         require 'mr/model/configuration'
+        require 'mr/model/fields'
         require 'bench/setup_activerecord'
         profile_model_configuration
         profile_model_initialize
@@ -100,7 +101,9 @@ module Bench
 
     def profile_model_fields
       @logger.puts "benchmarking MR::Model fields"
-      model_class = Class.new{ include MR::Model }
+      model_class = Class.new do
+        include MR::Model::Fields
+      end
 
       profile("adding readers") do |n|
         model_class.class_eval{ field_reader "reader_#{n}" }
@@ -113,9 +116,10 @@ module Bench
       end
 
       model_class = Class.new do
-        include MR::Model
+        include MR::Model::Fields
         record_class AreaRecord
         field_accessor :name, :active, :description
+        def initialize; set_record record_class.new; end
       end
       model = model_class.new.tap do |m|
         m.name        = 'Name'
@@ -278,6 +282,8 @@ module Bench
                        "#{memory_diff.to_s.rjust(10)} mb"
         raise ActiveRecord::Rollback
       end
+      AreaRecord.model_class = Area
+      UserRecord.model_class = User
       GC.enable
       GC.start
       GC.disable
