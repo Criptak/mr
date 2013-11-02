@@ -16,7 +16,13 @@ module MR::ReadModel::Querying
 
     should have_imeths :relation
     should have_imeths :query
-    should have_imeths :select, :from, :joins
+    should have_imeths :select
+    should have_imeths :from, :joins
+    should have_imeths :where
+    should have_imeths :order
+    should have_imeths :group, :having
+    should have_imeths :limit, :offset
+    should have_imeths :merge
 
     should "return a Relation using `relation`" do
       relation = subject.relation
@@ -39,29 +45,35 @@ module MR::ReadModel::Querying
 
     private
 
-    def assert_static_expression_added(collection, type, *args)
-      assert_equal 1, collection.size
-      expression = collection.first
-      expected_class = MR::ReadModel::QueryExpression::Static
-      assert_instance_of expected_class, expression
-      assert_equal type, expression.type
-      assert_equal args, expression.args
+    def assert_static_expression_added(relation, type, *args)
+      with_backtrace(caller) do
+        assert_equal 1, relation.expressions.size
+        expression = relation.expressions.first
+        expected_class = MR::ReadModel::QueryExpression::Static
+        assert_instance_of expected_class, expression
+        assert_equal type, expression.type
+        assert_equal args, expression.args
+      end
     end
 
-    def assert_dynamic_expression_added(collection, type, block)
-      assert_equal 1, collection.size
-      expression = collection.first
-      expected_class = MR::ReadModel::QueryExpression::Dynamic
-      assert_instance_of expected_class, expression
-      assert_equal type,  expression.type
-      assert_equal block, expression.block
+    def assert_dynamic_expression_added(relation, type, block)
+      with_backtrace(caller) do
+        assert_equal 1, relation.expressions.size
+        expression = relation.expressions.first
+        expected_class = MR::ReadModel::QueryExpression::Dynamic
+        assert_instance_of expected_class, expression
+        assert_equal type,  expression.type
+        assert_equal block, expression.block
+      end
     end
 
     def assert_expression_applied(relation_spy, type, *args)
-      applied = relation_spy.applied.detect do |e|
-        e.type == type && e.args == args
+      with_backtrace(caller) do
+        applied = relation_spy.applied.detect do |e|
+          e.type == type && e.args == args
+        end
+        assert applied
       end
-      assert applied
     end
 
   end
@@ -80,30 +92,121 @@ module MR::ReadModel::Querying
     should "apply a static select to the relation with `select`" do
       select_sql = "some_table.some_column AS 'something'"
       subject.select select_sql
-      assert_static_expression_added @relation.selects, :select, select_sql
+      assert_static_expression_added @relation, :select, select_sql
     end
 
     should "add a dynamic select to the relation with `select`" do
       select_proc = proc{ |name| "some_table.some_column AS '#{name}'" }
       subject.select(&select_proc)
-      assert_dynamic_expression_added @relation.selects, :select, select_proc
+      assert_dynamic_expression_added @relation, :select, select_proc
     end
 
     should "add a static join to the relation with `joins`" do
       join_args = [ :some_table, :other_table ]
       subject.joins(*join_args)
-      assert_static_expression_added @relation.joins, :joins, *join_args
+      assert_static_expression_added @relation, :joins, *join_args
     end
 
     should "add a dynamic join to the relation with `joins`" do
       join_proc = proc{ |name| "CROSS JOIN #{name}" }
       subject.joins(&join_proc)
-      assert_dynamic_expression_added @relation.joins, :joins, join_proc
+      assert_dynamic_expression_added @relation, :joins, join_proc
+    end
+
+    should "add a static where to the relation with `where`" do
+      where_args = { :column => 'value' }
+      subject.where(where_args)
+      assert_static_expression_added @relation, :where, where_args
+    end
+
+    should "add a dynamic where to the relation with `where`" do
+      where_proc = proc{ |name| { :column => name } }
+      subject.where(&where_proc)
+      assert_dynamic_expression_added @relation, :where, where_proc
+    end
+
+    should "add a static order to the relation with `order`" do
+      order_args = 'some_table.some_column'
+      subject.order(order_args)
+      assert_static_expression_added @relation, :order, order_args
+    end
+
+    should "add a dynamic order to the relation with `order`" do
+      order_proc = proc{ |column| column }
+      subject.order(&order_proc)
+      assert_dynamic_expression_added @relation, :order, order_proc
+    end
+
+    should "add a static group to the relation with `group`" do
+      group_args = 'some_table.some_column'
+      subject.group(group_args)
+      assert_static_expression_added @relation, :group, group_args
+    end
+
+    should "add a dynamic group to the relation with `group`" do
+      group_proc = proc{ |column| column }
+      subject.group(&group_proc)
+      assert_dynamic_expression_added @relation, :group, group_proc
+    end
+
+    should "add a static having to the relation with `having`" do
+      having_args = 'COUNT(*) > 0'
+      subject.having(having_args)
+      assert_static_expression_added @relation, :having, having_args
+    end
+
+    should "add a dynamic having to the relation with `having`" do
+      having_proc = proc{ |column| "COUNT(#{column}) > 0" }
+      subject.having(&having_proc)
+      assert_dynamic_expression_added @relation, :having, having_proc
+    end
+
+    should "add a static limit to the relation with `limit`" do
+      limit_args = 1
+      subject.limit(limit_args)
+      assert_static_expression_added @relation, :limit, limit_args
+    end
+
+    should "add a dynamic limit to the relation with `limit`" do
+      limit_proc = proc{ |count| count }
+      subject.limit(&limit_proc)
+      assert_dynamic_expression_added @relation, :limit, limit_proc
+    end
+
+    should "add a static offset to the relation with `offset`" do
+      offset_args = 1
+      subject.offset(offset_args)
+      assert_static_expression_added @relation, :offset, offset_args
+    end
+
+    should "add a dynamic offset to the relation with `offset`" do
+      offset_proc = proc{ |count| count }
+      subject.offset(&offset_proc)
+      assert_dynamic_expression_added @relation, :offset, offset_proc
+    end
+
+    should "add a static merge to the relation with `merge`" do
+      merge_args = 'fake-relation'
+      subject.merge(merge_args)
+      assert_static_expression_added @relation, :merge, merge_args
+    end
+
+    should "add a dynamic merge to the relation with `merge`" do
+      merge_proc = proc{ 'fake-relation' }
+      subject.merge(&merge_proc)
+      assert_dynamic_expression_added @relation, :merge, merge_proc
     end
 
     should "raise an ArgumentError when any query method isn't provided args or a block" do
       assert_raises(ArgumentError){ subject.select }
       assert_raises(ArgumentError){ subject.joins }
+      assert_raises(ArgumentError){ subject.where }
+      assert_raises(ArgumentError){ subject.order }
+      assert_raises(ArgumentError){ subject.group }
+      assert_raises(ArgumentError){ subject.having }
+      assert_raises(ArgumentError){ subject.limit }
+      assert_raises(ArgumentError){ subject.offset }
+      assert_raises(ArgumentError){ subject.merge }
     end
 
   end
@@ -137,13 +240,12 @@ module MR::ReadModel::Querying
     subject{ @relation }
 
     should have_accessors :record_class
-    should have_readers :selects, :joins
+    should have_readers :expressions
 
     should "default it's record class and query expressions" do
       relation = MR::ReadModel::Relation.new
       assert_nil relation.record_class
-      assert_equal [], relation.selects
-      assert_equal [], relation.joins
+      assert_equal [], relation.expressions
     end
 
     should "return an ActiveRecord relation from the record class using `build`" do
@@ -155,25 +257,19 @@ module MR::ReadModel::Querying
       assert_not_same ar_relation, subject.build
     end
 
-    should "apply query expressions in the correct order using `build`" do
-      expressions = []
-      subject.add_select :first_column
-      subject.add_select :second_column
-      subject.add_joins :first_table
-      subject.add_joins :second_table
+    should "apply query expressions in the order they are added using `build`" do
+      subject.expressions << MR::ReadModel::QueryExpression.new(:order, :first_column)
+      subject.expressions << MR::ReadModel::QueryExpression.new(:where, :second_column)
+      subject.expressions << MR::ReadModel::QueryExpression.new(:joins, :third_column)
       ar_relation = subject.build
 
-      expressions = [
-        subject.joins,
-        subject.selects
-      ].flatten
-      expected_order = expressions.map{ |e| [ e.type, e.args ] }
+      expected_order = subject.expressions.map{ |e| [ e.type, e.args ] }
       actual_order   = ar_relation.applied.map{ |e| [ e.type, e.args ] }
       assert_equal expected_order, actual_order
     end
 
     should "apply query expressions using the args passed to `build`" do
-      subject.add_select{ |column| column }
+      subject.expressions << MR::ReadModel::QueryExpression.new(:select){ |c| c }
       ar_relation = subject.build('some_table.some_column')
       assert_expression_applied ar_relation, :select, 'some_table.some_column'
     end
@@ -201,14 +297,20 @@ module MR::ReadModel::Querying
       @applied = []
     end
 
-    def select(*args)
-      @applied << AppliedExpression.new(:select, args)
-      self
-    end
+    [ :select,
+      :joins,
+      :where,
+      :order,
+      :group, :having,
+      :limit, :offset,
+      :merge
+    ].each do |type|
 
-    def joins(*args)
-      @applied << AppliedExpression.new(:joins, args)
-      self
+      define_method(type) do |*args|
+        @applied << AppliedExpression.new(type, args)
+        self
+      end
+
     end
 
     def ==(other)

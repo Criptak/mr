@@ -24,9 +24,7 @@ module MR::ReadModel
       end
 
       def select(*args, &block)
-        relation.add_select(*args, &block)
-      rescue InvalidQueryExpression => e
-        raise ArgumentError, e.message
+        add_query_expression(:select, *args, &block)
       end
 
       def from(record_class)
@@ -35,9 +33,45 @@ module MR::ReadModel
       end
 
       def joins(*args, &block)
-        relation.add_joins(*args, &block)
-      rescue InvalidQueryExpression => e
-        raise ArgumentError, e.message
+        add_query_expression(:joins, *args, &block)
+      end
+
+      def where(*args, &block)
+        add_query_expression(:where, *args, &block)
+      end
+
+      def order(*args, &block)
+        add_query_expression(:order, *args, &block)
+      end
+
+      def group(*args, &block)
+        add_query_expression(:group, *args, &block)
+      end
+
+      def having(*args, &block)
+        add_query_expression(:having, *args, &block)
+      end
+
+      def limit(*args, &block)
+        add_query_expression(:limit, *args, &block)
+      end
+
+      def offset(*args, &block)
+        add_query_expression(:offset, *args, &block)
+      end
+
+      def merge(*args, &block)
+        add_query_expression(:merge, *args, &block)
+      end
+
+      private
+
+      def add_query_expression(type, *args, &block)
+        relation.expressions << QueryExpression.new(type, *args, &block)
+      rescue InvalidQueryExpression => exception
+        error = ArgumentError.new(exception.message)
+        error.set_backtrace(caller)
+        raise error
       end
 
     end
@@ -46,33 +80,18 @@ module MR::ReadModel
 
   class Relation
     attr_accessor :record_class
-    attr_reader :selects, :joins
+    attr_reader :expressions
 
     def initialize
       @record_class = nil
-      @selects = []
-      @joins   = []
-    end
-
-    def add_select(*args, &block)
-      @selects << QueryExpression.new(:select, *args, &block)
-    end
-
-    def add_joins(*args, &block)
-      @joins << QueryExpression.new(:joins, *args, &block)
+      @expressions  = []
     end
 
     def build(args = nil)
       raise NoRecordClassError if !@record_class
-      [ @joins, @selects ].inject(@record_class.scoped) do |relation, expressions|
-        expressions.empty? ? relation : apply_all(expressions, relation, args)
+      @expressions.inject(@record_class.scoped) do |relation, expression|
+        expression.apply_to(relation, args)
       end
-    end
-
-    private
-
-    def apply_all(expressions, relation, args)
-      expressions.inject(relation){ |r, e| e.apply_to(r, args) }
     end
 
   end
