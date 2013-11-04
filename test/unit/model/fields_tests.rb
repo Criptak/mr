@@ -10,9 +10,7 @@ module MR::Model::Fields
     setup do
       @model_class = Class.new do
         include MR::Model::Fields
-        def initialize(record)
-          set_record record
-        end
+        def initialize(record); set_record record; end
       end
       @record = FakeRecord.new
     end

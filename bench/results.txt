@@ -1,42 +1,42 @@
 Benchmarking MR
 benchmarking MR::Model configuration
-  reading record class                               |     119.18 ms |     +21.65 mb
-  writing record class                               |     282.51 ms |      +0.05 mb
+  reading record class                               |     121.81 ms |     +21.64 mb
+  writing record class                               |      279.4 ms |      +0.06 mb
 benchmarking MR::Model initialize
-  with no arguments                                  |     446.82 ms |      +18.5 mb
-  with a record                                      |      33.37 ms |      +0.12 mb
-  with a hash of values                              |    1111.91 ms |      +49.0 mb
-  with a record and hash of values                   |     518.86 ms |      +0.24 mb
+  with no arguments                                  |     465.88 ms |      +17.4 mb
+  with a record                                      |      34.46 ms |       +0.1 mb
+  with a hash of values                              |    1087.09 ms |     +49.02 mb
+  with a record and hash of values                   |      500.8 ms |      +0.22 mb
 benchmarking MR::Model comparison
-  unequal                                            |      57.43 ms |        0.0 mb
-  equal                                              |      53.16 ms |        0.0 mb
+  unequal                                            |      52.73 ms |        0.0 mb
+  equal                                              |      52.55 ms |        0.0 mb
 benchmarking MR::Model fields
-  adding readers                                     |     378.15 ms |     +72.44 mb
-  adding writers                                     |      332.0 ms |     +47.25 mb
-  adding accessors                                   |     683.07 ms |    +141.02 mb
-  reading field                                      |      58.32 ms |        0.0 mb
-  writing field                                      |     157.37 ms |      +0.79 mb
-  reading many fields                                |     274.92 ms |        0.0 mb
-  writing many fields                                |     546.39 ms |        0.0 mb
+  adding readers                                     |     371.05 ms |     +73.49 mb
+  adding writers                                     |     330.44 ms |     +47.26 mb
+  adding accessors                                   |     674.89 ms |    +141.01 mb
+  reading field                                      |      58.02 ms |        0.0 mb
+  writing field                                      |     156.05 ms |      +0.77 mb
+  reading many fields                                |     273.54 ms |        0.0 mb
+  writing many fields                                |     537.89 ms |        0.0 mb
 benchmarking MR::Model associations
-  adding a belongs to                                |     414.62 ms |        0.0 mb
-  adding a has many                                  |     411.14 ms |        0.0 mb
-  adding a has one                                   |     418.73 ms |        0.0 mb
-  adding a polymorphic belongs to                    |     417.13 ms |        0.0 mb
-  reading a belongs to                               |     196.31 ms |        0.0 mb
-  writing a belongs to                               |     657.84 ms |        0.0 mb
-  reading a has many                                 |     240.31 ms |        0.0 mb
-  writing a has many                                 |    4756.97 ms |     +321.1 mb
-  reading a has one                                  |      153.8 ms |      +0.36 mb
-  writing a has one                                  |   10286.87 ms |    +668.37 mb
-  reading a polymorphic belongs to                   |     375.14 ms |      +0.64 mb
-  writing a polymorphic belongs to                   |     927.34 ms |        0.0 mb
+  adding a belongs to                                |     469.44 ms |        0.0 mb
+  adding a has many                                  |     456.43 ms |      +0.08 mb
+  adding a has one                                   |      459.2 ms |      +0.08 mb
+  adding a polymorphic belongs to                    |     473.21 ms |      +0.08 mb
+  reading a belongs to                               |     163.18 ms |        0.0 mb
+  writing a belongs to                               |     435.34 ms |        0.0 mb
+  reading a has many                                 |     181.98 ms |        0.0 mb
+  writing a has many                                 |    4394.01 ms |    +259.93 mb
+  reading a has one                                  |     121.72 ms |      +0.09 mb
+  writing a has one                                  |   10090.28 ms |     +640.0 mb
+  reading a polymorphic belongs to                   |     316.77 ms |      +0.44 mb
+  writing a polymorphic belongs to                   |     647.07 ms |        0.0 mb
 benchmarking MR::Model persistence
-  saving and destroying                              |    9793.86 ms |    +630.92 mb
-  checking validations and reading errors            |    4405.77 ms |      +0.78 mb
+  saving and destroying                              |    9687.63 ms |    +632.49 mb
+  checking validations and reading errors            |    4509.18 ms |      +0.24 mb
 benchmarking MR::Model querying
-  finding one                                        |    3417.96 ms |        0.0 mb
-  finding all                                        |    4155.48 ms |     +49.84 mb
+  finding one                                        |    3374.65 ms |        0.0 mb
+  finding all                                        |    4240.05 ms |     +48.84 mb
 benchmarking MR::ReadModel
-  querying records and initializing                  |    5061.31 ms |     +95.34 mb
-Done 66.79s 1002.68mb
+  querying records and initializing                  |    5042.42 ms |     +94.32 mb
+Done 65.31s 1004.2mb

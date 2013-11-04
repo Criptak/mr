@@ -15,6 +15,7 @@ module Bench
         require 'mr'
         require 'mr/model/configuration'
         require 'mr/model/fields'
+        require 'mr/model/associations'
         require 'bench/setup_activerecord'
         profile_model_configuration
         profile_model_initialize
@@ -147,19 +148,26 @@ module Bench
 
     def profile_model_associations
       @logger.puts "benchmarking MR::Model associations"
-      model_class = Class.new{ include MR::Model }
+      area_model_class = Class.new do
+        include MR::Model::Associations
+        record_class AreaRecord
+      end
+      user_model_class = Class.new do
+        include MR::Model::Associations
+        record_class UserRecord
+      end
 
       profile("adding a belongs to") do
-        model_class.belongs_to :test, 'Test'
+        user_model_class.belongs_to :area
       end
       profile("adding a has many") do
-        model_class.has_many :test, 'Test'
+        area_model_class.has_many :users
       end
       profile("adding a has one") do
-        model_class.has_one :test, 'Test'
+        area_model_class.has_one :manager_user
       end
       profile("adding a polymorphic belongs to") do
-        model_class.polymorphic_belongs_to :test
+        user_model_class.polymorphic_belongs_to :parent
       end
 
       first_area  = Area.new.tap{ |a| a.save }
