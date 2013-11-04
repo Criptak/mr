@@ -12,6 +12,10 @@ module MR::FakeRecord
       @fake_record_class_name = @options[:class_name]
     end
 
+    def macro
+      raise NotImplementedError
+    end
+
     def belongs_to?
       false
     end
@@ -74,6 +78,10 @@ module MR::FakeRecord
       @foreign_key = (@options[:foreign_key] || "#{name}_id").to_s
     end
 
+    def macro
+      :belongs_to
+    end
+
     def belongs_to?
       true
     end
@@ -90,6 +98,10 @@ module MR::FakeRecord
   end
 
   class HasMany < Association
+
+    def macro
+      :has_many
+    end
 
     def collection?
       true
@@ -108,13 +120,16 @@ module MR::FakeRecord
 
   end
 
-  HasOne = Class.new(Association)
+  class HasOne < Association
+    def macro; :has_one; end
+  end
 
   class PolymorphicBelongsTo < BelongsTo
     attr_reader :foreign_type
 
     def initialize(name, options = nil)
       super
+      @options[:polymorphic] = true
       @foreign_type = (@options[:foreign_type] || "#{name}_type").to_s
     end
 

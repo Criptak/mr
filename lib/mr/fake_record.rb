@@ -122,6 +122,10 @@ module MR::FakeRecord
     end
     alias :reflect_on_all_associations :associations
 
+    def reflect_on_association(name)
+      self.associations.detect{ |a| a.name.to_s == name.to_s }
+    end
+
     def belongs_to(name, fake_record_class_name, options = nil)
       options ||= {}
       options[:class_name] = fake_record_class_name
