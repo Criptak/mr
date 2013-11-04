@@ -14,6 +14,7 @@ module MR
     def models
       @relation.all.map{ |record| @model_class.new(record) }
     end
+    alias :results :models
 
     def count
       @relation.count

@@ -317,26 +317,3 @@ class SuperFieldAndAssociationTests < WithModelTests
   end
 
 end
-
-class SuperReadModelFieldsTests < WithModelTests
-  desc "when overwriting a method defined by read model"
-  setup do
-    record = UserRecord.new({ :name => 'test' }).tap do |u|
-      u.id = 1
-      u.save!
-    end
-    @user = User.new(record)
-    @query = CustomUser.custom_all_of_em_query
-  end
-  teardown do
-    @user.destroy
-  end
-  subject{ @query }
-
-  should "allow supering to the original method defined by MR::ReadModel" do
-    read_model = @query.models.first
-    assert_instance_of Fixnum, read_model.user_id
-    assert_equal @user.id, read_model.user_id
-  end
-
-end

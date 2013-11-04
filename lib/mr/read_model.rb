@@ -1,52 +1,36 @@
-require 'mr'
-require 'mr/record'
+require 'mr/read_model/data'
+require 'mr/read_model/fields'
+require 'mr/read_model/querying'
 
-module MR
+module MR; end
+module MR::ReadModel
 
-  module ReadModel
-
-    def self.new(&block)
-      block ||= proc{ }
-      klass = Class.new{ include MR::ReadModel }
-      klass.class_eval(&block)
-      klass
+  def self.included(klass)
+    klass.class_eval do
+      include MR::ReadModel::Data
+      include MR::ReadModel::Fields
+      include MR::ReadModel::Querying
     end
+  end
 
-    def self.included(klass)
-      klass.class_eval do
-        extend ClassMethods
-        include InstanceMethods
-        include self.read_model_interface_module
-      end
+  def initialize(data)
+    set_data data
+  end
+
+  def ==(other)
+    if other.kind_of?(self.class)
+      self.fields == other.fields
+    else
+      super
     end
+  end
 
-    module InstanceMethods
-
-      def initialize(record_or_attributes)
-        attributes = if record_or_attributes.kind_of?(Hash)
-          record_or_attributes
-        elsif record_or_attributes.kind_of?(MR::Record)
-          record_or_attributes.attributes
-        else
-          raise MR::InvalidRecordError.new(record_or_attributes)
-        end
-        attributes.each do |name, value|
-          self.instance_variable_set("@#{name}", value)
-          mod = self.class.read_model_interface_module
-          mod.class_eval{ attr_reader(name) }
-        end
-      end
-
-    end
-
-    module ClassMethods
-
-      def read_model_interface_module
-        @read_model_interface_module ||= Module.new
-      end
-
-    end
-
+  def inspect
+    object_hex = (self.object_id << 1).to_s(16)
+    fields_inspect = self.class.fields.map do |field|
+      "#{field.ivar_name}=#{field.read(data).inspect}"
+    end.sort.join(" ")
+    "#<#{self.class}:0x#{object_hex} #{fields_inspect}>"
   end
 
 end
