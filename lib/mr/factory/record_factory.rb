@@ -23,11 +23,11 @@ module MR::Factory
     end
 
     def apply_args(record, args = nil)
-      super record, deep_merge(build_defaults, symbolize_hash(args || {}))
+      super record, deep_merge(build_defaults, stringify_hash(args || {}))
     end
 
     def default_args(value = nil)
-      @defaults = symbolize_hash(value) if value
+      @defaults = stringify_hash(value) if value
       @defaults
     end
 
@@ -36,7 +36,7 @@ module MR::Factory
     def build_defaults
       @columns ||= non_association_columns(@record_class)
       column_defaults = @columns.inject({}) do |a, column|
-        a.merge(column.name.to_sym => MR::Factory.send(column.type))
+        a.merge(column.name.to_s => MR::Factory.send(column.type))
       end
       column_defaults.merge(@defaults)
     end
@@ -44,7 +44,7 @@ module MR::Factory
     def apply_args_to_associations!(record, args)
       one_to_one_associations_with_args(record, args).each do |association|
         associated_record = get_associated_record(record, association)
-        association_args  = args.delete(association.reflection.name.to_sym)
+        association_args  = args.delete(association.reflection.name.to_s)
         apply_args!(associated_record, association_args) if associated_record
       end
     end

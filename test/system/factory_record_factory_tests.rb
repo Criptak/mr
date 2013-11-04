@@ -20,14 +20,14 @@ class MR::Factory::RecordFactory
 
     should "allow reading and writing default args with #default_args" do
       subject.default_args(:test => true)
-      assert_equal({ :test => true }, subject.default_args)
+      assert_equal({ 'test' => true }, subject.default_args)
     end
 
     should "allow passing a block when it's initialized" do
       factory = MR::Factory::ModelFactory.new(User) do
         default_args :test => true
       end
-      assert_equal({ :test => true }, factory.default_args)
+      assert_equal({ 'test' => true }, factory.default_args)
     end
 
     should "allow applying hash args to a record with #apply_args" do
@@ -98,7 +98,7 @@ class MR::Factory::RecordFactory
       factory = MR::Factory::ModelFactory.new(User) do
         default_args :test => true
       end
-      assert_equal({ :test => true }, factory.default_args)
+      assert_equal({ 'test' => true }, factory.default_args)
     end
 
     should "allow applying hash args to a record with #apply_args" do

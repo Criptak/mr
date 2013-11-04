@@ -24,7 +24,7 @@ module MR::Factory
     end
 
     def hash_key?(args, key)
-      args[key.to_sym].kind_of?(Hash)
+      args[key.to_s].kind_of?(Hash)
     end
 
     def deep_merge(hash1, hash2)
@@ -37,12 +37,12 @@ module MR::Factory
       end
     end
 
-    def symbolize_hash(hash)
+    def stringify_hash(hash)
       hash ||= {}
       raise ArgumentError, "must be a kind of Hash" unless hash.kind_of?(Hash)
       hash.inject({}) do |h, (k, v)|
-        value = v.kind_of?(Hash) ? symbolize_hash(v) : v
-        h.merge(k.to_sym => value)
+        value = v.kind_of?(Hash) ? stringify_hash(v) : v
+        h.merge(k.to_s => value)
       end
     end
 
