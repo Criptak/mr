@@ -290,4 +290,17 @@ module MR::ReadModel::Fields
     end
   end
 
+  class PrimaryKeyFieldTests < FieldTests
+    desc "of type primary key"
+    setup do
+      @field = MR::ReadModel::Field.new(:test, :primary_key)
+    end
+
+    should "type cast data values using `read`" do
+      value = MR::Factory.primary_key
+      assert_equal value, subject.read({ 'test' => value.to_s })
+    end
+
+  end
+
 end
