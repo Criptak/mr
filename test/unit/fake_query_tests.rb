@@ -17,7 +17,7 @@ class MR::FakeQuery
     end
     subject{ @query }
 
-    should have_imeths :models, :count, :paged
+    should have_imeths :models, :results, :count, :paged
 
     should "return the models and their size with #models and #count" do
       assert_equal @models, subject.models
