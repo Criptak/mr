@@ -43,6 +43,7 @@ class MR::Factory::ReadModelFactory
       assert_kind_of Time,      read_model.time
       assert_kind_of Date,      read_model.date
       assert_kind_of TrueClass, read_model.boolean
+      assert_kind_of Integer,   read_model.primary_key
     end
 
     should "raise an ArgumentError if a non-Hash is passed to `default_args`" do
@@ -54,13 +55,14 @@ class MR::Factory::ReadModelFactory
   class TestReadModel
     include MR::ReadModel
 
-    field :string,   :string
-    field :integer,  :integer
-    field :float,    :float
-    field :datetime, :datetime
-    field :time,     :time
-    field :date,     :date
-    field :boolean,  :boolean
+    field :string,      :string
+    field :integer,     :integer
+    field :float,       :float
+    field :datetime,    :datetime
+    field :time,        :time
+    field :date,        :date
+    field :boolean,     :boolean
+    field :primary_key, :primary_key
   end
 
 end

@@ -75,13 +75,14 @@ module MR::ReadModel
   class Field
 
     TYPE_CAST_PROCS = Hash.new{ |h, k| raise BadFieldTypeError.new(k) }.tap do |h|
-      h[:string]   = proc{ |input| input.to_s }
-      h[:integer]  = proc{ |input| input.to_i }
-      h[:float]    = proc{ |input| input.to_f }
-      h[:datetime] = proc{ |input| DateTime.parse(input.to_s) }
-      h[:time]     = proc{ |input| Time.parse(input.to_s) }
-      h[:date]     = proc{ |input| Date.parse(input.to_s) }
-      h[:boolean]  = proc{ |input| NsOptions::Boolean.new(input.to_s).actual }
+      h[:string]      = proc{ |input| input.to_s }
+      h[:integer]     = proc{ |input| input.to_i }
+      h[:float]       = proc{ |input| input.to_f }
+      h[:datetime]    = proc{ |input| DateTime.parse(input.to_s) }
+      h[:time]        = proc{ |input| Time.parse(input.to_s) }
+      h[:date]        = proc{ |input| Date.parse(input.to_s) }
+      h[:boolean]     = proc{ |input| NsOptions::Boolean.new(input.to_s).actual }
+      h[:primary_key] = h[:integer]
     end.freeze
 
     attr_reader :name, :type, :value
