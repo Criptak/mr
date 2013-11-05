@@ -2,6 +2,7 @@ module MR
 
   class FakeQuery
     attr_reader :models, :count
+    alias :results :models
 
     def initialize(models)
       @models = models
