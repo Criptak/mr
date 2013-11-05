@@ -13,8 +13,8 @@ module MR::ReadModel
     end
   end
 
-  def initialize(data)
-    set_data data
+  def initialize(data = nil)
+    set_data(data || {})
   end
 
   def ==(other)
