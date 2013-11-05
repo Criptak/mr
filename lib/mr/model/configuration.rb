@@ -16,6 +16,7 @@ module MR::Model
     # * Use the `set_record` private method to write a record value.
 
     def self.included(klass)
+      return if klass.respond_to?(:configuration)
       klass.class_eval do
         include NsOptions
         options :configuration do
@@ -35,7 +36,7 @@ module MR::Model
       protected
 
       def record
-        @record || raise(NoRecordError.new(caller))
+        @record || raise(NoRecordError, "a record hasn't been set", caller)
       end
 
       private
@@ -56,7 +57,8 @@ module MR::Model
 
       def record_class(*args)
         set_record_class(*args) unless args.empty?
-        configuration.record_class || raise(NoRecordClassError.new(caller))
+        configuration.record_class ||
+        raise(NoRecordClassError, "a record class hasn't been set", caller)
       end
 
       private
@@ -72,19 +74,7 @@ module MR::Model
   end
 
   InvalidRecordError = Class.new(ArgumentError)
-
-  class NoRecordError < RuntimeError
-    def initialize(called_from = nil)
-      super "a record hasn't been set"
-      set_backtrace(called_from) if called_from
-    end
-  end
-
-  class NoRecordClassError < RuntimeError
-    def initialize(called_from = nil)
-      super "a record class hasn't been set"
-      set_backtrace(called_from) if called_from
-    end
-  end
+  NoRecordError      = Class.new(RuntimeError)
+  NoRecordClassError = Class.new(RuntimeError)
 
 end

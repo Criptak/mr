@@ -2,7 +2,7 @@ require 'assert'
 require 'mr/model/configuration'
 
 require 'ns-options/assert_macros'
-require 'mr/record'
+require 'mr/fake_record'
 
 module MR::Model::Configuration
 
@@ -111,7 +111,7 @@ module MR::Model::Configuration
   end
 
   class TestRecord
-    include MR::Record
+    include MR::FakeRecord
   end
 
 end
