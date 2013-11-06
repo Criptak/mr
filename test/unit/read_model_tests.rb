@@ -15,6 +15,11 @@ module MR::ReadModel
     end
     subject{ @read_model_class }
 
+    should "default it's data when initialized" do
+      read_model = subject.new
+      assert_nil read_model.name
+    end
+
     should "include the Data, Fields and Querying mixins" do
       assert_includes MR::ReadModel::Data, subject
       assert_includes MR::ReadModel::Fields, subject
