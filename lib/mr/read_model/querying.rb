@@ -132,7 +132,7 @@ module MR::ReadModel
       end
 
       def apply_to(relation, args)
-        relation.send(@type, @block.call(args))
+        relation.send(@type, relation.instance_exec(args, &@block))
       end
     end
 

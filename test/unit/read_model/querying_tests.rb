@@ -281,13 +281,63 @@ module MR::ReadModel::Querying
 
   end
 
+  class StaticQueryExpressionTests < UnitTests
+    desc "QueryExpression::Static"
+    setup do
+      @ar_relation = TestRecord.scoped
+      @expression  = MR::ReadModel::QueryExpression::Static.new(:select, 'column')
+    end
+    subject{ @expression }
+
+    should have_readers :type, :args
+
+    should "apply itself to an ActiveRecord relation using `apply_to`" do
+      subject.apply_to(@ar_relation)
+      assert_expression_applied @ar_relation, subject.type, *subject.args
+    end
+
+  end
+
+  class DynamicQueryExpressionTests < UnitTests
+    desc "QueryExpression::Dynamic"
+    setup do
+      @ar_relation = TestRecord.scoped
+      block = proc{ 'column' }
+      @expression  = MR::ReadModel::QueryExpression::Dynamic.new(:select, &block)
+    end
+    subject{ @expression }
+
+    should have_readers :type, :block
+
+    should "apply itself to an ActiveRecord relation using `apply_to`" do
+      subject.apply_to(@ar_relation, 'test')
+      assert_expression_applied @ar_relation, subject.type, 'column'
+    end
+
+    should "yield any args to it's block using `apply_to`" do
+      yielded = nil
+      block = proc{ |args| yielded = args }
+      expression = MR::ReadModel::QueryExpression::Dynamic.new(:select, &block)
+      expression.apply_to(@ar_relation, 'test')
+      assert_equal 'test', yielded
+    end
+
+    should "eval it's block in the ActiveRecord relation's scope using `apply_to`" do
+      scope = nil
+      block = proc{ |args| scope = self }
+      expression = MR::ReadModel::QueryExpression::Dynamic.new(:select, &block)
+      expression.apply_to(@ar_relation, 'test')
+      assert_equal @ar_relation, scope
+    end
+
+  end
+
   class TestRecord
     include MR::FakeRecord
 
     def self.scoped
       ActiveRecordRelationSpy.new
     end
-
   end
 
   class ActiveRecordRelationSpy
@@ -318,7 +368,6 @@ module MR::ReadModel::Querying
     end
 
     AppliedExpression = Struct.new(:type, :args)
-
   end
 
 end
