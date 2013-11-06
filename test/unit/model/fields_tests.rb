@@ -16,15 +16,16 @@ module MR::Model::Fields
     end
     subject{ @model_class }
 
-    should have_imeths :field_reader, :field_writer, :field_accessor
+    should have_imeths :fields, :field_reader, :field_writer, :field_accessor
 
     should "include Model::Configuration mixin" do
       assert_includes MR::Model::Configuration, subject.included_modules
     end
 
-    should "add a fields option to the configuration" do
-      assert_respond_to :fields, subject.configuration
-      assert_instance_of MR::Model::FieldSet, subject.configuration.fields
+    should "return an instance of a FieldSet using `fields`" do
+      fields = subject.fields
+      assert_instance_of MR::Model::FieldSet, fields
+      assert_same fields, subject.fields
     end
 
     should "add reader methods for a field using `field_reader`" do

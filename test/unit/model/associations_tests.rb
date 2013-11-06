@@ -18,6 +18,7 @@ module MR::Model::Associations
     end
     subject{ @model_class }
 
+    should have_imeths :associations
     should have_imeths :belongs_to, :polymorphic_belongs_to
     should have_imeths :has_one, :has_many
 
@@ -25,10 +26,10 @@ module MR::Model::Associations
       assert_includes MR::Model::Configuration, subject.included_modules
     end
 
-    should "add an associations option to the configuration" do
-      assert_respond_to :associations, subject.configuration
-      associations = subject.configuration.associations
+    should "return an instance of a AssociationSet using `associations`" do
+      associations = subject.associations
       assert_instance_of MR::Model::AssociationSet, associations
+      assert_same associations, subject.associations
     end
 
     should "add accessors methods for a belongs to association using `belongs_to`" do

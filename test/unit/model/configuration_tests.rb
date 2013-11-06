@@ -15,15 +15,10 @@ module MR::Model::Configuration
     end
     subject{ @model_class }
 
-    should have_imeths :configuration, :record_class
-
-    should "include NsOptions" do
-      assert_includes NsOptions, subject.included_modules
-    end
+    should have_imeths :record_class
 
     should "allow reading and writing it's record class with `record_class`" do
       subject.record_class TestRecord
-      assert_equal TestRecord, subject.configuration.record_class
       assert_equal TestRecord, subject.record_class
     end
 
@@ -54,9 +49,6 @@ module MR::Model::Configuration
         def write_record(record)
           set_record(record)
         end
-
-        public :configuration
-
       end
       @record = TestRecord.new
       @model  = @model_class.new
@@ -79,33 +71,12 @@ module MR::Model::Configuration
       assert_equal @model, @record.model
     end
 
-    should "return the class's configuration with `configuration`" do
-      assert_same @model_class.configuration, subject.configuration
-    end
-
     should "raise a no record error if a record hasn't been set" do
       assert_raises(MR::Model::NoRecordError){ subject.read_record }
     end
 
     should "raise an invalid record error when setting record without an MR::Record" do
       assert_raises(MR::Model::InvalidRecordError){ subject.write_record('fake') }
-    end
-
-  end
-
-  class ConfigurationTests < UnitTests
-    include NsOptions::AssertMacros
-
-    desc "configuration"
-    setup do
-      @configuration = @model_class.configuration
-    end
-    subject{ @configuration }
-
-    should have_option :record_class
-
-    should "be a NsOptions::Namespace" do
-      assert_instance_of NsOptions::Namespace, subject
     end
 
   end
