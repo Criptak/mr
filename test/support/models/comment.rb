@@ -11,6 +11,6 @@ class Comment
   field_accessor :favorite, :message, :parent_type
 
   polymorphic_belongs_to :parent
-  belongs_to :user, 'User'
+  belongs_to :user
 
 end

@@ -52,7 +52,6 @@ end
 
 class Area
   include MR::Model
-  include MR::Model::Associations
   record_class AreaRecord
   has_one :manager_user
   has_many :users
@@ -60,7 +59,6 @@ end
 
 class User
   include MR::Model
-  include MR::Model::Associations
   record_class UserRecord
   polymorphic_belongs_to :parent
   belongs_to :area

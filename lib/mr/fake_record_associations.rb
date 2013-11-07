@@ -134,7 +134,12 @@ module MR::FakeRecord
     end
 
     def fake_record_class
-      @record ? @record.send(@foreign_type).constantize : super
+      if @record
+        class_name = @record.send(@foreign_type)
+        class_name.constantize if class_name
+      else
+        super
+      end
     end
     alias :klass :fake_record_class
 

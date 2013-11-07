@@ -13,10 +13,6 @@ module Bench
       @logger.puts "Benchmarking MR"
       benchmark = Benchmark.measure do
         require 'mr'
-        require 'mr/model/configuration'
-        require 'mr/model/fields'
-        require 'mr/model/associations'
-        require 'mr/model/persistence'
         require 'bench/setup_activerecord'
         profile_model_configuration
         profile_model_initialize
@@ -39,7 +35,7 @@ module Bench
     def profile_model_configuration
       @logger.puts "benchmarking MR::Model configuration"
       model_class = Class.new do
-        include MR::Model::Configuration
+        include MR::Model
         record_class AreaRecord
       end
 
@@ -104,7 +100,7 @@ module Bench
     def profile_model_fields
       @logger.puts "benchmarking MR::Model fields"
       model_class = Class.new do
-        include MR::Model::Fields
+        include MR::Model
       end
 
       profile("adding readers") do |n|
@@ -118,10 +114,9 @@ module Bench
       end
 
       model_class = Class.new do
-        include MR::Model::Fields
+        include MR::Model
         record_class AreaRecord
         field_accessor :name, :active, :description
-        def initialize; set_record record_class.new; end
       end
       model = model_class.new.tap do |m|
         m.name        = 'Name'
@@ -150,11 +145,11 @@ module Bench
     def profile_model_associations
       @logger.puts "benchmarking MR::Model associations"
       area_model_class = Class.new do
-        include MR::Model::Associations
+        include MR::Model
         record_class AreaRecord
       end
       user_model_class = Class.new do
-        include MR::Model::Associations
+        include MR::Model
         record_class UserRecord
       end
 
@@ -210,14 +205,9 @@ module Bench
     def profile_model_persistence
       @logger.puts "benchmarking MR::Model persistence"
       model_class = Class.new do
-        include MR::Model::Fields
-        include MR::Model::Persistence
+        include MR::Model
         record_class AreaRecord
         field_accessor :name, :active, :description
-
-        def initialize(record = nil)
-          set_record(record || self.record_class.new)
-        end
       end
 
       profile("saving and destroying") do |n|

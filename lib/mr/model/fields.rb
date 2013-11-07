@@ -52,6 +52,7 @@ module MR::Model
   end
 
   class FieldSet
+    include Enumerable
 
     def initialize
       @fields = {}
@@ -73,6 +74,10 @@ module MR::Model
       @fields.values.inject({}) do |h, field|
         h.merge(field.name => field.read(record))
       end
+    end
+
+    def each(&block)
+      @fields.values.each(&block)
     end
 
     def batch_write(values, record)
