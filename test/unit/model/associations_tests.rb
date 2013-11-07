@@ -188,12 +188,13 @@ module MR::Model::Associations
     should "allow writing the record's association using `write`" do
       record  = @other_record
       yielded = nil
-      subject.write(@other_model, @test_model, @test_record) do |object|
+      result = subject.write(@other_model, @test_model, @test_record) do |object|
         yielded = object; record
       end
 
       assert_equal @other_model,  yielded
       assert_equal @other_record, @test_record.area
+      assert_equal @test_model.send(subject.name), result
     end
 
     should "allow writing `nil` values to the record's association using `write`" do
@@ -243,13 +244,14 @@ module MR::Model::Associations
     should "allow writing the record's association using `write`" do
       models  = [ @first_model, @second_model ]
       yielded = []
-      subject.write(models, @test_model, @test_record) do |object|
+      results = subject.write(models, @test_model, @test_record) do |object|
         yielded << object; object.send(:record)
       end
 
       assert_equal models,  yielded
       records = [ @first_record, @second_record ]
       assert_equal records, @test_record.comments
+      assert_equal @test_model.send(subject.name), results
     end
 
     should "allow writing a single value to the record's association using `write`" do
@@ -363,6 +365,8 @@ module MR::Model::Associations
     include MR::Model
     include MR::Model::Associations
     record_class TestRecord
+    belongs_to :area
+    has_many :comments
   end
 
 end
