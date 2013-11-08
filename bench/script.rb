@@ -16,6 +16,7 @@ module Bench
         require 'mr/model/configuration'
         require 'mr/model/fields'
         require 'mr/model/associations'
+        require 'mr/model/persistence'
         require 'bench/setup_activerecord'
         profile_model_configuration
         profile_model_initialize
@@ -209,9 +210,14 @@ module Bench
     def profile_model_persistence
       @logger.puts "benchmarking MR::Model persistence"
       model_class = Class.new do
-        include MR::Model
+        include MR::Model::Fields
+        include MR::Model::Persistence
         record_class AreaRecord
         field_accessor :name, :active, :description
+
+        def initialize(record = nil)
+          set_record(record || self.record_class.new)
+        end
       end
 
       profile("saving and destroying") do |n|
