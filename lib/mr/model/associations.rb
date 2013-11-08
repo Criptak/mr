@@ -8,35 +8,37 @@ module MR::Model
     def self.included(klass)
       klass.class_eval do
         include MR::Model::Configuration
-        configuration.option :associations, MR::Model::AssociationSet
-        configuration.associations = MR::Model::AssociationSet.new
         extend ClassMethods
       end
     end
 
     module ClassMethods
 
+      def associations
+        @associations ||= MR::Model::AssociationSet.new
+      end
+
       def belongs_to(*names)
         names.each do |name|
-          configuration.associations.add_belongs_to(name, self)
+          self.associations.add_belongs_to(name, self)
         end
       end
 
       def polymorphic_belongs_to(*names)
         names.each do |name|
-          configuration.associations.add_polymorphic_belongs_to(name, self)
+          self.associations.add_polymorphic_belongs_to(name, self)
         end
       end
 
       def has_one(*names)
         names.each do |name|
-          configuration.associations.add_has_one(name, self)
+          self.associations.add_has_one(name, self)
         end
       end
 
       def has_many(*names)
         names.each do |name|
-          configuration.associations.add_has_many(name, self)
+          self.associations.add_has_many(name, self)
         end
       end
 
@@ -110,9 +112,7 @@ module MR::Model
           begin
             association.write(value, self, record){ |m| m.record }
           rescue BadAssociationValueError => exception
-            error = ArgumentError.new(exception.message)
-            error.set_backtrace(caller)
-            raise error
+            raise ArgumentError, exception.message, caller
           end
         end
 

@@ -8,19 +8,17 @@ module MR::Model
     def self.included(klass)
       klass.class_eval do
         include MR::Model::Configuration
-        configuration.option :fields, MR::Model::FieldSet
-        configuration.fields = MR::Model::FieldSet.new
         extend ClassMethods
       end
     end
 
     def fields
-      configuration.fields.read_all(record)
+      self.class.fields.read_all(record)
     end
 
     def fields=(values)
       raise(ArgumentError, "must be a hash") unless values.kind_of?(Hash)
-      configuration.fields.batch_write(values, record)
+      self.class.fields.batch_write(values, record)
     rescue NoFieldError => exception
       exception.set_backtrace(caller)
       raise exception
@@ -28,21 +26,25 @@ module MR::Model
 
     module ClassMethods
 
+      def fields
+        @fields ||= MR::Model::FieldSet.new
+      end
+
       def field_reader(*names)
         names.each do |name|
-          configuration.fields.add_reader(name, self)
+          self.fields.add_reader(name, self)
         end
       end
 
       def field_writer(*names)
         names.each do |name|
-          configuration.fields.add_writer(name, self)
+          self.fields.add_writer(name, self)
         end
       end
 
       def field_accessor(*names)
-        field_reader *names
-        field_writer *names
+        field_reader(*names)
+        field_writer(*names)
       end
 
     end
@@ -60,7 +62,7 @@ module MR::Model
     end
 
     def find(name)
-      @fields[name.to_s] || raise(NoFieldError.new(name))
+      @fields[name.to_s] || raise(NoFieldError, "the '#{name}' field doesn't exist")
     end
 
     def get(name)
@@ -69,7 +71,7 @@ module MR::Model
 
     def read_all(record)
       @fields.values.inject({}) do |h, field|
-        h.merge({ field.name => field.read(record) })
+        h.merge(field.name => field.read(record))
       end
     end
 
@@ -146,10 +148,6 @@ module MR::Model
 
   end
 
-  class NoFieldError < RuntimeError
-    def initialize(field_name)
-      super "the '#{field_name}' field doesn't exist"
-    end
-  end
+  NoFieldError = Class.new(RuntimeError)
 
 end
