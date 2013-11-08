@@ -143,8 +143,9 @@ module MR::Model
 
     def write(value, model, record, &block)
       raise BadAssociationValueError.new(value) if value && !value.kind_of?(MR::Model)
-      association_record = model.instance_exec(value, &block) if value
-      record.send(@association_writer_name, association_record)
+      associated_record = model.instance_exec(value, &block) if value
+      record.send(@association_writer_name, associated_record)
+      value
     end
   end
 
@@ -161,6 +162,7 @@ module MR::Model
         model.instance_exec(value, &block)
       end
       record.send(@association_writer_name, associated_records)
+      values
     end
   end
 
