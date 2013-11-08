@@ -1,0 +1,5 @@
+MR::ReadModel
+-------------
+Querying
+  query                                  |    5651.37 ms |     673.76 MB |
+Total                                    |       7.35 s  |     236.92 MB |
