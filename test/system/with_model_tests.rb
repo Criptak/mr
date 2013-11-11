@@ -4,7 +4,6 @@ require 'mr'
 require 'test/support/setup_test_db'
 require 'test/support/models/area'
 require 'test/support/models/comment'
-require 'test/support/models/custom_user'
 require 'test/support/models/user'
 require 'test/support/models/user_record'
 
@@ -53,24 +52,25 @@ class WithModelTests < Assert::Context
     assert_equal true,                   record.active
 
     expected = {
-      :id         => nil,
-      :name       => 'Joe Test',
-      :email      => 'joe.test@example.com',
-      :active     => true,
-      :area_id    => nil,
-      :created_at => nil,
-      :updated_at => nil
+      'id'         => nil,
+      'name'       => 'Joe Test',
+      'email'      => 'joe.test@example.com',
+      'active'     => true,
+      'area_id'    => nil,
+      'created_at' => nil,
+      'updated_at' => nil
     }
     assert_equal expected, subject.fields
   end
 
   should "be able to save and destroy the model" do
     assert_nothing_raised do
-      subject.save({
+      subject.fields = {
         :name   => 'Joe Test',
         :email  => 'joe.test@example.com',
         :active => true
-      })
+      }
+      subject.save
     end
     assert_not subject.destroyed?
     assert UserRecord.exists?(subject.id)
@@ -299,21 +299,6 @@ class InvalidTests < WithModelTests
     subject.valid?
 
     assert_equal [ "can't be blank" ], subject.errors[:name]
-  end
-
-end
-
-class SuperFieldAndAssociationTests < WithModelTests
-  desc "when overwriting field or association methods defined by model"
-  setup do
-    @user = CustomUser.new
-  end
-
-  should "allow supering to the original method defined by MR::Model" do
-    assert_not_nil subject.created_at
-    area = subject.area
-    assert_instance_of Area, area
-    assert area.new?
   end
 
 end

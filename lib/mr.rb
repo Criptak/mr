@@ -8,10 +8,4 @@ require 'mr/record'
 
 module MR
 
-  class InvalidRecordError < RuntimeError
-    def initialize(record)
-      super "The passed record is not a kind of MR::Record: #{record.inspect}"
-    end
-  end
-
 end

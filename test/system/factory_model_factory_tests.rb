@@ -68,15 +68,41 @@ class MR::Factory::ModelFactory
     end
 
     should "allow applying hash args to an associated model with #apply_args" do
-      user = User.new.tap{ |u| u.area = Area.new }
-      subject.apply_args(user, :area => { :name => 'Test' })
+      user = User.new.tap do |u|
+        u.area = Area.new
+        u.favorite_comment = Comment.new
+      end
+      subject.apply_args(user, {
+        :area => { :name => 'Test' },
+        :favorite_comment => { :message => 'test' }
+      })
       assert_equal 'Test', user.area.name
+      assert_equal 'test', user.favorite_comment.message
+
+      comment = Comment.new.tap{ |c| c.parent = User.new }
+      subject.apply_args(comment, :parent => { :name => 'Test' })
+      assert_equal 'Test', comment.parent.name
     end
 
     should "build and apply args to an associated model with #apply_args" do
       user = User.new
-      subject.apply_args(user, :area => { :name => 'Test' })
+      subject.apply_args(user, {
+        :area => { :name => 'Test' },
+        :favorite_comment => { :message => 'test' }
+      })
       assert_equal 'Test', user.area.name
+      assert_equal 'test', user.favorite_comment.message
+
+      comment = Comment.new.tap{ |c| c.parent_type = 'UserRecord' }
+      subject.apply_args(comment, :parent => { :name => 'Test' })
+      assert_equal 'Test', comment.parent.name
+    end
+
+    should "raise an exception when building a polymorphic model with #apply_args" do
+      comment = Comment.new
+      assert_raises(NoRecordClassError) do
+        subject.apply_args(comment, :parent => { :name => 'Test' })
+      end
     end
 
     should "build an instance of the model with it's fields set, " \
@@ -159,6 +185,48 @@ class MR::Factory::ModelFactory
       assert_instance_of DateTime, user.created_at
       assert_instance_of DateTime, user.updated_at
       assert_equal MR::Factory.boolean, user.active
+    end
+
+    should "allow applying hash args to an associated model with #apply_args" do
+      user = User.new(FakeUserRecord.new).tap do |u|
+        u.area = Area.new(FakeAreaRecord.new)
+        u.favorite_comment = Comment.new(FakeCommentRecord.new)
+      end
+      subject.apply_args(user, {
+        :area => { :name => 'Test' },
+        :favorite_comment => { :message => 'test' }
+      })
+      assert_equal 'Test', user.area.name
+      assert_equal 'test', user.favorite_comment.message
+
+      comment = Comment.new(FakeCommentRecord.new).tap do |c|
+        c.parent = User.new(FakeUserRecord.new)
+      end
+      subject.apply_args(comment, :parent => { :name => 'Test' })
+      assert_equal 'Test', comment.parent.name
+    end
+
+    should "build and apply args to an associated model with #apply_args" do
+      user = User.new(FakeUserRecord.new)
+      subject.apply_args(user, {
+        :area => { :name => 'Test' },
+        :favorite_comment => { :message => 'test' }
+      })
+      assert_equal 'Test', user.area.name
+      assert_equal 'test', user.favorite_comment.message
+
+      comment = Comment.new(FakeCommentRecord.new).tap do |c|
+        c.parent_type = 'FakeUserRecord'
+      end
+      subject.apply_args(comment, :parent => { :name => 'Test' })
+      assert_equal 'Test', comment.parent.name
+    end
+
+    should "raise an exception when building a polymorphic model with #apply_args" do
+      comment = Comment.new(FakeCommentRecord.new)
+      assert_raises(NoRecordClassError) do
+        subject.apply_args(comment, :parent => { :name => 'Test' })
+      end
     end
 
   end
