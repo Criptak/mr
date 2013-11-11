@@ -13,6 +13,10 @@ module MR::Record
     @model ||= self.class.model_class.new(self)
   end
 
+  def model_class
+    self.class.model_class
+  end
+
   module ClassMethods
 
     attr_accessor :model_class

@@ -63,8 +63,12 @@ module MR::FakeRecord
     !self.id
   end
 
+  def errors
+    @errors ||= ErrorSet.new
+  end
+
   def valid?
-    true
+    self.errors.empty?
   end
 
   def destroyed?
@@ -122,6 +126,10 @@ module MR::FakeRecord
     end
     alias :reflect_on_all_associations :associations
 
+    def reflect_on_association(name)
+      self.associations.detect{ |a| a.name.to_s == name.to_s }
+    end
+
     def belongs_to(name, fake_record_class_name, options = nil)
       options ||= {}
       options[:class_name] = fake_record_class_name
@@ -168,6 +176,23 @@ module MR::FakeRecord
 
     def <=>(other)
       self.name <=> other.name
+    end
+  end
+
+  class ErrorSet
+    attr_reader :messages
+
+    def initialize
+      @messages = {}
+    end
+
+    def add(attribute, message)
+      @messages[attribute.to_s] ||= []
+      @messages[attribute.to_s] << message
+    end
+
+    def empty?
+      @messages.empty?
     end
   end
 

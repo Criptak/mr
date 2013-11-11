@@ -53,15 +53,15 @@ end
 class Area
   include MR::Model
   record_class AreaRecord
-  has_one :manager_user, 'User'
-  has_many :users, 'User'
+  has_one :manager_user
+  has_many :users
 end
 
 class User
   include MR::Model
   record_class UserRecord
   polymorphic_belongs_to :parent
-  belongs_to :area, 'Area'
+  belongs_to :area
 end
 
 class UserWithAreaData
