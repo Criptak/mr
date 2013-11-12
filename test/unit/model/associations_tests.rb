@@ -88,14 +88,6 @@ module MR::Model::Associations
       assert_includes second_record, @record.comments
     end
 
-    should "raise a no record association error when " \
-           "the record doesn't define a matching association" do
-      assert_raises(MR::Model::NoRecordAssociationError){ subject.belongs_to :test }
-      assert_raises(MR::Model::NoRecordAssociationError){ subject.polymorphic_belongs_to :test }
-      assert_raises(MR::Model::NoRecordAssociationError){ subject.has_one :test }
-      assert_raises(MR::Model::NoRecordAssociationError){ subject.has_many :test }
-    end
-
   end
 
   class InstanceTests < UnitTests
@@ -137,7 +129,7 @@ module MR::Model::Associations
   class AssociationTests < UnitTests
     desc "Association"
     setup do
-      @association = MR::Model::Association.new(:test, TestRecord)
+      @association = MR::Model::Association.new(:test)
     end
     subject{ @association }
 
@@ -150,11 +142,6 @@ module MR::Model::Associations
       assert_equal 'test=', subject.writer_method_name
     end
 
-    should "raise a NotImplementedError using `type` and `type_display`" do
-      assert_raises(NotImplementedError){ subject.type }
-      assert_raises(NotImplementedError){ subject.type_display }
-    end
-
   end
 
   class OneToOneAssociationTests < UnitTests
@@ -165,7 +152,7 @@ module MR::Model::Associations
       @other_record = TestRecord.new.tap{ |r| r.save! }
       @other_model  = TestModel.new(@other_record)
 
-      @association  = MR::Model::OneToOneAssociation.new(:area, TestRecord)
+      @association  = MR::Model::OneToOneAssociation.new(:area)
     end
     subject{ @association }
 
@@ -220,7 +207,7 @@ module MR::Model::Associations
       @second_record = TestRecord.new.tap{ |r| r.save! }
       @second_model  = TestModel.new(@second_record)
 
-      @association   = MR::Model::OneToManyAssociation.new(:comments, TestRecord)
+      @association   = MR::Model::OneToManyAssociation.new(:comments)
     end
     subject{ @association }
 
@@ -277,19 +264,12 @@ module MR::Model::Associations
   class BelongsToAssociationTests < UnitTests
     desc "BelongsToAssociation"
     setup do
-      @association = MR::Model::BelongsToAssociation.new(:test, TestRecord)
+      @association = MR::Model::BelongsToAssociation.new(:test)
     end
     subject{ @association }
 
-    should have_imeths :type, :type_display
-
     should "be a kind of OneToOneAssociation" do
       assert_kind_of MR::Model::OneToOneAssociation, subject
-    end
-
-    should "know it's `type` and `type_display`" do
-      assert_equal :belongs_to,  subject.type
-      assert_equal 'belongs to', subject.type_display
     end
 
   end
@@ -297,19 +277,12 @@ module MR::Model::Associations
   class HasOneAssociationTests < UnitTests
     desc "HasOneAssociation"
     setup do
-      @association = MR::Model::HasOneAssociation.new(:test, TestRecord)
+      @association = MR::Model::HasOneAssociation.new(:test)
     end
     subject{ @association }
 
-    should have_imeths :type, :type_display
-
     should "be a kind of OneToOneAssociation" do
       assert_kind_of MR::Model::OneToOneAssociation, subject
-    end
-
-    should "know it's `type` and `type_display`" do
-      assert_equal :has_one,  subject.type
-      assert_equal 'has one', subject.type_display
     end
 
   end
@@ -317,19 +290,12 @@ module MR::Model::Associations
   class HasManyAssociationTests < UnitTests
     desc "HasManyAssociation"
     setup do
-      @association = MR::Model::HasManyAssociation.new(:test, TestRecord)
+      @association = MR::Model::HasManyAssociation.new(:test)
     end
     subject{ @association }
 
-    should have_imeths :type, :type_display
-
     should "be a kind of OneToManyAssociation" do
       assert_kind_of MR::Model::OneToManyAssociation, subject
-    end
-
-    should "know it's `type` and `type_display`" do
-      assert_equal :has_many,  subject.type
-      assert_equal 'has many', subject.type_display
     end
 
   end
@@ -337,7 +303,7 @@ module MR::Model::Associations
   class PolymorphicBelongsToAssociationTests < UnitTests
     desc "PolymorphicBelongsToAssociation"
     setup do
-      @association = MR::Model::PolymorphicBelongsToAssociation.new(:test, TestRecord)
+      @association = MR::Model::PolymorphicBelongsToAssociation.new(:test)
     end
     subject{ @association }
 
