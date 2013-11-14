@@ -5,60 +5,53 @@ require 'test/support/setup_test_db'
 require 'test/support/models/area'
 require 'test/support/models/comment'
 require 'test/support/models/user'
-require 'test/support/models/user_record'
 
 class WithModelTests < Assert::Context
   desc "MR with an ActiveRecord model"
   setup do
-    @user = User.new({ :name => "Joe Test" })
+    @user = User.new(:name => "Joe Test")
   end
   teardown do
-    @user.destroy rescue nil
+    @user.destroy
   end
   subject{ @user }
 
   should "allow accessing the record's attributes" do
     assert_nothing_raised do
       subject.name   = 'Joe Test'
-      subject.email  = 'joe.test@example.com'
-      subject.active = true
+      subject.number = 12345
     end
 
     # check that the attributes were set
     record = subject.send(:record)
-    assert_equal 'Joe Test',             record.name
-    assert_equal 'joe.test@example.com', record.email
-    assert_equal true,                   record.active
+    assert_equal 'Joe Test', record.name
+    assert_equal 12345,      record.number
 
     # check that we can read the attributes
-    assert_equal 'Joe Test',             subject.name
-    assert_equal 'joe.test@example.com', subject.email
-    assert_equal true,                   subject.active
+    assert_equal 'Joe Test', subject.name
+    assert_equal 12345,      subject.number
   end
 
   should "allow mass setting and reading the record's attributes" do
     assert_nothing_raised do
       subject.fields = {
         :name   => 'Joe Test',
-        :email  => 'joe.test@example.com',
-        :active => true
+        :number => 12345,
       }
     end
 
     # check that the attributes were set
     record = subject.send(:record)
-    assert_equal 'Joe Test',             record.name
-    assert_equal 'joe.test@example.com', record.email
-    assert_equal true,                   record.active
+    assert_equal 'Joe Test', record.name
+    assert_equal 12345,      record.number
 
     expected = {
       'id'         => nil,
       'name'       => 'Joe Test',
-      'email'      => 'joe.test@example.com',
-      'active'     => true,
+      'number'     => 12345,
+      'salary'     => nil,
+      'started_on' => nil,
       'area_id'    => nil,
-      'created_at' => nil,
-      'updated_at' => nil
     }
     assert_equal expected, subject.fields
   end
@@ -67,8 +60,7 @@ class WithModelTests < Assert::Context
     assert_nothing_raised do
       subject.fields = {
         :name   => 'Joe Test',
-        :email  => 'joe.test@example.com',
-        :active => true
+        :number => 12345,
       }
       subject.save
     end
@@ -107,7 +99,7 @@ end
 class BelongsToTests < WithModelTests
   desc "using a belongs to association"
   setup do
-    @area = Area.new({ :name => 'Alpha' })
+    @area = Area.new(:name => 'Alpha')
     @area.save
   end
   teardown do
@@ -116,11 +108,9 @@ class BelongsToTests < WithModelTests
 
   should "be able to read it and write to it" do
     assert_nil subject.area
-
     assert_nothing_raised do
       subject.area = @area
     end
-
     assert_equal @area,    subject.area
     assert_equal @area.id, subject.area_id
   end
@@ -131,7 +121,7 @@ class HasManyTests < WithModelTests
   desc "using a has many association"
   setup do
     @user.save
-    @comment = Comment.new({ :message => "Test", :user => @user })
+    @comment = Comment.new(:body => "Test", :parent => @user)
   end
   teardown do
     @comment.destroy
@@ -140,7 +130,6 @@ class HasManyTests < WithModelTests
 
   should "be able to read it" do
     @comment.save
-
     assert_equal [ @comment ], subject.comments
   end
 
@@ -150,17 +139,16 @@ class HasOneTests < WithModelTests
   desc "using a has one association"
   setup do
     @user.save
-    @comment = Comment.new({ :message => "Test", :favorite => true, :user => @user })
+    @image = Image.new(:file_path => "test", :user => @user)
   end
   teardown do
-    @comment.destroy
+    @image.destroy
     @user.destroy
   end
 
   should "be able to read it" do
-    @comment.save
-
-    assert_equal @comment, subject.favorite_comment
+    @image.save
+    assert_equal @image, subject.image
   end
 
 end
@@ -171,7 +159,7 @@ class PolymorphicBelongsToTests < WithModelTests
     @user.save
     @area = Area.new(:name => 'Alpha')
     @area.save
-    @comment = Comment.new(:message => "Test")
+    @comment = Comment.new(:body => "Test")
   end
   teardown do
     @comment.destroy
@@ -204,9 +192,9 @@ class QueryTests < WithModelTests
   desc "using a MR::Query"
   setup do
     @users = [*(0..4)].map do |i|
-      User.new({ :name => "test #{i}" }).tap{|u| u.save }
+      User.new(:name => "test #{i}").tap{ |u| u.save }
     end
-    @query = User.all_of_em_query
+    @query = MR::Query.new(User, UserRecord.scoped)
   end
   teardown do
     @users.each(&:destroy)
@@ -280,8 +268,9 @@ end
 class InvalidTests < WithModelTests
   desc "when saving an invalid model"
   setup do
-    @user = User.new
+    @area = Area.new(ValidAreaRecord.new)
   end
+  subject{ @area }
 
   should "raise a InvalidModel exception with the ActiveRecord error messages" do
     exception = nil
@@ -297,7 +286,6 @@ class InvalidTests < WithModelTests
 
   should "return the ActiveRecord's error messages with errors" do
     subject.valid?
-
     assert_equal [ "can't be blank" ], subject.errors[:name]
   end
 

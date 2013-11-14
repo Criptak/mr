@@ -2,14 +2,12 @@ require 'assert'
 require 'mr/factory/record_factory'
 
 require 'test/support/setup_test_db'
-require 'test/support/models/comment_record'
-require 'test/support/models/fake_user_record'
+require 'test/support/models/comment'
 require 'test/support/models/user'
-require 'test/support/models/user_record'
 
 class MR::Factory::RecordFactory
 
-  class BaseTests < Assert::Context
+  class SystemTests < Assert::Context
     desc "MR::Factory::RecordFactory"
     setup do
       @factory = MR::Factory::RecordFactory.new(UserRecord)
@@ -65,11 +63,10 @@ class MR::Factory::RecordFactory
       user_record = subject.instance
       assert_instance_of UserRecord, user_record
       assert user_record.new_record?
-      assert_instance_of String,   user_record.name
-      assert_instance_of String,   user_record.email
-      assert_instance_of DateTime, user_record.created_at
-      assert_instance_of DateTime, user_record.updated_at
-      assert_equal MR::Factory.boolean, user_record.active
+      assert_kind_of String,     user_record.name
+      assert_kind_of Integer,    user_record.number
+      assert_kind_of BigDecimal, user_record.salary
+      assert_kind_of Date,       user_record.started_on
     end
 
     should "build an instance stack for the record with it's attributes set, " \
@@ -79,16 +76,15 @@ class MR::Factory::RecordFactory
       user_record = stack.record
       assert_instance_of UserRecord, user_record
       assert user_record.new_record?
-      assert_instance_of String,   user_record.name
-      assert_instance_of String,   user_record.email
-      assert_instance_of DateTime, user_record.created_at
-      assert_instance_of DateTime, user_record.updated_at
-      assert_equal MR::Factory.boolean, user_record.active
+      assert_kind_of String,     user_record.name
+      assert_kind_of Integer,    user_record.number
+      assert_kind_of BigDecimal, user_record.salary
+      assert_kind_of Date,       user_record.started_on
     end
 
   end
 
-  class FakeRecordTests < BaseTests
+  class FakeRecordTests < SystemTests
     desc "with a fake record"
     setup do
       @factory = MR::Factory::RecordFactory.new(FakeUserRecord)
@@ -136,11 +132,10 @@ class MR::Factory::RecordFactory
       user_record = subject.instance
       assert_instance_of FakeUserRecord, user_record
       assert user_record.new_record?
-      assert_instance_of String,   user_record.name
-      assert_instance_of String,   user_record.email
-      assert_instance_of DateTime, user_record.created_at
-      assert_instance_of DateTime, user_record.updated_at
-      assert_equal MR::Factory.boolean, user_record.active
+      assert_kind_of String,  user_record.name
+      assert_kind_of Integer, user_record.number
+      assert_kind_of Float,   user_record.salary
+      assert_kind_of Date,    user_record.started_on
     end
 
     should "build an instance stack for the record with it's attributes set, " \
@@ -150,23 +145,21 @@ class MR::Factory::RecordFactory
       user_record = stack.record
       assert_instance_of FakeUserRecord, user_record
       assert user_record.new_record?
-      assert_instance_of String,   user_record.name
-      assert_instance_of String,   user_record.email
-      assert_instance_of DateTime, user_record.created_at
-      assert_instance_of DateTime, user_record.updated_at
-      assert_equal MR::Factory.boolean, user_record.active
+      assert_kind_of String,  user_record.name
+      assert_kind_of Integer, user_record.number
+      assert_kind_of Float,   user_record.salary
+      assert_kind_of Date,    user_record.started_on
     end
 
   end
 
-  class WithDefaultArgsTests < BaseTests
+  class WithDefaultArgsTests < SystemTests
     desc "with default args"
     setup do
       @factory = MR::Factory::RecordFactory.new(UserRecord) do
         default_args({
           :name   => 'Test',
-          :email  => 'test@example.com',
-          :active => true
+          :number => 12345
         })
       end
     end
@@ -174,55 +167,49 @@ class MR::Factory::RecordFactory
     should "use the default args with #apply_args" do
       user_record = UserRecord.new
       subject.apply_args(user_record)
-      assert_equal 'Test',             user_record.name
-      assert_equal 'test@example.com', user_record.email
-      assert_equal true,               user_record.active
+      assert_equal 'Test', user_record.name
+      assert_equal 12345,  user_record.number
     end
 
     should "use the default args with #instance" do
       user_record = subject.instance
-      assert_equal 'Test',             user_record.name
-      assert_equal 'test@example.com', user_record.email
-      assert_equal true,               user_record.active
+      assert_equal 'Test', user_record.name
+      assert_equal 12345,  user_record.number
     end
 
     should "use the default args with #instance_stack" do
       stack = subject.instance_stack
       user_record = stack.record
-      assert_equal 'Test',             user_record.name
-      assert_equal 'test@example.com', user_record.email
-      assert_equal true,               user_record.active
+      assert_equal 'Test', user_record.name
+      assert_equal 12345,  user_record.number
     end
 
     should "allow overwriting the defaults by passing args to #apply_args" do
       user_record = UserRecord.new
       subject.apply_args(user_record, :name => 'Not Test')
-      assert_equal 'Not Test',         user_record.name
-      assert_equal 'test@example.com', user_record.email
-      assert_equal true,               user_record.active
+      assert_equal 'Not Test', user_record.name
+      assert_equal 12345,      user_record.number
     end
 
     should "allow overwriting the defaults by passing args to #instance" do
       user_record = subject.instance(:name => 'Not Test')
-      assert_equal 'Not Test',         user_record.name
-      assert_equal 'test@example.com', user_record.email
-      assert_equal true,               user_record.active
+      assert_equal 'Not Test', user_record.name
+      assert_equal 12345,      user_record.number
     end
 
     should "allow overwriting the defaults by passing args to #instance_stack" do
       stack = subject.instance_stack(:name => 'Not Test')
       user_record = stack.record
-      assert_equal 'Not Test',         user_record.name
-      assert_equal 'test@example.com', user_record.email
-      assert_equal true,               user_record.active
+      assert_equal 'Not Test', user_record.name
+      assert_equal 12345,      user_record.number
     end
 
   end
 
-  class DeepMergeTests < BaseTests
+  class DeepMergeTests < SystemTests
     desc "with deeply nested args"
     setup do
-      @factory = MR::Factory::RecordFactory.new(CommentRecord) do
+      @factory = MR::Factory::RecordFactory.new(ImageRecord) do
         default_args :user => { :name => 'Test' }
       end
     end
@@ -230,19 +217,19 @@ class MR::Factory::RecordFactory
     should "deeply merge the args preserving both the defaults and " \
            "what was passed when applying args" do
       comment_record = @factory.instance({
-        :user => { :email => 'test@example.com' }
+        :user => { :number => 12345 }
       })
       user_record = comment_record.user
-      assert_equal 'Test',             user_record.name
-      assert_equal 'test@example.com', user_record.email
+      assert_equal 'Test', user_record.name
+      assert_equal 12345,  user_record.number
     end
 
   end
 
-  class DupArgsTests < BaseTests
+  class DupArgsTests < SystemTests
     desc "using a factory multiple times"
     setup do
-      @factory = MR::Factory::RecordFactory.new(CommentRecord) do
+      @factory = MR::Factory::RecordFactory.new(ImageRecord) do
         default_args :user => { :area => { :name => 'Test' } }
       end
     end

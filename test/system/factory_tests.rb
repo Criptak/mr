@@ -3,7 +3,6 @@ require 'mr/factory'
 
 require 'test/support/setup_test_db'
 require 'test/support/models/user'
-require 'test/support/models/user_record'
 
 module MR::Factory
 

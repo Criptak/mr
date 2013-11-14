@@ -2,7 +2,8 @@ require 'assert'
 require 'mr/read_model'
 
 require 'mr/factory'
-require 'test/support/models/user_record'
+require 'test/support/models/user'
+require 'test/support/read_models/user_with_area_data'
 
 module MR::ReadModel
 
@@ -61,21 +62,6 @@ module MR::ReadModel
       assert_equal @user.name,      subject.user_name
       assert_equal @user.area.id,   subject.area_id
       assert_equal @user.area.name, subject.area_name
-    end
-
-  end
-
-  class UserWithAreaData
-    include MR::ReadModel
-
-    field :user_id,   :integer, 'users.id'
-    field :user_name, :string,  'users.name'
-    field :area_id,   :integer, 'areas.id'
-    field :area_name, :string,  'areas.name'
-    from UserRecord
-    joins :area
-    where do |area_id|
-      [ "areas.id = ?", area_id ]
     end
 
   end
