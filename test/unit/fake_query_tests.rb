@@ -1,17 +1,18 @@
 require 'assert'
 require 'mr/fake_query'
 
-require 'test/support/models/test_model'
+require 'mr/fake_record'
+require 'mr/model'
 
 class MR::FakeQuery
 
-  class BaseTests < Assert::Context
+  class UnitTests < Assert::Context
     desc "MR::FakeQuery"
     setup do
       @models = [
-        TestModel.new.tap{|m| m.save },
-        TestModel.new.tap{|m| m.save },
-        TestModel.new.tap{|m| m.save }
+        FakeTestModel.new.tap{ |m| m.save },
+        FakeTestModel.new.tap{ |m| m.save },
+        FakeTestModel.new.tap{ |m| m.save }
       ]
       @query = MR::FakeQuery.new(@models)
     end
@@ -30,7 +31,7 @@ class MR::FakeQuery
 
   end
 
-  class FakePagedQueryTests < BaseTests
+  class FakePagedQueryTests < UnitTests
     desc "MR::FakePagedQuery"
     setup do
       @paged_query = MR::FakePagedQuery.new(@query, 1, 1)
@@ -56,6 +57,15 @@ class MR::FakeQuery
       assert_equal 3, subject.total_count
     end
 
+  end
+
+  class FakeTestRecord
+    include MR::FakeRecord
+  end
+
+  class FakeTestModel
+    include MR::Model
+    record_class FakeTestRecord
   end
 
 end

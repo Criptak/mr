@@ -1,8 +1,9 @@
 require 'assert'
 require 'mr/query'
 
-require 'test/support/models/fake_test_record'
-require 'test/support/models/test_model'
+require 'mr/fake_record'
+require 'mr/model'
+require 'test/support/active_record_relation_spy'
 
 class MR::Query
 
@@ -11,10 +12,10 @@ class MR::Query
     setup do
       @relation = FakeTestRecord.scoped
       @relation.results = [
-        FakeTestRecord.new({ :id => 1 }),
-        FakeTestRecord.new({ :id => 2 })
+        FakeTestRecord.new(:id => 1),
+        FakeTestRecord.new(:id => 2)
       ]
-      @query = MR::Query.new(TestModel, @relation)
+      @query = MR::Query.new(FakeTestModel, @relation)
     end
     subject{ @query }
 
@@ -27,7 +28,7 @@ class MR::Query
 
     should "call `all` on the relation and build model instances with #models" do
       models = subject.models
-      expected = @relation.results.map{|r| TestModel.new(r) }
+      expected = @relation.results.map{ |r| FakeTestModel.new(r) }
 
       assert_equal expected, models
     end
@@ -57,7 +58,7 @@ class MR::Query
 
     should "return the first page of models with #models" do
       models = subject.models
-      expected = @relation.results[0, 1].map{|r| TestModel.new(r) }
+      expected = @relation.results[0, 1].map{ |r| FakeTestModel.new(r) }
 
       assert_equal expected, models
     end
@@ -103,6 +104,19 @@ class MR::Query
       assert_equal 7,  @relation.limit_value
     end
 
+  end
+
+  class FakeTestRecord
+    include MR::FakeRecord
+
+    def self.scoped
+      ActiveRecordRelationSpy.new
+    end
+  end
+
+  class FakeTestModel
+    include MR::Model
+    record_class FakeTestRecord
   end
 
 end

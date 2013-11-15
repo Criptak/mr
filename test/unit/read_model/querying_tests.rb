@@ -32,8 +32,8 @@ module MR::ReadModel::Querying
     end
 
     should "set the relation's record class using `from`" do
-      subject.from TestRecord
-      assert_equal TestRecord, subject.relation.record_class
+      subject.from FakeTestRecord
+      assert_equal FakeTestRecord, subject.relation.record_class
     end
 
     should "raise an ArgumentError when passing `from` a non MR::Record" do
@@ -82,12 +82,12 @@ module MR::ReadModel::Querying
   class WithFromRecordClassTests < UnitTests
     setup do
       @ar_relation_spy = ActiveRecordRelationSpy.new
-      TestRecord.stubs(:scoped).returns(@ar_relation_spy)
-      @read_model_class.from TestRecord
+      FakeTestRecord.stubs(:scoped).returns(@ar_relation_spy)
+      @read_model_class.from FakeTestRecord
       @relation = @read_model_class.relation
     end
     teardown do
-      TestRecord.unstub(:scoped)
+      FakeTestRecord.unstub(:scoped)
     end
 
     should "apply a static select to the relation with `select`" do
@@ -236,7 +236,7 @@ module MR::ReadModel::Querying
     desc "Relation"
     setup do
       @relation = MR::ReadModel::Relation.new
-      @relation.record_class = TestRecord
+      @relation.record_class = FakeTestRecord
     end
     subject{ @relation }
 
@@ -250,7 +250,7 @@ module MR::ReadModel::Querying
     end
 
     should "return an ActiveRecord relation from the record class using `build`" do
-      assert_equal TestRecord.scoped, subject.build
+      assert_equal FakeTestRecord.scoped, subject.build
     end
 
     should "return a new relation everytime `build` is called" do
@@ -285,7 +285,7 @@ module MR::ReadModel::Querying
   class StaticQueryExpressionTests < UnitTests
     desc "QueryExpression::Static"
     setup do
-      @ar_relation = TestRecord.scoped
+      @ar_relation = FakeTestRecord.scoped
       @expression  = MR::ReadModel::QueryExpression::Static.new(:select, 'column')
     end
     subject{ @expression }
@@ -302,7 +302,7 @@ module MR::ReadModel::Querying
   class DynamicQueryExpressionTests < UnitTests
     desc "QueryExpression::Dynamic"
     setup do
-      @ar_relation = TestRecord.scoped
+      @ar_relation = FakeTestRecord.scoped
       block = proc{ 'column' }
       @expression  = MR::ReadModel::QueryExpression::Dynamic.new(:select, &block)
     end
@@ -333,7 +333,7 @@ module MR::ReadModel::Querying
 
   end
 
-  class TestRecord
+  class FakeTestRecord
     include MR::FakeRecord
 
     def self.scoped

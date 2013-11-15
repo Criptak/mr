@@ -18,8 +18,8 @@ module MR::Model::Configuration
     should have_imeths :record_class
 
     should "allow reading and writing it's record class with `record_class`" do
-      subject.record_class TestRecord
-      assert_equal TestRecord, subject.record_class
+      subject.record_class FakeTestRecord
+      assert_equal FakeTestRecord, subject.record_class
     end
 
     should "raise a no record class error if a record class hasn't been set" do
@@ -40,7 +40,7 @@ module MR::Model::Configuration
     desc "for a model instance"
     setup do
       @model_class.class_eval do
-        record_class TestRecord
+        record_class FakeTestRecord
 
         def read_record
           record
@@ -50,7 +50,7 @@ module MR::Model::Configuration
           set_record(record)
         end
       end
-      @record = TestRecord.new
+      @record = FakeTestRecord.new
       @model  = @model_class.new
     end
     subject{ @model }
@@ -81,7 +81,7 @@ module MR::Model::Configuration
 
   end
 
-  class TestRecord
+  class FakeTestRecord
     include MR::FakeRecord
   end
 

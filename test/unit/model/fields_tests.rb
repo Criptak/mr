@@ -12,7 +12,7 @@ module MR::Model::Fields
         include MR::Model::Fields
         def initialize(record); set_record record; end
       end
-      @record = TestRecord.new
+      @record = FakeTestRecord.new
     end
     subject{ @model_class }
 
@@ -233,7 +233,7 @@ module MR::Model::Fields
 
   end
 
-  class TestRecord
+  class FakeTestRecord
     include MR::FakeRecord
     attribute :name,        :string
     attribute :active,      :boolean
