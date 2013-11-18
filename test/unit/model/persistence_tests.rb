@@ -10,7 +10,7 @@ module MR::Model::Persistence
     setup do
       @model_class = Class.new do
         include MR::Model::Persistence
-        record_class TestRecord
+        record_class FakeTestRecord
         def initialize(record); set_record record; end
       end
     end
@@ -29,7 +29,7 @@ module MR::Model::Persistence
   class InstanceTests < UnitTests
     desc "for a model instance"
     setup do
-      @record = TestRecord.new
+      @record = FakeTestRecord.new
       @model = @model_class.new(@record)
     end
     subject{ @model }
@@ -100,7 +100,7 @@ module MR::Model::Persistence
 
   end
 
-  class TestRecord
+  class FakeTestRecord
     include MR::FakeRecord
   end
 

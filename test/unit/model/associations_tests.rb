@@ -11,10 +11,10 @@ module MR::Model::Associations
     setup do
       @model_class = Class.new do
         include MR::Model::Associations
-        record_class RecordWithAssociations
+        record_class FakeRecordWithAssociations
         def initialize(record); set_record record; end
       end
-      @record = RecordWithAssociations.new
+      @record = FakeRecordWithAssociations.new
     end
     subject{ @model_class }
 
@@ -35,13 +35,13 @@ module MR::Model::Associations
     should "add accessors methods for a belongs to association using `belongs_to`" do
       subject.belongs_to :area
       model = subject.new(@record)
-      new_record = TestRecord.new
-      new_model  = TestModel.new(new_record)
+      new_record = FakeTestRecord.new
+      new_model  = FakeTestModel.new(new_record)
 
       assert_respond_to :area, model
       assert_respond_to :area=, model
       model.area = new_model
-      assert_instance_of TestModel, model.area
+      assert_instance_of FakeTestModel, model.area
       assert_equal new_record, @record.area
     end
 
@@ -49,36 +49,36 @@ module MR::Model::Associations
            "using `polymorphic_belongs_to`" do
       subject.polymorphic_belongs_to :parent
       model = subject.new(@record)
-      new_record = TestRecord.new
-      new_model  = TestModel.new(new_record)
+      new_record = FakeTestRecord.new
+      new_model  = FakeTestModel.new(new_record)
 
       assert_respond_to :parent, model
       assert_respond_to :parent=, model
       model.parent = new_model
-      assert_instance_of TestModel, model.parent
+      assert_instance_of FakeTestModel, model.parent
       assert_equal new_record, @record.parent
     end
 
     should "add accessors methods for a has one association using `has_one`" do
       subject.has_one :image
       model = subject.new(@record)
-      new_record = TestRecord.new
-      new_model  = TestModel.new(new_record)
+      new_record = FakeTestRecord.new
+      new_model  = FakeTestModel.new(new_record)
 
       assert_respond_to :image, model
       assert_respond_to :image=, model
       model.image = new_model
-      assert_instance_of TestModel, model.image
+      assert_instance_of FakeTestModel, model.image
       assert_equal new_record, @record.image
     end
 
     should "add accessors methods for a has many association using `has_many`" do
       subject.has_many :comments
       model = subject.new(@record)
-      first_record  = TestRecord.new
-      first_model   = TestModel.new(first_record)
-      second_record = TestRecord.new
-      second_model  = TestModel.new(second_record)
+      first_record  = FakeTestRecord.new
+      first_model   = FakeTestModel.new(first_record)
+      second_record = FakeTestRecord.new
+      second_model  = FakeTestModel.new(second_record)
 
       assert_respond_to :comments, model
       assert_respond_to :comments=, model
@@ -147,10 +147,10 @@ module MR::Model::Associations
   class OneToOneAssociationTests < UnitTests
     desc "OneToOneAssociation"
     setup do
-      @test_record  = TestRecord.new.tap{ |r| r.save! }
-      @test_model   = TestModel.new(@test_record)
-      @other_record = TestRecord.new.tap{ |r| r.save! }
-      @other_model  = TestModel.new(@other_record)
+      @test_record  = FakeTestRecord.new.tap{ |r| r.save! }
+      @test_model   = FakeTestModel.new(@test_record)
+      @other_record = FakeTestRecord.new.tap{ |r| r.save! }
+      @other_model  = FakeTestModel.new(@other_record)
 
       @association  = MR::Model::OneToOneAssociation.new(:area)
     end
@@ -200,12 +200,12 @@ module MR::Model::Associations
   class OneToManyAssociationTests < UnitTests
     desc "OneToManyAssociation"
     setup do
-      @test_record   = TestRecord.new.tap{ |r| r.save! }
-      @test_model    = TestModel.new(@test_record)
-      @first_record  = TestRecord.new.tap{ |r| r.save! }
-      @first_model   = TestModel.new(@first_record)
-      @second_record = TestRecord.new.tap{ |r| r.save! }
-      @second_model  = TestModel.new(@second_record)
+      @test_record   = FakeTestRecord.new.tap{ |r| r.save! }
+      @test_model    = FakeTestModel.new(@test_record)
+      @first_record  = FakeTestRecord.new.tap{ |r| r.save! }
+      @first_model   = FakeTestModel.new(@first_record)
+      @second_record = FakeTestRecord.new.tap{ |r| r.save! }
+      @second_model  = FakeTestModel.new(@second_record)
 
       @association   = MR::Model::OneToManyAssociation.new(:comments)
     end
@@ -313,24 +313,23 @@ module MR::Model::Associations
 
   end
 
-  class RecordWithAssociations
+  class FakeRecordWithAssociations
     include MR::FakeRecord
-    belongs_to :area, 'MR::Model::Associations::RecordWithAssociations'
+    belongs_to :area, 'MR::Model::Associations::FakeRecordWithAssociations'
     polymorphic_belongs_to :parent
-    has_one :image, 'MR::Model::Associations::RecordWithAssociations'
-    has_many :comments, 'MR::Model::Associations::RecordWithAssociations'
+    has_one :image, 'MR::Model::Associations::FakeRecordWithAssociations'
+    has_many :comments, 'MR::Model::Associations::FakeRecordWithAssociations'
   end
 
-  class TestRecord
+  class FakeTestRecord
     include MR::FakeRecord
-    belongs_to :area, 'MR::Model::Associations::TestRecord'
-    has_many :comments, 'MR::Model::Associations::TestRecord'
+    belongs_to :area, 'MR::Model::Associations::FakeTestRecord'
+    has_many :comments, 'MR::Model::Associations::FakeTestRecord'
   end
 
-  class TestModel
+  class FakeTestModel
     include MR::Model
-    include MR::Model::Associations
-    record_class TestRecord
+    record_class FakeTestRecord
     belongs_to :area
     has_many :comments
   end

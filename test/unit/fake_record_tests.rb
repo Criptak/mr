@@ -1,8 +1,8 @@
 require 'assert'
 require 'mr/fake_record'
 
+require 'mr/model'
 require 'ns-options/assert_macros'
-require 'test/support/models/test_model'
 
 module MR::FakeRecord
 
@@ -133,8 +133,8 @@ module MR::FakeRecord
     end
 
     should "allow configuring a model class with #model_class" do
-      assert_nothing_raised{ @fake_record_class.model_class(TestModel) }
-      assert_equal TestModel, @fake_record_class.model_class
+      assert_nothing_raised{ @fake_record_class.model_class(FakeTestModel) }
+      assert_equal FakeTestModel, @fake_record_class.model_class
     end
 
     should "detect when it's attributes have changed" do
@@ -184,6 +184,10 @@ module MR::FakeRecord
       assert_equal true, attribute.primary
     end
 
+  end
+
+  class FakeTestModel
+    include MR::Model
   end
 
 end

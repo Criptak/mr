@@ -1,11 +1,11 @@
 require 'assert'
 require 'mr/fake_record_associations'
 
-require 'test/support/models/fake_test_record'
+require 'mr/fake_record'
 
 class MR::FakeRecord::Association
 
-  class BaseTests < Assert::Context
+  class UnitTests < Assert::Context
     desc "MR::FakeRecord::Association"
     setup do
       record_class = Class.new do
@@ -14,7 +14,7 @@ class MR::FakeRecord::Association
       end
       @record = record_class.new
       @association = MR::FakeRecord::Association.new(:user, {
-        :class_name => 'FakeTestRecord'
+        :class_name => FakeTestRecord.name
       })
     end
     subject{ @association }
@@ -25,10 +25,10 @@ class MR::FakeRecord::Association
     should have_imeths :belongs_to?, :collection?, :reflection, :klass
 
     should "know it's name, ivar name and fake record class name" do
-      assert_equal :user,            subject.name
-      assert_instance_of Hash,       subject.options
-      assert_equal '@user',          subject.ivar_name
-      assert_equal 'FakeTestRecord', subject.fake_record_class_name
+      assert_equal :user, subject.name
+      assert_instance_of Hash, subject.options
+      assert_equal '@user', subject.ivar_name
+      assert_equal FakeTestRecord.name, subject.fake_record_class_name
     end
 
     should "return false with #belongs_to?" do
@@ -67,11 +67,11 @@ class MR::FakeRecord::Association
 
   end
 
-  class BelongsToTests < BaseTests
+  class BelongsToTests < UnitTests
     desc "BelongsTo"
     setup do
       @belongs_to = MR::FakeRecord::BelongsTo.new(:user, {
-        :class_name  => 'FakeTestRecord',
+        :class_name  => FakeTestRecord.name,
         :foreign_key => :created_by_id
       })
     end
@@ -104,11 +104,11 @@ class MR::FakeRecord::Association
 
   end
 
-  class HasManyTests < BaseTests
+  class HasManyTests < UnitTests
     desc "HasMany"
     setup do
       @has_many = MR::FakeRecord::HasMany.new(:users, {
-        :class_name => 'FakeTestRecord'
+        :class_name => FakeTestRecord.name
       })
     end
     subject{ @has_many }
@@ -134,11 +134,11 @@ class MR::FakeRecord::Association
 
   end
 
-  class HasOneTests < BaseTests
+  class HasOneTests < UnitTests
     desc "HasOne"
     setup do
       @has_one = MR::FakeRecord::HasOne.new(:user, {
-        :class_name => 'FakeTestRecord'
+        :class_name => FakeTestRecord.name
       })
     end
     subject{ @has_one }
@@ -147,6 +147,10 @@ class MR::FakeRecord::Association
       assert subject.kind_of?(MR::FakeRecord::Association)
     end
 
+  end
+
+  class FakeTestRecord
+    include MR::FakeRecord
   end
 
 end
