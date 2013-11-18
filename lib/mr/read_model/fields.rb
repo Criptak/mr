@@ -1,7 +1,4 @@
-require 'date'
-require 'time'
-require 'ns-options/boolean'
-
+require 'active_record'
 require 'mr/read_model/data'
 require 'mr/read_model/querying'
 
@@ -74,16 +71,18 @@ module MR::ReadModel
 
   class Field
 
-    TYPE_CAST_PROCS = Hash.new{ |h, k| raise BadFieldTypeError.new(k) }.tap do |h|
-      h[:string]      = proc{ |input| input.to_s }
-      h[:integer]     = proc{ |input| input.to_i }
-      h[:float]       = proc{ |input| input.to_f }
-      h[:datetime]    = proc{ |input| DateTime.parse(input.to_s) }
-      h[:time]        = proc{ |input| Time.parse(input.to_s) }
-      h[:date]        = proc{ |input| Date.parse(input.to_s) }
-      h[:boolean]     = proc{ |input| NsOptions::Boolean.new(input.to_s).actual }
-      h[:primary_key] = h[:integer]
-    end.freeze
+    TYPES = {
+      :boolean  => [ :boolean ],
+      :binary   => [ :binary ],
+      :date     => [ :date ],
+      :datetime => [ :datetime, :timestamp ],
+      :decimal  => [ :decimal ],
+      :float    => [ :float ],
+      :integer  => [ :integer, :primary_key ],
+      :string   => [ :string, :text ],
+      :time     => [ :time ]
+    }.freeze
+    VALID_TYPES = TYPES.values.flatten.freeze
 
     attr_reader :name, :type, :value
     attr_reader :method_name, :ivar_name
@@ -91,14 +90,15 @@ module MR::ReadModel
     def initialize(name, type)
       @name = name.to_s
       @type = type.to_sym
-      @type_cast_proc = TYPE_CAST_PROCS[@type]
-
-      @method_name    = @name
-      @ivar_name      = "@#{@name}"
-      @attribute_name = @name
+      raise BadFieldTypeError.new(@type) unless VALID_TYPES.include?(@type)
+      @method_name     = @name
+      @ivar_name       = "@#{@name}"
+      @attribute_name  = @name
+      @ar_column_class = nil
     end
 
     def read(data)
+      @ar_column_class ||= determine_ar_column_class(data)
       type_cast(data[@attribute_name])
     end
 
@@ -116,8 +116,27 @@ module MR::ReadModel
 
     private
 
+    def determine_ar_column_class(data)
+      if data.class.respond_to?(:columns)
+        data.class.columns.first.class
+      else
+        ActiveRecord::ConnectionAdapters::Column
+      end
+    end
+
     def type_cast(value)
-      @type_cast_proc.call(value) unless value.nil?
+      return if value.nil?
+      case @type
+      when *TYPES[:string]   then value
+      when *TYPES[:integer]  then @ar_column_class.value_to_integer(value)
+      when *TYPES[:float]    then value.to_f
+      when *TYPES[:decimal]  then @ar_column_class.value_to_decimal(value)
+      when *TYPES[:datetime] then @ar_column_class.string_to_time(value)
+      when *TYPES[:time]     then @ar_column_class.string_to_dummy_time(value)
+      when *TYPES[:date]     then @ar_column_class.string_to_date(value)
+      when *TYPES[:binary]   then @ar_column_class.binary_to_string(value)
+      when *TYPES[:boolean]  then @ar_column_class.value_to_boolean(value)
+      end
     end
 
   end

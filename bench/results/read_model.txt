@@ -1,35 +1,40 @@
 MR::ReadModel
 -------------
 Fields
-  field                                  |     205.58 ms |      81.04 MB |
-  field with select args                 |     286.86 ms |      60.48 MB |
-  field with select block                |     417.98 ms |     178.13 MB |
-  typecast string                        |      135.1 ms |       3.17 MB |
-  typecast integer                       |      68.62 ms |       0.68 MB |
-  typecast float                         |      52.04 ms |        0.0 MB |
-  typecast datetime                      |    1994.42 ms |       83.5 MB |
-  typecast time                          |     878.35 ms |        0.0 MB |
-  typecast date                          |    1524.27 ms |        0.0 MB |
-  typecast boolean                       |       98.9 ms |        0.0 MB |
+  field                                  |     181.39 ms |      81.04 MB |
+  field with select args                 |     259.47 ms |      60.44 MB |
+  field with select block                |     386.09 ms |     178.13 MB |
+  typecast string                        |      99.08 ms |       2.53 MB |
+  typecast text                          |      67.76 ms |       0.25 MB |
+  typecast binary                        |      61.18 ms |        0.0 MB |
+  typecast integer                       |      64.03 ms |        0.0 MB |
+  typecast primary key                   |      65.47 ms |        0.0 MB |
+  typecast float                         |      53.46 ms |        0.0 MB |
+  typecast decimal                       |      74.28 ms |        0.0 MB |
+  typecast datetime                      |     229.89 ms |        0.0 MB |
+  typecast timestamp                     |     231.62 ms |        0.0 MB |
+  typecast time                          |     240.99 ms |        0.0 MB |
+  typecast date                          |     318.84 ms |        0.0 MB |
+  typecast boolean                       |      92.09 ms |        0.0 MB |
 Querying
-  select                                 |      55.99 ms |       0.02 MB |
-  select with block                      |       76.4 ms |       0.15 MB |
-  from                                   |      10.55 ms |        0.0 MB |
-  joins                                  |       68.5 ms |       0.08 MB |
-  joins with block                       |      90.86 ms |       0.07 MB |
-  where                                  |      73.14 ms |       0.07 MB |
-  where with block                       |     103.67 ms |       0.07 MB |
-  order                                  |      88.68 ms |       0.07 MB |
-  order with block                       |     112.02 ms |       0.07 MB |
-  group                                  |      95.86 ms |       0.07 MB |
-  group with block                       |     117.69 ms |       0.07 MB |
-  having                                 |     101.84 ms |      -0.75 MB |
-  having with block                      |     119.42 ms |       0.07 MB |
-  limit                                  |      91.03 ms |       0.07 MB |
-  limit with block                       |     118.48 ms |       0.07 MB |
-  offset                                 |      89.05 ms |       0.07 MB |
-  offset with block                      |      118.6 ms |       0.07 MB |
-  merge                                  |     414.64 ms |       0.07 MB |
-  merge with block                       |     132.77 ms |       0.07 MB |
-  query                                  |     6072.7 ms |     730.05 MB |
-Total                                    |      20.53 s  |     774.22 MB |
+  select                                 |      52.19 ms |       0.02 MB |
+  select with block                      |      75.85 ms |       0.16 MB |
+  from                                   |      10.33 ms |        0.0 MB |
+  joins                                  |       65.8 ms |       0.07 MB |
+  joins with block                       |      89.49 ms |      -0.16 MB |
+  where                                  |       73.9 ms |      -0.29 MB |
+  where with block                       |     101.37 ms |       0.08 MB |
+  order                                  |      90.17 ms |       0.07 MB |
+  order with block                       |     111.97 ms |       0.08 MB |
+  group                                  |      96.61 ms |       0.07 MB |
+  group with block                       |     116.01 ms |       0.07 MB |
+  having                                 |     102.74 ms |       0.07 MB |
+  having with block                      |     121.61 ms |       0.07 MB |
+  limit                                  |      92.34 ms |       0.07 MB |
+  limit with block                       |     119.84 ms |       0.07 MB |
+  offset                                 |      83.57 ms |       0.07 MB |
+  offset with block                      |     109.51 ms |      -1.16 MB |
+  merge                                  |     395.14 ms |       0.08 MB |
+  merge with block                       |      128.5 ms |       0.07 MB |
+  query                                  |    5861.81 ms |      783.9 MB |
+Total                                    |      16.36 s  |     774.31 MB |

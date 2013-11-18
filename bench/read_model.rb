@@ -18,30 +18,55 @@ profiler.run("MR::ReadModel") do
 
     read_model_class = Class.new do
       include MR::ReadModel
-      field :string,   :string
-      field :integer,  :integer
-      field :float,    :float
-      field :datetime, :datetime
-      field :time,     :time
-      field :date,     :date
-      field :boolean,  :boolean
+      field :string,      :string
+      field :text,        :text
+      field :binary,      :binary
+      field :integer,     :integer
+      field :primary_key, :primary_key
+      field :float,       :float
+      field :decimal,     :decimal
+      field :datetime,    :datetime
+      field :timestamp,   :timestamp
+      field :time,        :time
+      field :date,        :date
+      field :boolean,     :boolean
     end
 
     benchmark("typecast string") do |n|
-      read_model = read_model_class.new('string' => 'Benchmark')
+      read_model = read_model_class.new('string' => 'String')
       read_model.string
+    end
+    benchmark("typecast text") do |n|
+      read_model = read_model_class.new('text' => 'Text')
+      read_model.text
+    end
+    benchmark("typecast binary") do |n|
+      read_model = read_model_class.new('binary' => "\000\001\002\003\004")
+      read_model.binary
     end
     benchmark("typecast integer") do |n|
       read_model = read_model_class.new('integer' => '100')
       read_model.integer
     end
+    benchmark("typecast primary key") do |n|
+      read_model = read_model_class.new('primary_key' => '125')
+      read_model.primary_key
+    end
     benchmark("typecast float") do |n|
       read_model = read_model_class.new('float' => '6.1370')
       read_model.float
     end
+    benchmark("typecast decimal") do |n|
+      read_model = read_model_class.new('decimal' => '33.4755926134924')
+      read_model.decimal
+    end
     benchmark("typecast datetime") do |n|
       read_model = read_model_class.new('datetime' => '2013-11-18 21:29:10')
       read_model.datetime
+    end
+    benchmark("typecast timestamp") do |n|
+      read_model = read_model_class.new('timestamp' => '2013-11-18 22:10:36.660846')
+      read_model.timestamp
     end
     benchmark("typecast time") do |n|
       read_model = read_model_class.new('time' => '21:29:10.905011')

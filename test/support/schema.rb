@@ -10,15 +10,17 @@ ActiveRecord::Schema.define(:version => 1) do
   end
 
   create_table :users do |t|
-    t.string  :name
-    t.integer :number
-    t.decimal :salary
-    t.date    :started_on
-    t.integer :area_id
+    t.string    :name
+    t.integer   :number
+    t.decimal   :salary
+    t.date      :started_on
+    t.timestamp :dob
+    t.integer   :area_id
   end
 
   create_table :images do |t|
     t.string  :file_path
+    t.binary  :data
     t.integer :user_id
   end
 
