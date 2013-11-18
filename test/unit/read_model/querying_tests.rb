@@ -1,8 +1,8 @@
 require 'assert'
 require 'mr/read_model/querying'
 
+require 'ardb/relation_spy'
 require 'mr/fake_record'
-require 'test/support/active_record_relation_spy'
 
 module MR::ReadModel::Querying
 
@@ -81,7 +81,7 @@ module MR::ReadModel::Querying
 
   class WithFromRecordClassTests < UnitTests
     setup do
-      @ar_relation_spy = ActiveRecordRelationSpy.new
+      @ar_relation_spy = Ardb::RelationSpy.new
       FakeTestRecord.stubs(:scoped).returns(@ar_relation_spy)
       @read_model_class.from FakeTestRecord
       @relation = @read_model_class.relation
@@ -337,7 +337,7 @@ module MR::ReadModel::Querying
     include MR::FakeRecord
 
     def self.scoped
-      ActiveRecordRelationSpy.new
+      Ardb::RelationSpy.new
     end
   end
 

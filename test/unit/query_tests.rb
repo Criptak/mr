@@ -1,9 +1,9 @@
 require 'assert'
 require 'mr/query'
 
+require 'ardb/relation_spy'
 require 'mr/fake_record'
 require 'mr/model'
-require 'test/support/active_record_relation_spy'
 
 class MR::Query
 
@@ -110,7 +110,7 @@ class MR::Query
     include MR::FakeRecord
 
     def self.scoped
-      ActiveRecordRelationSpy.new
+      Ardb::RelationSpy.new
     end
   end
 
