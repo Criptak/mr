@@ -2,6 +2,7 @@ require 'assert'
 require 'mr/read_model/querying'
 
 require 'mr/fake_record'
+require 'test/support/active_record_relation_spy'
 
 module MR::ReadModel::Querying
 
@@ -338,36 +339,6 @@ module MR::ReadModel::Querying
     def self.scoped
       ActiveRecordRelationSpy.new
     end
-  end
-
-  class ActiveRecordRelationSpy
-    attr_reader :applied
-
-    def initialize
-      @applied = []
-    end
-
-    [ :select,
-      :joins,
-      :where,
-      :order,
-      :group, :having,
-      :limit, :offset,
-      :merge
-    ].each do |type|
-
-      define_method(type) do |*args|
-        @applied << AppliedExpression.new(type, args)
-        self
-      end
-
-    end
-
-    def ==(other)
-      @applied == other.applied
-    end
-
-    AppliedExpression = Struct.new(:type, :args)
   end
 
 end
