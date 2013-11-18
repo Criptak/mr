@@ -3,6 +3,7 @@ ActiveRecord::Schema.define(:version => 1) do
   create_table :areas do |t|
     t.string  :name
     t.boolean :active
+    t.float   :ratio
     t.text    :description
     t.float   :percentage
     t.time    :meeting_time
