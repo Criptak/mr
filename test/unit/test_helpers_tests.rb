@@ -1,10 +1,6 @@
 require 'assert'
 require 'mr/test_helpers'
 
-require 'test/support/models/fake_user_record'
-require 'test/support/models/user'
-
-
 module MR::TestHelpers
 
   class FakeContext
@@ -29,11 +25,11 @@ module MR::TestHelpers
     Assertion = Struct.new(:result, :backtrace)
   end
 
-  class BaseTests < Assert::Context
+  class UnitTests < Assert::Context
     desc "MR::TestHelpers"
     setup do
-      @record  = FakeUserRecord.new
-      @model   = User.new(@record)
+      @record  = FakeTestRecord.new
+      @model   = FakeTestModel.new(@record)
       @context = FakeContext.new
     end
     subject{ @context }
@@ -84,6 +80,20 @@ module MR::TestHelpers
       assert_result_is(true,  @model){ |m| assert_not_field_saved m, :name, 'Test' }
     end
 
+  end
+
+  class FakeTestRecord
+    include MR::FakeRecord
+
+    attribute :name, :string
+  end
+
+  class FakeTestModel
+    include MR::Model
+    record_class FakeTestRecord
+
+    field_reader :id
+    field_accessor :name
   end
 
 end

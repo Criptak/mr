@@ -2,21 +2,20 @@ require 'assert'
 require 'mr/factory/record_stack'
 
 require 'test/support/setup_test_db'
-require 'test/support/models/area_record'
-require 'test/support/models/comment_record'
-require 'test/support/models/fake_comment_record'
-require 'test/support/models/user_record'
+require 'test/support/models/area'
+require 'test/support/models/comment'
+require 'test/support/models/user'
 
 class MR::Factory::RecordStack
 
-  class BaseTests < Assert::Context
+  class SystemTests < Assert::Context
     desc "MR::Factory::RecordStack"
     setup do
-      @comment_record = CommentRecord.new(:parent_type => 'AreaRecord')
+      @comment_record = CommentRecord.new(:parent_type => 'UserRecord')
       @record_stack = MR::Factory::RecordStack.new(@comment_record)
     end
     teardown do
-      @record_stack.destroy rescue nil
+      @record_stack.destroy
     end
     subject{ @record_stack }
 
@@ -28,12 +27,10 @@ class MR::Factory::RecordStack
            "all belongs to associations set" do
       assert_instance_of CommentRecord, @comment_record
       assert @comment_record.new_record?
-      assert_instance_of UserRecord, @comment_record.user
-      assert @comment_record.user.new_record?
-      assert_instance_of AreaRecord, @comment_record.user.area
-      assert @comment_record.user.area.new_record?
-      assert_instance_of AreaRecord, @comment_record.parent
+      assert_instance_of UserRecord, @comment_record.parent
       assert @comment_record.parent.new_record?
+      assert_instance_of AreaRecord, @comment_record.parent.area
+      assert @comment_record.parent.area.new_record?
     end
 
     should "create all the dependencies for the record with #create_dependencies" do
@@ -41,10 +38,8 @@ class MR::Factory::RecordStack
 
       assert_not @comment_record.parent.new_record?
       assert_equal @comment_record.parent.id, @comment_record.parent_id
-      assert_not @comment_record.user.area.new_record?
-      assert_equal @comment_record.user.area.id, @comment_record.user.area_id
-      assert_not @comment_record.user.new_record?
-      assert_equal @comment_record.user.id, @comment_record.user_id
+      assert_not @comment_record.parent.area.new_record?
+      assert_equal @comment_record.parent.area.id, @comment_record.parent.area_id
       assert @comment_record.new_record?
     end
 
@@ -53,8 +48,7 @@ class MR::Factory::RecordStack
       assert_nothing_raised{ subject.destroy_dependencies }
 
       assert @comment_record.parent.destroyed?
-      assert @comment_record.user.area.destroyed?
-      assert @comment_record.user.destroyed?
+      assert @comment_record.parent.area.destroyed?
       assert @comment_record.new_record?
     end
 
@@ -63,10 +57,8 @@ class MR::Factory::RecordStack
 
       assert_not @comment_record.parent.new_record?
       assert_equal @comment_record.parent.id, @comment_record.parent_id
-      assert_not @comment_record.user.area.new_record?
-      assert_equal @comment_record.user.area.id, @comment_record.user.area_id
-      assert_not @comment_record.user.new_record?
-      assert_equal @comment_record.user.id, @comment_record.user_id
+      assert_not @comment_record.parent.area.new_record?
+      assert_equal @comment_record.parent.area.id, @comment_record.parent.area_id
       assert_not @comment_record.new_record?
     end
 
@@ -75,17 +67,16 @@ class MR::Factory::RecordStack
       assert_nothing_raised{ subject.destroy }
 
       assert @comment_record.parent.destroyed?
-      assert @comment_record.user.area.destroyed?
-      assert @comment_record.user.destroyed?
+      assert @comment_record.parent.area.destroyed?
       assert @comment_record.destroyed?
     end
 
   end
 
-  class FakeRecordTests < BaseTests
+  class FakeRecordTests < SystemTests
     desc "with a fake record"
     setup do
-      @fake_comment_record = FakeCommentRecord.new(:parent_type => 'FakeAreaRecord')
+      @fake_comment_record = FakeCommentRecord.new(:parent_type => 'FakeUserRecord')
       @record_stack = MR::Factory::RecordStack.new(@fake_comment_record)
     end
     teardown do
@@ -97,12 +88,10 @@ class MR::Factory::RecordStack
            "all belongs to associations set" do
       assert_instance_of FakeCommentRecord, @fake_comment_record
       assert @fake_comment_record.new_record?
-      assert_instance_of FakeUserRecord, @fake_comment_record.user
-      assert @fake_comment_record.user.new_record?
-      assert_instance_of FakeAreaRecord, @fake_comment_record.user.area
-      assert @fake_comment_record.user.area.new_record?
-      assert_instance_of FakeAreaRecord, @fake_comment_record.parent
+      assert_instance_of FakeUserRecord, @fake_comment_record.parent
       assert @fake_comment_record.parent.new_record?
+      assert_instance_of FakeAreaRecord, @fake_comment_record.parent.area
+      assert @fake_comment_record.parent.area.new_record?
     end
 
     should "create all the dependencies for the record with #create_dependencies" do
@@ -110,10 +99,8 @@ class MR::Factory::RecordStack
 
       assert_not @fake_comment_record.parent.new_record?
       assert_equal @fake_comment_record.parent.id, @fake_comment_record.parent_id
-      assert_not @fake_comment_record.user.area.new_record?
-      assert_equal @fake_comment_record.user.area.id, @fake_comment_record.user.area_id
-      assert_not @fake_comment_record.user.new_record?
-      assert_equal @fake_comment_record.user.id, @fake_comment_record.user_id
+      assert_not @fake_comment_record.parent.area.new_record?
+      assert_equal @fake_comment_record.parent.area.id, @fake_comment_record.parent.area_id
       assert @fake_comment_record.new_record?
     end
 
@@ -122,8 +109,7 @@ class MR::Factory::RecordStack
       assert_nothing_raised{ subject.destroy_dependencies }
 
       assert @fake_comment_record.parent.destroyed?
-      assert @fake_comment_record.user.area.destroyed?
-      assert @fake_comment_record.user.destroyed?
+      assert @fake_comment_record.parent.area.destroyed?
       assert @fake_comment_record.new_record?
     end
 
@@ -132,10 +118,8 @@ class MR::Factory::RecordStack
 
       assert_not @fake_comment_record.parent.new_record?
       assert_equal @fake_comment_record.parent.id, @fake_comment_record.parent_id
-      assert_not @fake_comment_record.user.area.new_record?
-      assert_equal @fake_comment_record.user.area.id, @fake_comment_record.user.area_id
-      assert_not @fake_comment_record.user.new_record?
-      assert_equal @fake_comment_record.user.id, @fake_comment_record.user_id
+      assert_not @fake_comment_record.parent.area.new_record?
+      assert_equal @fake_comment_record.parent.area.id, @fake_comment_record.parent.area_id
       assert_not @fake_comment_record.new_record?
     end
 
@@ -144,40 +128,38 @@ class MR::Factory::RecordStack
       assert_nothing_raised{ subject.destroy }
 
       assert @fake_comment_record.parent.destroyed?
-      assert @fake_comment_record.user.area.destroyed?
-      assert @fake_comment_record.user.destroyed?
+      assert @fake_comment_record.parent.area.destroyed?
       assert @fake_comment_record.destroyed?
     end
 
   end
 
-  class PresetAssociationsTests < BaseTests
+  class PresetAssociationsTests < SystemTests
     desc "when provided preset associations"
     setup do
-      @user_record    = UserRecord.new.tap{ |u| u.save }
-      @comment_record = CommentRecord.new({
-        :parent_type => 'AreaRecord',
-        :user        => @user_record
-      })
-      @record_factory = MR::Factory::RecordStack.new(@comment_record)
+      @user_record    = UserRecord.new.tap{ |u| u.save! }
+      @comment_record = CommentRecord.new(:parent => @user_record)
+      @record_stack = MR::Factory::RecordStack.new(@comment_record)
+    end
+    teardown do
+      UserRecord.destroy_all
     end
 
     should "use a preset association for other cases of the record class" do
-      assert_same @user_record, @comment_record.user
+      assert_same @user_record, @comment_record.parent
       assert_same @user_record, @comment_record.created_by
     end
 
     should "always use the preset value for the association" do
       created_by_record = UserRecord.new.tap{ |u| u.save }
       comment_record    = CommentRecord.new({
-        :parent_type => 'AreaRecord',
-        :created_by  => created_by_record,
-        :user        => @user_record
+        :parent     => @user_record,
+        :created_by => created_by_record
       })
       MR::Factory::RecordStack.new(comment_record)
 
       assert_not_same created_by_record, @user_record
-      assert_same @user_record,      comment_record.user
+      assert_same @user_record,      comment_record.parent
       assert_same created_by_record, comment_record.created_by
     end
 
@@ -190,7 +172,7 @@ class MR::Factory::RecordStack
       @stack_record = MR::Factory::Record.new(@user_record)
     end
     teardown do
-      @stack_record.destroy rescue nil
+      @stack_record.destroy
     end
     subject{ @stack_record }
 
