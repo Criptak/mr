@@ -15,13 +15,11 @@ class UserRecord < ActiveRecord::Base
   has_one :image, {
     :class_name  => 'ImageRecord',
     :foreign_key => 'user_id',
-    :autosave    => false,
-    :dependent   => :destroy
+    :autosave    => false
   }
   has_many :comments, {
     :class_name  => 'CommentRecord',
-    :as          => :parent,
-    :dependent   => :destroy
+    :as          => :parent
   }
 
 end

@@ -8,8 +8,7 @@ class AreaRecord < ActiveRecord::Base
 
   has_many :users, {
     :class_name  => 'UserRecord',
-    :foreign_key => 'area_id',
-    :dependent   => :destroy
+    :foreign_key => 'area_id'
   }
 
 end
