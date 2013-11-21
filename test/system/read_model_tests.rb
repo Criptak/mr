@@ -2,24 +2,73 @@ require 'assert'
 require 'mr/read_model'
 
 require 'mr/factory'
-require 'test/support/models/user'
+require 'test/support/setup_test_db'
+require 'test/support/factory/area'
+require 'test/support/factory/comment'
+require 'test/support/factory/image'
+require 'test/support/factory/user'
+require 'test/support/read_models/comment_with_user_data'
 require 'test/support/read_models/user_with_area_data'
 
 module MR::ReadModel
 
   class SystemTests < Assert::Context
-    setup do
-      @user_factory = MR::Factory.new(UserRecord)
-    end
+    desc "MR::ReadModel"
+
   end
 
-  class UserWithAreaDataQueryTests < SystemTests
-    desc "UserWithAreaData query"
+  class FieldsTests < SystemTests
+    desc "fields"
     setup do
-      @matching_user_stack = @user_factory.instance_stack.tap{ |s| s.create }
-      @matching_user = @matching_user_stack.record
-      @not_matching_user_stack = @user_factory.instance_stack.tap{ |s| s.create }
-      @not_matching_user = @not_matching_user_stack.record
+      @area    = Factory::Area.instance.tap{ |a| a.save }
+      @user    = Factory::User.instance(:area => @area).tap{ |u| u.save }
+      @image   = Factory::Image.instance(:user => @user).tap{ |i| i.save }
+      @comment = Factory::Comment.instance(:parent => @user).tap{ |c| c.save }
+      @comment_with_user_data = CommentWithUserData.query.results.first
+    end
+    teardown do
+      @comment.destroy
+      @image.destroy
+      @user.destroy
+      @area.destroy
+    end
+    subject{ @comment_with_user_data }
+
+    should have_readers :comment_id, :comment_created_at
+    should have_readers :user_name, :user_number, :user_salary, :user_started_on
+    should have_readers :area_active, :area_meeting_time
+
+    should "know it's different model's data" do
+      # reload the comment/area -- force AR to type-cast it's columns, otherwise
+      # comment has whatever fake data it was given, which may not match up
+      # like Time != DateTime
+      @comment = Comment.find(@comment.id)
+      @image   = Image.find(@image.id)
+      @user    = User.find(@user.id)
+      @area    = Area.find(@area.id)
+      assert_equal @comment.id,         subject.comment_id
+      assert_equal @comment.created_at, subject.comment_created_at
+      assert_equal @user.name,          subject.user_name
+      assert_equal @user.number,        subject.user_number
+      assert_equal @user.salary,        subject.user_salary
+      assert_equal @user.started_on,    subject.user_started_on
+      assert_equal @user.dob,           subject.user_dob
+      assert_equal @image.data,         subject.image_data
+      assert_equal @area.active,        subject.area_active
+      assert_equal @area.meeting_time,  subject.area_meeting_time
+      assert_equal @area.description,   subject.area_description
+      assert_equal @area.percentage,    subject.area_percentage
+    end
+
+  end
+
+  class QueryTests < SystemTests
+    desc "querying"
+    setup do
+      @matching_user_stack = Factory::User.instance_stack.tap{ |s| s.create }
+      @matching_user = @matching_user_stack.model
+      @not_matching_user_stack = Factory::User.instance_stack.tap{ |s| s.create }
+      @not_matching_user = @not_matching_user_stack.model
       @query = UserWithAreaData.query(@matching_user.area_id)
     end
     teardown do
@@ -37,31 +86,6 @@ module MR::ReadModel
       assert_equal 1, results.size
       assert_equal @matching_user.id,      results.first.user_id
       assert_equal @matching_user.area_id, results.first.area_id
-    end
-
-  end
-
-  class UserWithAreaDataFieldsTests < SystemTests
-    desc "UserWithAreaData fields"
-    setup do
-      @user_stack = @user_factory.instance_stack.tap{ |s| s.create }
-      @user       = @user_stack.record
-      query = UserWithAreaData.query(@user.area_id)
-      @user_with_area_data = query.results.first
-    end
-    teardown do
-      @user_stack.destroy
-    end
-    subject{ @user_with_area_data }
-
-    should have_readers :user_id, :user_name
-    should have_readers :area_id, :area_name
-
-    should "know it's user data" do
-      assert_equal @user.id,        subject.user_id
-      assert_equal @user.name,      subject.user_name
-      assert_equal @user.area.id,   subject.area_id
-      assert_equal @user.area.name, subject.area_name
     end
 
   end

@@ -165,7 +165,7 @@ module MR::ReadModel::Fields
 
     should "define a reader method on an object using `define_on`" do
       subject.define_on(@read_model_class)
-      read_model = @read_model_class.new({ 'test' => 'something' })
+      read_model = @read_model_class.new('test' => 'something')
 
       assert_respond_to subject.method_name, read_model
       value = read_model.send(subject.method_name)
@@ -180,78 +180,34 @@ module MR::ReadModel::Fields
 
   end
 
-  class StringFieldTests < FieldTests
-    desc "of type string"
+  class BooleanFieldTests < FieldTests
+    desc "of type boolean"
     setup do
-      @field = MR::ReadModel::Field.new(:test, :string)
+      @field = MR::ReadModel::Field.new(:test, :boolean)
     end
 
     should "type cast data values using `read`" do
-      assert_equal 'string', subject.read({ 'test' => 'string' })
-    end
+      assert_equal true,  subject.read('test' => 'true')
+      assert_equal true,  subject.read('test' => '1')
+      assert_equal true,  subject.read('test' => 't')
+      assert_equal true,  subject.read('test' => 'T')
 
+      assert_equal false, subject.read('test' => 'false')
+      assert_equal false, subject.read('test' => '0')
+      assert_equal false, subject.read('test' => 'f')
+      assert_equal false, subject.read('test' => 'F')
+    end
   end
 
-  class IntegerFieldTests < FieldTests
-    desc "of type integer"
+  class BinaryFieldTests < FieldTests
+    desc "of type binary"
     setup do
-      @field = MR::ReadModel::Field.new(:test, :integer)
+      @field = MR::ReadModel::Field.new(:test, :binary)
     end
 
     should "type cast data values using `read`" do
-      value = MR::Factory.integer
-      assert_equal value, subject.read({ 'test' => value.to_s })
-
-      value = MR::Factory.float
-      assert_equal value.to_i, subject.read({ 'test' => value.to_s })
-    end
-
-  end
-
-  class FloatFieldTests < FieldTests
-    desc "of type float"
-    setup do
-      @field = MR::ReadModel::Field.new(:test, :float)
-    end
-
-    should "type cast data values using `read`" do
-      value = MR::Factory.float
-      actual = subject.read({ 'test' => value.to_s })
-      assert_instance_of Float, actual
-      assert_equal value.to_s, actual.to_s
-
-      value = MR::Factory.integer
-      assert_equal value.to_f, subject.read({ 'test' => value.to_s })
-    end
-
-  end
-
-  class DateTimeFieldTests < FieldTests
-    desc "of type datetime"
-    setup do
-      @field = MR::ReadModel::Field.new(:test, :datetime)
-    end
-
-    should "type cast data values using `read`" do
-      value = MR::Factory.datetime
-      actual = subject.read({ 'test' => value.to_s })
-      assert_instance_of DateTime, actual
-      assert_equal value.to_s, actual.to_s
-    end
-
-  end
-
-  class TimeFieldTests < FieldTests
-    desc "of type time"
-    setup do
-      @field = MR::ReadModel::Field.new(:test, :time)
-    end
-
-    should "type cast data values using `read`" do
-      value = MR::Factory.time
-      actual = subject.read({ 'test' => value.to_s })
-      assert_instance_of Time, actual
-      assert_equal value.to_s, actual.to_s
+      expected = "\000\001\002\003\004"
+      assert_equal expected, subject.read('test' => "\000\001\002\003\004")
     end
 
   end
@@ -263,31 +219,61 @@ module MR::ReadModel::Fields
     end
 
     should "type cast data values using `read`" do
-      value = MR::Factory.date
-      actual = subject.read({ 'test' => value.to_s })
-      assert_instance_of Date, actual
-      assert_equal value.to_s, actual.to_s
+      actual = subject.read('test' => '2013-11-18')
+      assert_equal Date.parse('2013-11-18'), actual
     end
 
   end
 
-  class BooleanFieldTests < FieldTests
-    desc "of type boolean"
+  class DateTimeFieldTests < FieldTests
+    desc "of type datetime"
     setup do
-      @field = MR::ReadModel::Field.new(:test, :boolean)
+      @field = MR::ReadModel::Field.new(:test, :datetime)
     end
 
     should "type cast data values using `read`" do
-      assert_equal true,  subject.read({ 'test' => 'true' })
-      assert_equal true,  subject.read({ 'test' => '1' })
-      assert_equal true,  subject.read({ 'test' => 't' })
-      assert_equal true,  subject.read({ 'test' => 'T' })
-
-      assert_equal false, subject.read({ 'test' => 'false' })
-      assert_equal false, subject.read({ 'test' => '0' })
-      assert_equal false, subject.read({ 'test' => 'f' })
-      assert_equal false, subject.read({ 'test' => 'F' })
+      actual = subject.read('test' => '2013-11-18 21:29:10')
+      assert_equal Time.parse('2013-11-18 21:29:10'), actual
     end
+
+  end
+
+  class DecimalFieldTests < FieldTests
+    desc "of type decimal"
+    setup do
+      @field = MR::ReadModel::Field.new(:test, :decimal)
+    end
+
+    should "type cast data values using `read`" do
+      expected = BigDecimal.new('33.4755926134924')
+      assert_equal expected, subject.read('test' => '33.4755926134924')
+    end
+
+  end
+
+  class FloatFieldTests < FieldTests
+    desc "of type float"
+    setup do
+      @field = MR::ReadModel::Field.new(:test, :float)
+    end
+
+    should "type cast data values using `read`" do
+      actual = subject.read('test' => '6.1374')
+      assert_equal 6.1374, actual
+    end
+
+  end
+
+  class IntegerFieldTests < FieldTests
+    desc "of type integer"
+    setup do
+      @field = MR::ReadModel::Field.new(:test, :integer)
+    end
+
+    should "type cast data values using `read`" do
+      assert_equal 100, subject.read('test' => '100')
+    end
+
   end
 
   class PrimaryKeyFieldTests < FieldTests
@@ -297,8 +283,57 @@ module MR::ReadModel::Fields
     end
 
     should "type cast data values using `read`" do
-      value = MR::Factory.primary_key
-      assert_equal value, subject.read({ 'test' => value.to_s })
+      assert_equal 100, subject.read('test' => '100')
+    end
+
+  end
+
+  class StringFieldTests < FieldTests
+    desc "of type string"
+    setup do
+      @field = MR::ReadModel::Field.new(:test, :string)
+    end
+
+    should "type cast data values using `read`" do
+      assert_equal 'string', subject.read('test' => 'string')
+    end
+
+  end
+
+  class TextFieldTests < FieldTests
+    desc "of type string"
+    setup do
+      @field = MR::ReadModel::Field.new(:test, :text)
+    end
+
+    should "type cast data values using `read`" do
+      assert_equal 'string', subject.read('test' => 'string')
+    end
+
+  end
+
+  class TimeFieldTests < FieldTests
+    desc "of type time"
+    setup do
+      @field = MR::ReadModel::Field.new(:test, :time)
+    end
+
+    should "type cast data values using `read`" do
+      actual = subject.read('test' => '21:29:10.905011')
+      assert_equal Time.parse('2000-01-01 21:29:10.905011'), actual
+    end
+
+  end
+
+  class TimestampFieldTests < FieldTests
+    desc "of type timestamp"
+    setup do
+      @field = MR::ReadModel::Field.new(:test, :timestamp)
+    end
+
+    should "type cast data values using `read`" do
+      actual = subject.read('test' => '2013-11-18 22:10:36.660846')
+      assert_equal Time.parse('2013-11-18 22:10:36.660846'), actual
     end
 
   end

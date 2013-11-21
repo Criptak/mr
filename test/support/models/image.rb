@@ -18,7 +18,7 @@ class Image
   record_class ImageRecord
 
   field_reader :id, :user_id
-  field_accessor :file_path
+  field_accessor :file_path, :data
 
   belongs_to :user
 
@@ -29,6 +29,7 @@ class FakeImageRecord
   model_class Image
 
   attribute :file_path, :string
+  attribute :data,      :binary
   attribute :user_id,   :integer
 
   belongs_to :user, 'FakeUserRecord'

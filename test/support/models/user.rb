@@ -29,7 +29,7 @@ class User
   record_class UserRecord
 
   field_reader :id, :area_id
-  field_accessor :name, :number, :salary, :started_on
+  field_accessor :name, :number, :salary, :started_on, :dob
 
   belongs_to :area
   has_one :image
@@ -45,6 +45,7 @@ class FakeUserRecord
   attribute :number,     :integer
   attribute :salary,     :float
   attribute :started_on, :date
+  attribute :dob,        :timestamp
   attribute :area_id,    :integer
 
   belongs_to :area, 'FakeAreaRecord'

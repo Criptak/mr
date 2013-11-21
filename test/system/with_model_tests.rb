@@ -51,6 +51,7 @@ class WithModelTests < Assert::Context
       'number'     => 12345,
       'salary'     => nil,
       'started_on' => nil,
+      'dob'        => nil,
       'area_id'    => nil,
     }
     assert_equal expected, subject.fields
