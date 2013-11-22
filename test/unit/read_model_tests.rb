@@ -74,6 +74,8 @@ module MR::ReadModel
   class FakeTestRecord
     include MR::FakeRecord
     attribute :name, :string
+
+    def [](attribute_name); self.send(attribute_name); end
   end
 
 end

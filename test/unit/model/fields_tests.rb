@@ -19,7 +19,7 @@ module MR::Model::Fields
     should have_imeths :fields, :field_reader, :field_writer, :field_accessor
 
     should "include Model::Configuration mixin" do
-      assert_includes MR::Model::Configuration, subject.included_modules
+      assert_includes MR::Model::Configuration, subject
     end
 
     should "return an instance of a FieldSet using `fields`" do

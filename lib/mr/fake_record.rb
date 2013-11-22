@@ -75,14 +75,6 @@ module MR::FakeRecord
     !!@destroyed
   end
 
-  def [](attribute_name)
-    self.send(attribute_name)
-  end
-
-  def []=(attribute_name, value)
-    self.send("#{attribute_name}=", value)
-  end
-
   def association(name)
     association = self.class.associations.detect{ |a| a.name.to_s == name.to_s }
     association.dup.tap{ |a| a.record = self }
@@ -107,7 +99,7 @@ module MR::FakeRecord
       attribute = Attribute.new(name, type)
       attr_accessor attribute.name
       define_method("#{attribute.name}_changed?") do
-        self[attribute.name] != @saved_attributes[attribute.name.to_sym]
+        self.send(attribute.name) != @saved_attributes[attribute.name.to_sym]
       end
       self.fr_config.attributes << attribute
     end

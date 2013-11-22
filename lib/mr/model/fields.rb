@@ -110,16 +110,17 @@ module MR::Model
       @reader_method_name  = @name
       @changed_method_name = "#{@name}_changed?"
       @writer_method_name  = "#{@reader_method_name}="
-      @attribute_name = @reader_method_name
-      @attribute_changed_method_name = "#{@attribute_name}_changed?"
+      @attribute_reader_method_name = @reader_method_name
+      @attribute_writer_method_name = @writer_method_name
+      @attribute_changed_method_name = "#{@reader_method_name}_changed?"
     end
 
     def read(record)
-      record[@attribute_name]
+      record.send(@attribute_reader_method_name)
     end
 
     def write(value, record)
-      record[@attribute_name] = value
+      record.send(@attribute_writer_method_name, value)
     end
 
     def changed?(record)
