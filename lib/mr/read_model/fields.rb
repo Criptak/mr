@@ -1,6 +1,6 @@
-require 'active_record'
 require 'mr/read_model/data'
 require 'mr/read_model/querying'
+require 'mr/type_converter'
 
 module MR; end
 module MR::ReadModel
@@ -53,7 +53,7 @@ module MR::ReadModel
 
     def read_all(data)
       inject({}) do |h, field|
-        h.merge({ field.name => field.read(data) })
+        h.merge(field.name => field.read(data))
       end
     end
 
@@ -70,36 +70,22 @@ module MR::ReadModel
   end
 
   class Field
-
-    TYPES = {
-      :boolean  => [ :boolean ],
-      :binary   => [ :binary ],
-      :date     => [ :date ],
-      :datetime => [ :datetime, :timestamp ],
-      :decimal  => [ :decimal ],
-      :float    => [ :float ],
-      :integer  => [ :integer, :primary_key ],
-      :string   => [ :string, :text ],
-      :time     => [ :time ]
-    }.freeze
-    VALID_TYPES = TYPES.values.flatten.freeze
-
     attr_reader :name, :type, :value
     attr_reader :method_name, :ivar_name
 
     def initialize(name, type)
       @name = name.to_s
       @type = type.to_sym
-      raise BadFieldTypeError.new(@type) unless VALID_TYPES.include?(@type)
+      raise BadFieldTypeError.new(@type) unless MR::TypeConverter.valid?(@type)
       @method_name     = @name
       @ivar_name       = "@#{@name}"
       @attribute_name  = @name
-      @ar_column_class = nil
+      @converter = nil
     end
 
     def read(data)
-      @ar_column_class ||= determine_ar_column_class(data)
-      type_cast(data[@attribute_name])
+      @converter ||= MR::TypeConverter.new(determine_ar_column_class(data))
+      @converter.convert(data[@attribute_name], @type)
     end
 
     def define_on(model_class)
@@ -117,26 +103,7 @@ module MR::ReadModel
     private
 
     def determine_ar_column_class(data)
-      if data.class.respond_to?(:columns)
-        data.class.columns.first.class
-      else
-        ActiveRecord::ConnectionAdapters::Column
-      end
-    end
-
-    def type_cast(value)
-      return if value.nil?
-      case @type
-      when *TYPES[:string]   then value
-      when *TYPES[:integer]  then @ar_column_class.value_to_integer(value)
-      when *TYPES[:float]    then value.to_f
-      when *TYPES[:decimal]  then @ar_column_class.value_to_decimal(value)
-      when *TYPES[:datetime] then @ar_column_class.string_to_time(value)
-      when *TYPES[:time]     then @ar_column_class.string_to_dummy_time(value)
-      when *TYPES[:date]     then @ar_column_class.string_to_date(value)
-      when *TYPES[:binary]   then @ar_column_class.binary_to_string(value)
-      when *TYPES[:boolean]  then @ar_column_class.value_to_boolean(value)
-      end
+      data.class.columns.first.class if data.class.respond_to?(:columns)
     end
 
   end
