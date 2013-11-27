@@ -2,6 +2,7 @@ require 'bench/setup'
 
 profiler = Bench::Profiler.new("bench/results/factory.txt")
 profiler.run("MR::Factory") do
+  MR::Factory.type_converter # memoize this
 
   benchmark("primary_key new provider") do |n|
     MR::Factory.primary_key("bench script #{n}")
@@ -50,7 +51,7 @@ profiler.run("MR::Factory") do
 
   benchmark("timestamp new") do
     MR::Factory.timestamp
-    MR::Factory.instance_variable_set("@time", nil)
+    MR::Factory.instance_variable_set("@timestamp", nil)
   end
   MR::Factory.timestamp
   benchmark("timestamp existing") do
