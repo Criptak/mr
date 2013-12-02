@@ -2,86 +2,149 @@ require 'assert'
 require 'mr/factory'
 
 require 'thread'
+require 'mr/type_converter'
 
 module MR::Factory
 
   class UnitTests < Assert::Context
     desc "MR::Factory"
+    setup do
+      @type_converter = MR::TypeConverter.new
+    end
     subject{ MR::Factory }
 
     should have_imeths :new
-    should have_imeths :primary_key, :integer, :float, :decimal
-    should have_imeths :date, :datetime, :time, :timestamp
-    should have_imeths :string, :text, :hex
-    should have_imeths :boolean
+    should have_imeths :primary_key, :integer
+    should have_imeths :float, :decimal
+    should have_imeths :date, :time
+    should have_imeths :datetime, :timestamp
+    should have_imeths :string, :text
+    should have_imeths :slug, :hex
     should have_imeths :binary
+    should have_imeths :boolean
+    should have_imeths :type_cast, :type_converter
 
-    should "return unique integers for an identifier with #primary_key" do
-      threads = [*0..2].map do |n|
-        Thread.new{ Thread.current['id'] = subject.primary_key('test') }
-      end
-      primary_keys = threads.map{ |thread| thread.join; thread['id'] }
-      primary_keys.each_with_index do |primary_key, n|
-        assert_equal n + 1, primary_key
-      end
-      assert_equal 1, subject.primary_key('not_test')
+    should "return unique integers for an identifier using `primary_key`" do
+      assert_equal 1, subject.primary_key('test')
+      assert_equal 2, subject.primary_key('test')
+      assert_equal 1, subject.primary_key('other')
     end
 
-    should "return a random Fixnum with #integer" do
-      assert_instance_of Fixnum, subject.integer(10)
+    should "return a random integer using `integer`" do
+      assert_kind_of Integer, subject.integer
     end
 
-    should "return a random Float with #float and #decimal" do
-      assert_instance_of Float,  subject.float(10)
-      assert_instance_of Float,  subject.decimal(10)
+    should "allow passing a maximum value using `integer`" do
+      assert_includes subject.integer(2), [ 1, 2 ]
     end
 
-    should "return a Date with #date" do
-      returned_date = subject.date
-      assert_instance_of Date, returned_date
-      assert_same returned_date, subject.date
+    should "return a random float using `float`" do
+      assert_kind_of Float, subject.float
     end
 
-    should "return a DateTime with #datetime" do
-      returned_datetime = subject.datetime
-      assert_instance_of DateTime, returned_datetime
-      assert_same returned_datetime, subject.datetime
+    should "allow passing a maximum value using `float`" do
+      float = subject.float(2)
+      assert float <= 2
+      assert float >= 1
     end
 
-    should "return a Time with #time" do
-      returned_time = subject.time
-      assert_instance_of Time, returned_time
-      assert_same returned_time, subject.time
+    should "return a random decimal using `decimal`" do
+      assert_kind_of BigDecimal, subject.decimal
     end
 
-    should "return a random a-z String with #string and #text" do
-      string = subject.string(10)
-      assert_instance_of String, string
-      assert_match(/\A[a-z]{10}\Z/, string)
-
-      text = subject.text(10)
-      assert_instance_of String, text
-      assert_match(/\A[a-z]{10}\Z/, text)
+    should "allow passing a maximum value using `decimal`" do
+      decimal = subject.decimal(2)
+      assert decimal <= 2
+      assert decimal >= 1
     end
 
-    should "return a random hex String with #hex" do
-      hex = subject.hex(10)
-      assert_instance_of String, hex
-      assert_match(/\A[0-9a-f]{10}\Z/, hex)
+    should "return a random date using `date`" do
+      assert_kind_of Date, subject.date
     end
 
-    should "return a dasherized String with #slug" do
-      slug = subject.slug(10)
-      assert_instance_of String, slug
-      assert_match(/\A[a-z]{4}-[a-z]{4}-[a-z]{2}\Z/, slug)
+    should "return the same date with every call to `date`" do
+      date = subject.date
+      assert_same date, subject.date
     end
 
-    should "return true with #boolean" do
-      assert_equal true, subject.boolean
+    should "return a random time object using `time`" do
+      assert_kind_of Time, subject.time
     end
 
-    should "return a string of bytes with #binary" do
-      assert_instance_of String, subject.binary
+    should "return the same time object with every call to `time`" do
+      time = subject.time
+      assert_same time, subject.time
+    end
+
+    should "return a random time object using `datetime`" do
+      assert_kind_of Time, subject.datetime
+    end
+
+    should "return the same time object with every call to `datetime`" do
+      datetime = subject.datetime
+      assert_same datetime, subject.datetime
+    end
+
+    should "return a random time object using `timestamp`" do
+      assert_kind_of Time, subject.timestamp
+    end
+
+    should "return the same time object with every call to `timestamp`" do
+      timestamp = subject.timestamp
+      assert_same timestamp, subject.timestamp
+    end
+
+    should "return a random string using `string`" do
+      assert_kind_of String, subject.string
+      assert_equal 10, subject.string.length
+    end
+
+    should "allow passing a maximum length using `string`" do
+      assert_equal 1, subject.string(1).length
+    end
+
+    should "return a random string using `text`" do
+      assert_kind_of String, subject.text
+      assert_equal 20, subject.text.length
+    end
+
+    should "allow passing a maximum length using `text`" do
+      assert_equal 1, subject.text(1).length
+    end
+
+    should "return a random hex string using `hex`" do
+      assert_kind_of String, subject.hex
+      assert_match(/\A[0-9a-f]{10}\Z/, subject.hex)
+    end
+
+    should "allow passing a maximum length using `hex`" do
+      assert_equal 1, subject.hex(1).length
+    end
+
+    should "return a random slug string using `slug`" do
+      assert_kind_of String, subject.slug
+      assert_match(/\A[a-z]{4}-[a-z]{4}-[a-z]{2}\Z/, subject.slug)
+    end
+
+    should "allow passing a maximum length using `slug`" do
+      assert_equal 1, subject.slug(1).length
+    end
+
+    should "return a random binary string using `binary`" do
+      assert_kind_of String, subject.binary
+    end
+
+    should "return a random boolean using `boolean`" do
+      assert_includes subject.boolean.class, [ TrueClass, FalseClass ]
+    end
+
+    should "type cast values to a specified type using `type_cast`" do
+      expected = Date.parse('2013-01-01')
+      assert_equal expected, subject.type_cast('2013-01-01', :date)
+    end
+
+    should "return an instance of MR::TypeConverter using `type_converter`" do
+      assert_instance_of MR::TypeConverter, subject.type_converter
     end
 
   end
@@ -96,15 +159,24 @@ module MR::Factory
 
     should have_readers :mutex, :current
 
-    should "store a mutex and it's the current id" do
+    should "store a mutex and it's current value" do
       assert_instance_of Mutex,  subject.mutex
       assert_instance_of Fixnum, subject.current
     end
 
-    should "increated the counter and return the value with #next" do
+    should "increated the counter and return the value using `next`" do
       next_id = subject.next
       assert_equal @started_at + 1, next_id
       assert_equal @started_at + 1, subject.current
+    end
+
+    should "lock getting the next value using `next`" do
+      threads = [*0..2].map do |n|
+        Thread.new{ Thread.current['id'] = @provider.next }
+      end
+      primary_keys = threads.map{ |thread| thread.join; thread['id'] }
+      assert_includes 1, primary_keys
+      assert_includes 2, primary_keys
     end
 
   end

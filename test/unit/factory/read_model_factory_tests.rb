@@ -39,11 +39,11 @@ class MR::Factory::ReadModelFactory
       assert_kind_of String,    read_model.string
       assert_kind_of Integer,   read_model.integer
       assert_kind_of Float,     read_model.float
-      assert_kind_of DateTime,  read_model.datetime
+      assert_kind_of Time,      read_model.datetime
       assert_kind_of Time,      read_model.time
       assert_kind_of Date,      read_model.date
-      assert_kind_of TrueClass, read_model.boolean
       assert_kind_of Integer,   read_model.primary_key
+      assert_includes read_model.boolean.class, [ TrueClass, FalseClass ]
     end
 
     should "raise an ArgumentError if a non-Hash is passed to `default_args`" do
