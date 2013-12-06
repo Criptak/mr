@@ -1,0 +1,9 @@
+language: ruby
+rvm:
+  - ree
+  - 2.0.0
+  - rbx-2.2.1
+script: bundle exec assert
+branches:
+  only:
+    - master

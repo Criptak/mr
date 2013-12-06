@@ -1,3 +1,4 @@
+$LOAD_PATH.push File.expand_path('../..', __FILE__)
 require 'test/support/setup_test_db'
 require 'mr'
 require 'whysoslow'
