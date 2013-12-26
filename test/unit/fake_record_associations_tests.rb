@@ -85,7 +85,9 @@ class MR::FakeRecord::Association
 
     should "know it's foreign_key" do
       assert_equal "created_by_id", subject.foreign_key
-      belongs_to = MR::FakeRecord::BelongsTo.new(:user, 'FakeTestRecord')
+      belongs_to = MR::FakeRecord::BelongsTo.new(:user, {
+        :class_name => 'FakeTestRecord'
+      })
       assert_equal "user_id", belongs_to.foreign_key
     end
 

@@ -51,7 +51,7 @@ module MR::ReadModel
       object_hex = (subject.object_id << 1).to_s(16)
       values_inspect = @read_model_class.fields.map do |field|
         "#{field.ivar_name}=#{field.read(@data).inspect}"
-      end
+      end.join(' ')
       expected = "#<#{@read_model_class}:0x#{object_hex} #{values_inspect}>"
       assert_equal expected, subject.inspect
     end

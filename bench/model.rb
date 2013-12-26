@@ -1,3 +1,4 @@
+$LOAD_PATH.push File.expand_path('../..', __FILE__)
 require 'bench/setup'
 
 profiler = Bench::Profiler.new("bench/results/model.txt")
