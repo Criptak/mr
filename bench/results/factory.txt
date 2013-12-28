@@ -1,22 +1,22 @@
 MR::Factory
 -----------
-  primary_key new provider               |      70.11 ms |       3.18 MB |
-  primary_key existing provider          |      39.73 ms |        0.0 MB |
-  integer                                |      27.42 ms |        0.0 MB |
-  float                                  |      29.94 ms |        0.0 MB |
-  decimal                                |      69.29 ms |        0.0 MB |
-  date new                               |     329.34 ms |      19.97 MB |
-  date existing                          |        3.1 ms |        0.0 MB |
-  datetime new                           |     238.86 ms |       0.27 MB |
-  datetime existing                      |       3.06 ms |        0.0 MB |
-  time new                               |     240.08 ms |        0.0 MB |
-  time existing                          |       3.14 ms |        0.0 MB |
-  timestamp new                          |     235.97 ms |        0.0 MB |
-  timestamp existing                     |       3.11 ms |        0.0 MB |
-  string                                 |     100.29 ms |        0.0 MB |
-  text                                   |     152.14 ms |        0.0 MB |
-  slug                                   |     146.97 ms |        0.0 MB |
-  hex                                    |     151.08 ms |        0.0 MB |
-  binary                                 |      50.97 ms |        0.0 MB |
-  boolean                                |      42.75 ms |        0.0 MB |
-Total                                    |       3.13 s  |      23.75 MB |
+  primary_key new provider               |      66.13 ms |       3.18 MB |
+  primary_key existing provider          |      38.56 ms |        0.0 MB |
+  integer                                |      29.94 ms |        0.0 MB |
+  float                                  |      27.84 ms |        0.0 MB |
+  decimal                                |      69.07 ms |        0.0 MB |
+  date new                               |     328.29 ms |      19.22 MB |
+  date existing                          |       3.04 ms |        0.0 MB |
+  datetime new                           |     230.59 ms |       0.79 MB |
+  datetime existing                      |       3.11 ms |        0.0 MB |
+  time new                               |     230.27 ms |        0.0 MB |
+  time existing                          |       3.12 ms |        0.0 MB |
+  timestamp new                          |     233.62 ms |        0.0 MB |
+  timestamp existing                     |       3.15 ms |        0.0 MB |
+  string                                 |       98.2 ms |        0.0 MB |
+  text                                   |     149.72 ms |        0.0 MB |
+  slug                                   |     143.76 ms |        0.0 MB |
+  hex                                    |     143.65 ms |        0.0 MB |
+  binary                                 |      52.46 ms |        0.0 MB |
+  boolean                                |      41.68 ms |        0.0 MB |
+Total                                    |       3.08 s  |      23.52 MB |
