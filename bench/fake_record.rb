@@ -17,8 +17,8 @@ profiler.run("MR::FakeRecord") do
   end
 
   section "Comparison" do
-    first_fake_record  = FakeAreaRecord.new.tap{ |fr| fr.save! }
-    second_fake_record = FakeAreaRecord.new.tap{ |fr| fr.save! }
+    first_fake_record  = FakeAreaRecord.new.tap(&:save!)
+    second_fake_record = FakeAreaRecord.new.tap(&:save!)
     equal_fake_record  = FakeAreaRecord.new(first_fake_record.attributes)
 
     benchmark("== unequal") do |n|
@@ -30,26 +30,13 @@ profiler.run("MR::FakeRecord") do
   end
 
   section "Attributes" do
-    fake_record_class = Class.new{ include MR::FakeRecord::Attributes }
+    fake_record_class = Class.new{ include MR::FakeRecord }
 
     benchmark("attribute") do |n|
       fake_record_class.attribute "accessor_#{n}", :string
     end
 
-    # TODO - replace with FakeAreaRecord when Attributes is part of FakeRecord
-    fake_record_class = Class.new do
-      include MR::FakeRecord::Attributes
-
-      attribute :name,        :string
-      attribute :active,      :boolean
-      attribute :description, :text
-
-      def initialize(values = nil)
-        self.attributes = values || {}
-      end
-    end
-
-    fake_area_record = fake_record_class.new({
+    fake_area_record = FakeAreaRecord.new({
       :name        => 'Name',
       :active      => true,
       :description => 'description'
@@ -76,12 +63,12 @@ profiler.run("MR::FakeRecord") do
     end
 
     benchmark("columns") do |n|
-      fake_record_class.columns
+      FakeAreaRecord.columns
     end
   end
 
   section "Associations" do
-    fake_record_class = Class.new{ include MR::FakeRecord::Associations }
+    fake_record_class = Class.new{ include MR::FakeRecord }
 
     benchmark("belongs_to") do |n|
       fake_record_class.belongs_to "belongs_to_#{n}", 'FakeAreaRecord'
@@ -96,64 +83,17 @@ profiler.run("MR::FakeRecord") do
       fake_record_class.polymorphic_belongs_to "polymorphic_belongs_to_#{n}"
     end
 
-    # TODO - replace these when Associations is part of FakeRecord
-    fake_area_record_class = Class.new do
-      include MR::FakeRecord::Associations
-      attribute :id, :primary_key
-      has_many :users, 'FakeUserRecord'
-
-      def save!
-        self.id ||= MR::Factory.primary_key(self.class)
-      end
-    end
-    fake_user_record_class = Class.new do
-      include MR::FakeRecord::Associations
-      attribute :id,       :primary_key
-      attribute :area_id,  :integer
-      attribute :image_id, :integer
-      belongs_to :area, 'FakeAreaRecord'
-      has_one :image, 'FakeImageRecord'
-      has_many :comments, 'FakeCommentRecord'
-
-      def save!
-        self.id ||= MR::Factory.primary_key(self.class)
-      end
-    end
-    fake_image_record_class = Class.new do
-      include MR::FakeRecord::Associations
-      attribute :id,      :primary_key
-      attribute :user_id, :integer
-      belongs_to :user, 'FakeUserRecord'
-
-      def save!
-        self.id ||= MR::Factory.primary_key(self.class)
-      end
-    end
-    fake_comment_record_class = Class.new do
-      include MR::FakeRecord::Associations
-      attribute :id,            :primary_key
-      attribute :parent_type,   :string
-      attribute :parent_id,     :integer
-      attribute :created_by_id, :integer
-      polymorphic_belongs_to :parent
-      belongs_to :created_by, 'FakeUserRecord'
-
-      def save!
-        self.id ||= MR::Factory.primary_key(self.class)
-      end
-    end
-
-    first_area_record   = fake_area_record_class.new.tap{ |a| a.save! }
-    second_area_record  = fake_area_record_class.new.tap{ |a| a.save! }
-    first_user_record   = fake_user_record_class.new.tap{ |u| u.save! }
-    second_user_record  = fake_user_record_class.new.tap{ |u| u.save! }
-    first_image_record  = fake_image_record_class.new.tap{ |i| i.save! }
-    second_image_record = fake_image_record_class.new.tap{ |i| i.save! }
+    first_area_record   = FakeAreaRecord.new.tap(&:save!)
+    second_area_record  = FakeAreaRecord.new.tap(&:save!)
+    first_user_record   = FakeUserRecord.new.tap(&:save!)
+    second_user_record  = FakeUserRecord.new.tap(&:save!)
+    first_image_record  = FakeImageRecord.new.tap(&:save!)
+    second_image_record = FakeImageRecord.new.tap(&:save!)
 
     first_user_record.area  = first_area_record
     first_user_record.image = first_image_record
     first_user_record.save!
-    comment_record = fake_comment_record_class.new.tap do |c|
+    comment_record = FakeCommentRecord.new.tap do |c|
       c.parent = first_user_record
       c.save!
     end
@@ -187,10 +127,10 @@ profiler.run("MR::FakeRecord") do
       comment_record.parent = (n % 2 == 0) ? second_user_record : first_user_record
     end
 
-    fake_area_record = fake_area_record_class.new
+    fake_area_record = FakeAreaRecord.new
 
     benchmark("reflect_on_all_associations") do
-      fake_area_record_class.reflect_on_all_associations
+      FakeAreaRecord.reflect_on_all_associations
     end
     benchmark("association") do |n|
       fake_area_record.association(:users)

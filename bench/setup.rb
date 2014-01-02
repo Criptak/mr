@@ -1,8 +1,6 @@
 $LOAD_PATH.push File.expand_path('../..', __FILE__)
 require 'test/support/setup_test_db'
 require 'mr'
-require 'mr/fake_record/attributes'
-require 'mr/fake_record/associations'
 require 'whysoslow'
 
 require 'test/support/models/area'

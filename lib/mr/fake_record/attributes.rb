@@ -51,6 +51,7 @@ module MR::FakeRecord
   end
 
   class AttributeSet
+    include Enumerable
 
     def initialize
       @attributes = {}
@@ -58,6 +59,10 @@ module MR::FakeRecord
 
     def find(name)
       @attributes[name.to_s] || raise(NoAttributeError.new(name))
+    end
+
+    def each(&block)
+      @attributes.values.each(&block)
     end
 
     def read_all(record)

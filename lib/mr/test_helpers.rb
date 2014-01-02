@@ -21,8 +21,8 @@ module MR::TestHelpers
 
       previous_attrs = model.send(:record).previous_attributes || {}
       saved_attrs    = model.send(:record).saved_attributes || {}
-      changed  = previous_attrs[field_name.to_sym] != saved_attrs[field_name.to_sym]
-      saved_as = saved_attrs[field_name.to_sym]
+      changed  = previous_attrs[field_name.to_s] != saved_attrs[field_name.to_s]
+      saved_as = saved_attrs[field_name.to_s]
 
       if check_value
         desc = "Expected #{field_name.inspect} was saved as #{value.inspect}"
@@ -44,8 +44,8 @@ module MR::TestHelpers
 
       previous_attrs = model.send(:record).previous_attributes || {}
       saved_attrs    = model.send(:record).saved_attributes || {}
-      changed  = previous_attrs[field_name.to_sym] != saved_attrs[field_name.to_sym]
-      saved_as = saved_attrs[field_name.to_sym]
+      changed  = previous_attrs[field_name.to_s] != saved_attrs[field_name.to_s]
+      saved_as = saved_attrs[field_name.to_s]
 
       if check_value
         desc = "Expected #{field_name.inspect} was not saved as #{value.inspect}"

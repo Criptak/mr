@@ -95,7 +95,11 @@ module MR::FakeRecord::Attributes
 
     should have_imeths :add, :find
     should have_imeths :read_all, :batch_write
-    should have_imeths :to_a
+    should have_imeths :each, :to_a
+
+    should "be enumerable" do
+      assert_includes Enumerable, subject.class
+    end
 
     should "add an attribute to the set with `add` and return it using `find`" do
       subject.add :created_at, :timestamp, @fake_record_class
@@ -114,6 +118,12 @@ module MR::FakeRecord::Attributes
       assert_equal 'test', @fake_record.name
       assert_equal true,   @fake_record.active
       assert_equal values, subject.read_all(@fake_record)
+    end
+
+    should "yield each attribute using `each`" do
+      yielded = []
+      subject.each{ |a| yielded << a }
+      assert_equal yielded.sort, subject.to_a
     end
 
     should "return it's attributes sorted using `to_a`" do
