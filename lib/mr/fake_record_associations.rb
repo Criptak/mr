@@ -3,7 +3,7 @@ require 'active_support/core_ext/string'
 module MR; end
 module MR::FakeRecord
 
-  class Association
+  class AssociationOld
     attr_reader :name, :options, :ivar_name, :fake_record_class_name
     attr_accessor :record
 
@@ -72,7 +72,7 @@ module MR::FakeRecord
 
   end
 
-  class BelongsTo < Association
+  class BelongsToOld < AssociationOld
     attr_reader :foreign_key
 
     def initialize(name, options = nil)
@@ -99,7 +99,7 @@ module MR::FakeRecord
 
   end
 
-  class HasMany < Association
+  class HasManyOld < AssociationOld
 
     def macro
       :has_many
@@ -122,11 +122,11 @@ module MR::FakeRecord
 
   end
 
-  class HasOne < Association
+  class HasOneOld < AssociationOld
     def macro; :has_one; end
   end
 
-  class PolymorphicBelongsTo < BelongsTo
+  class PolymorphicBelongsToOld < BelongsToOld
     attr_reader :foreign_type
 
     def initialize(name, options = nil)

@@ -125,25 +125,25 @@ module MR::FakeRecord
     def belongs_to(name, fake_record_class_name, options = nil)
       options ||= {}
       options[:class_name] = fake_record_class_name
-      association = BelongsTo.new(name, options)
+      association = BelongsToOld.new(name, options)
       association.define_methods(self)
       self.fr_config.associations << association
     end
 
     def has_many(name, fake_record_class_name)
-      association = HasMany.new(name, :class_name => fake_record_class_name)
+      association = HasManyOld.new(name, :class_name => fake_record_class_name)
       association.define_methods(self)
       self.fr_config.associations << association
     end
 
     def has_one(name, fake_record_class_name)
-      association = HasOne.new(name, :class_name => fake_record_class_name)
+      association = HasOneOld.new(name, :class_name => fake_record_class_name)
       association.define_methods(self)
       self.fr_config.associations << association
     end
 
     def polymorphic_belongs_to(name, options = nil)
-      association = PolymorphicBelongsTo.new(name, options)
+      association = PolymorphicBelongsToOld.new(name, options)
       association.define_methods(self)
       self.fr_config.associations << association
     end
