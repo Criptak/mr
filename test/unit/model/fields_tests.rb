@@ -118,16 +118,9 @@ module MR::Model::Fields
     end
     subject{ @fields_set }
 
-    should have_imeths :names
     should have_imeths :find, :get
     should have_imeths :read_all, :batch_write
     should have_imeths :add_reader, :add_writer
-
-    should "return a list of all the field names using `names`" do
-      subject.get('name')
-      subject.get('active')
-      assert_equal [ 'active', 'name' ], subject.names
-    end
 
     should "return an existing field or raise a no field error using `find`" do
       subject.get('name')

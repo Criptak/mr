@@ -58,10 +58,6 @@ module MR::Model
       @fields = {}
     end
 
-    def names
-      @fields.keys.sort
-    end
-
     def find(name)
       @fields[name.to_s] || raise(NoFieldError, "the '#{name}' field doesn't exist")
     end
@@ -70,14 +66,14 @@ module MR::Model
       @fields[name.to_s] ||= Field.new(name)
     end
 
+    def each(&block)
+      @fields.values.each(&block)
+    end
+
     def read_all(record)
       @fields.values.inject({}) do |h, field|
         h.merge(field.name => field.read(record))
       end
-    end
-
-    def each(&block)
-      @fields.values.each(&block)
     end
 
     def batch_write(values, record)

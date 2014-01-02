@@ -17,8 +17,8 @@ profiler.run("MR::FakeRecord") do
   end
 
   section "Comparison" do
-    first_fake_record  = FakeAreaRecord.new.tap{ |fr| fr.save! }
-    second_fake_record = FakeAreaRecord.new.tap{ |fr| fr.save! }
+    first_fake_record  = FakeAreaRecord.new.tap(&:save!)
+    second_fake_record = FakeAreaRecord.new.tap(&:save!)
     equal_fake_record  = FakeAreaRecord.new(first_fake_record.attributes)
 
     benchmark("== unequal") do |n|
@@ -62,8 +62,8 @@ profiler.run("MR::FakeRecord") do
       }
     end
 
-    benchmark("column_names") do |n|
-      FakeAreaRecord.column_names
+    benchmark("columns") do |n|
+      FakeAreaRecord.columns
     end
   end
 
@@ -83,12 +83,12 @@ profiler.run("MR::FakeRecord") do
       fake_record_class.polymorphic_belongs_to "polymorphic_belongs_to_#{n}"
     end
 
-    first_area_record   = FakeAreaRecord.new.tap{ |a| a.save! }
-    second_area_record  = FakeAreaRecord.new.tap{ |a| a.save! }
-    first_user_record   = FakeUserRecord.new.tap{ |u| u.save! }
-    second_user_record  = FakeUserRecord.new.tap{ |u| u.save! }
-    first_image_record  = FakeImageRecord.new.tap{ |i| i.save! }
-    second_image_record = FakeImageRecord.new.tap{ |i| i.save! }
+    first_area_record   = FakeAreaRecord.new.tap(&:save!)
+    second_area_record  = FakeAreaRecord.new.tap(&:save!)
+    first_user_record   = FakeUserRecord.new.tap(&:save!)
+    second_user_record  = FakeUserRecord.new.tap(&:save!)
+    first_image_record  = FakeImageRecord.new.tap(&:save!)
+    second_image_record = FakeImageRecord.new.tap(&:save!)
 
     first_user_record.area  = first_area_record
     first_user_record.image = first_image_record
@@ -131,9 +131,6 @@ profiler.run("MR::FakeRecord") do
 
     benchmark("reflect_on_all_associations") do
       FakeAreaRecord.reflect_on_all_associations
-    end
-    benchmark("reflect_on_association") do
-      FakeAreaRecord.reflect_on_association(:users)
     end
     benchmark("association") do |n|
       fake_area_record.association(:users)

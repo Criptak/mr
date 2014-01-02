@@ -57,11 +57,9 @@ module MR::Factory
     end
 
     def one_to_one_associations_with_args(record, args)
-      record.class.reflect_on_all_associations.select do |reflection|
-        hash_key?(args, reflection.name) && !reflection.collection?
-      end.map do |reflection|
-        record.association(reflection.name)
-      end
+      reflections = record.class.reflect_on_all_associations(:belongs_to) +
+                    record.class.reflect_on_all_associations(:has_one)
+      reflections.map{ |r| record.association(r.name) if hash_key?(args, r.name) }.compact
     end
 
     def non_association_columns(record_class)
@@ -72,9 +70,9 @@ module MR::Factory
     end
 
     def belongs_to_association_columns(record_class)
-      associations = record_class.reflect_on_all_associations.select(&:belongs_to?)
-      polymorphic_associations = associations.select{|a| a.options[:polymorphic] }
-      associations.map(&:foreign_key) + polymorphic_associations.map(&:foreign_type)
+      reflections = record_class.reflect_on_all_associations(:belongs_to)
+      polymorphic_reflections = reflections.select{ |a| a.options[:polymorphic] }
+      reflections.map(&:foreign_key) + polymorphic_reflections.map(&:foreign_type)
     end
 
   end
