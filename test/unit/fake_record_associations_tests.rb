@@ -3,17 +3,17 @@ require 'mr/fake_record_associations'
 
 require 'mr/fake_record'
 
-class MR::FakeRecord::Association
+class MR::FakeRecord::AssociationOld
 
   class UnitTests < Assert::Context
-    desc "MR::FakeRecord::Association"
+    desc "MR::FakeRecord::AssociationOld"
     setup do
       record_class = Class.new do
         attr_accessor :user, :created_by_id
         attr_accessor :users
       end
       @record = record_class.new
-      @association = MR::FakeRecord::Association.new(:user, {
+      @association = MR::FakeRecord::AssociationOld.new(:user, {
         :class_name => FakeTestRecord.name
       })
     end
@@ -67,10 +67,10 @@ class MR::FakeRecord::Association
 
   end
 
-  class BelongsToTests < UnitTests
-    desc "BelongsTo"
+  class BelongsToOldTests < UnitTests
+    desc "BelongsToOld"
     setup do
-      @belongs_to = MR::FakeRecord::BelongsTo.new(:user, {
+      @belongs_to = MR::FakeRecord::BelongsToOld.new(:user, {
         :class_name  => FakeTestRecord.name,
         :foreign_key => :created_by_id
       })
@@ -80,12 +80,12 @@ class MR::FakeRecord::Association
     should have_readers :foreign_key
 
     should "be a kind of fake association" do
-      assert subject.kind_of?(MR::FakeRecord::Association)
+      assert subject.kind_of?(MR::FakeRecord::AssociationOld)
     end
 
     should "know it's foreign_key" do
       assert_equal "created_by_id", subject.foreign_key
-      belongs_to = MR::FakeRecord::BelongsTo.new(:user, {
+      belongs_to = MR::FakeRecord::BelongsToOld.new(:user, {
         :class_name => 'FakeTestRecord'
       })
       assert_equal "user_id", belongs_to.foreign_key
@@ -106,17 +106,17 @@ class MR::FakeRecord::Association
 
   end
 
-  class HasManyTests < UnitTests
-    desc "HasMany"
+  class HasManyOldTests < UnitTests
+    desc "HasManyOld"
     setup do
-      @has_many = MR::FakeRecord::HasMany.new(:users, {
+      @has_many = MR::FakeRecord::HasManyOld.new(:users, {
         :class_name => FakeTestRecord.name
       })
     end
     subject{ @has_many }
 
     should "be a kind of fake association" do
-      assert subject.kind_of?(MR::FakeRecord::Association)
+      assert subject.kind_of?(MR::FakeRecord::AssociationOld)
     end
 
     should "return true with #collection?" do
@@ -136,17 +136,17 @@ class MR::FakeRecord::Association
 
   end
 
-  class HasOneTests < UnitTests
-    desc "HasOne"
+  class HasOneOldTests < UnitTests
+    desc "HasOneOld"
     setup do
-      @has_one = MR::FakeRecord::HasOne.new(:user, {
+      @has_one = MR::FakeRecord::HasOneOld.new(:user, {
         :class_name => FakeTestRecord.name
       })
     end
     subject{ @has_one }
 
     should "be a kind of fake association" do
-      assert subject.kind_of?(MR::FakeRecord::Association)
+      assert subject.kind_of?(MR::FakeRecord::AssociationOld)
     end
 
   end

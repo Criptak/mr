@@ -65,12 +65,12 @@ module MR::FakeRecord
     should "return it's association list with #associations" do
       assert_instance_of Set, @fake_record_class.associations
       @fake_record_class.associations.each do |association|
-        assert_kind_of MR::FakeRecord::Association, association
+        assert_kind_of MR::FakeRecord::AssociationOld, association
       end
       expected = [
-        [ 'parent',   MR::FakeRecord::BelongsTo, 'FakeParentRecord' ],
-        [ 'children', MR::FakeRecord::HasMany,   'FakeChildRecord' ],
-        [ 'thing',    MR::FakeRecord::HasOne,    'FakeThingRecord' ]
+        [ 'parent',   MR::FakeRecord::BelongsToOld, 'FakeParentRecord' ],
+        [ 'children', MR::FakeRecord::HasManyOld,   'FakeChildRecord' ],
+        [ 'thing',    MR::FakeRecord::HasOneOld,    'FakeThingRecord' ]
       ].sort
       actual = @fake_record_class.associations.map do |a|
         [ a.name.to_s, a.class, a.fake_record_class_name ]
@@ -128,7 +128,7 @@ module MR::FakeRecord
 
     should "return the association with the matching name with #association" do
       association = subject.association(:parent)
-      assert_instance_of MR::FakeRecord::BelongsTo, association
+      assert_instance_of MR::FakeRecord::BelongsToOld, association
       assert_equal :parent, association.name
     end
 
