@@ -1,36 +1,36 @@
 MR::FakeRecord
 --------------
 Initialization
-  initialize with no arguments           |     302.35 ms |      54.61 MB |
-  initialize with a hash                 |     382.29 ms |      29.81 MB |
+  initialize with no arguments           |     297.43 ms |       54.6 MB |
+  initialize with a hash                 |     383.77 ms |      29.81 MB |
 Comparison
-  == unequal                             |       6.62 ms |        0.0 MB |
-  == equal                               |       6.75 ms |        0.0 MB |
+  == unequal                             |       7.04 ms |        0.0 MB |
+  == equal                               |        7.0 ms |        0.0 MB |
 Attributes
-  attribute                              |     286.92 ms |      72.24 MB |
-  read single attribute                  |       1.69 ms |        0.0 MB |
-  write single attribute                 |      19.84 ms |        0.0 MB |
-  single attribute changed?              |      22.31 ms |        0.0 MB |
-  attributes                             |     100.71 ms |       0.74 MB |
-  attributes=                            |      85.04 ms |        0.0 MB |
-  columns                                |      28.93 ms |        0.0 MB |
+  attribute                              |      289.5 ms |      72.24 MB |
+  read single attribute                  |       1.74 ms |        0.0 MB |
+  write single attribute                 |      20.32 ms |        0.0 MB |
+  single attribute changed?              |      22.53 ms |        0.0 MB |
+  attributes                             |     100.48 ms |       0.73 MB |
+  attributes=                            |      90.33 ms |        0.0 MB |
+  columns                                |      27.46 ms |        0.0 MB |
 Associations
-  belongs_to                             |     364.37 ms |      64.58 MB |
-  has_many                               |     344.41 ms |     113.45 MB |
-  has_one                                |     430.05 ms |     125.53 MB |
-  polymorphic_belongs_to                 |     420.23 ms |     128.56 MB |
-  read belongs to                        |      35.07 ms |        0.0 MB |
-  write belongs to                       |      64.53 ms |        0.0 MB |
-  read has many                          |      33.88 ms |        0.0 MB |
-  write has many                         |      57.09 ms |        0.0 MB |
-  read has one                           |      32.23 ms |        0.0 MB |
-  write has one                          |      62.56 ms |        0.0 MB |
-  read polymorphic belongs to            |      32.22 ms |        0.0 MB |
-  write polymorphic belongs to           |    1956.05 ms |        0.0 MB |
-  reflect_on_all_associations            |     130.87 ms |      20.42 MB |
-  association                            |      66.44 ms |        0.0 MB |
+  belongs_to                             |     325.13 ms |      56.17 MB |
+  has_many                               |     334.21 ms |     118.36 MB |
+  has_one                                |     403.18 ms |     119.04 MB |
+  polymorphic_belongs_to                 |     374.65 ms |     120.46 MB |
+  read belongs to                        |      47.63 ms |        0.0 MB |
+  write belongs to                       |      92.23 ms |        0.0 MB |
+  read has many                          |      48.32 ms |        0.0 MB |
+  write has many                         |       86.4 ms |        0.0 MB |
+  read has one                           |      46.62 ms |        0.0 MB |
+  write has one                          |      58.43 ms |        0.0 MB |
+  read polymorphic belongs to            |      46.64 ms |        0.0 MB |
+  write polymorphic belongs to           |    2032.61 ms |        0.0 MB |
+  reflect_on_all_associations            |      95.94 ms |        3.8 MB |
+  association                            |       5.64 ms |        0.0 MB |
 Persistence
-  save!                                  |     807.79 ms |      49.85 MB |
-  destroy                                |      21.94 ms |        0.0 MB |
-  valid? and errors                      |     387.67 ms |        0.0 MB |
-Total                                    |       13.1 s  |     574.97 MB |
+  save!                                  |     799.41 ms |      128.0 MB |
+  destroy                                |      19.63 ms |        0.0 MB |
+  valid? and errors                      |     373.77 ms |        0.0 MB |
+Total                                    |      12.61 s  |     530.94 MB |

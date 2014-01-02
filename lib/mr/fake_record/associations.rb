@@ -15,42 +15,46 @@ module MR::FakeRecord
     # ActiveRecord methods
 
     def association(name)
-      self.class.associations.find(name)
+      @association_cache ||= {}
+      @association_cache[name.to_sym] ||= begin
+        reflection = self.class.reflections.find(name)
+        reflection.association_class.new(self, reflection)
+      end
     end
 
     module ClassMethods
 
-      def associations
-        @associations ||= MR::FakeRecord::AssociationSet.new
+      def reflections
+        @reflections ||= MR::FakeRecord::ReflectionSet.new
       end
 
       def belongs_to(name, class_name)
-        self.associations.add_belongs_to(name, class_name, self)
+        self.reflections.add_belongs_to(name, class_name, self)
       end
 
       def polymorphic_belongs_to(name)
-        self.associations.add_polymorphic_belongs_to(name, self)
+        self.reflections.add_polymorphic_belongs_to(name, self)
       end
 
       def has_one(name, class_name)
-        self.associations.add_has_one(name, class_name, self)
+        self.reflections.add_has_one(name, class_name, self)
       end
 
       def has_many(name, class_name)
-        self.associations.add_has_many(name, class_name, self)
+        self.reflections.add_has_many(name, class_name, self)
       end
 
       # ActiveRecord methods
 
       def reflect_on_all_associations(type = nil)
-        self.associations.all(type).map(&:reflection)
+        self.reflections.all(type)
       end
 
     end
 
   end
 
-  class AssociationSet
+  class ReflectionSet
     def initialize
       @belongs_to = {}
       @has_one  = {}
@@ -83,83 +87,133 @@ module MR::FakeRecord
     end
 
     def add_belongs_to(name, class_name, fake_record_class)
-      association = BelongsToAssociation.new(name, class_name)
-      association.define_accessor_on(fake_record_class)
-      @belongs_to[name.to_s] = association
+      reflection = Reflection.new(:belongs_to, name, {
+        :class_name  => class_name,
+        :foreign_key => "#{name}_id"
+      })
+      reflection.define_accessor_on(fake_record_class)
+      @belongs_to[name.to_s] = reflection
     end
 
     def add_polymorphic_belongs_to(name, fake_record_class)
-      association = PolymorphicBelongsToAssociation.new(name)
-      association.define_accessor_on(fake_record_class)
-      @belongs_to[name.to_s] = association
+      reflection = Reflection.new(:belongs_to, name, {
+        :foreign_type => "#{name}_type",
+        :foreign_key  => "#{name}_id",
+        :polymorphic  => true
+      })
+      reflection.define_accessor_on(fake_record_class)
+      @belongs_to[name.to_s] = reflection
     end
 
     def add_has_one(name, class_name, fake_record_class)
-      association = HasOneAssociation.new(name, class_name)
-      association.define_accessor_on(fake_record_class)
-      @has_one[name.to_s] = association
+      reflection = Reflection.new(:has_one, name, :class_name => class_name)
+      reflection.define_accessor_on(fake_record_class)
+      @has_one[name.to_s] = reflection
     end
 
     def add_has_many(name, class_name, fake_record_class)
-      association = HasManyAssociation.new(name, class_name)
-      association.define_accessor_on(fake_record_class)
-      @has_many[name.to_s] = association
+      reflection = Reflection.new(:has_many, name, :class_name => class_name)
+      reflection.define_accessor_on(fake_record_class)
+      @has_many[name.to_s] = reflection
     end
   end
 
-  class Association
+  class Reflection
     attr_reader :reader_method_name, :writer_method_name
-    attr_reader :ivar_name
 
     # ActiveRecord methods
-    attr_reader :reflection
+    attr_reader :name, :macro, :options
+    attr_reader :foreign_key, :foreign_type
+    attr_reader :association_class
 
-    def initialize(name, options = nil)
-      @reflection = Reflection.new(name, options)
+    BELONGS_TO_ASSOC_PROC = proc do |r|
+      r.options[:polymorphic] ? PolymorphicBelongsToAssociation : BelongsToAssociation
+    end
+    ASSOCIATION_CLASS = {
+      :belongs_to => BELONGS_TO_ASSOC_PROC,
+      :has_one    => proc{ HasOneAssociation },
+      :has_many   => proc{ HasManyAssociation }
+    }.freeze
+
+    def initialize(macro, name, options = nil)
+      @macro   = macro.to_sym
+      @name    = name
+      @options = options || {}
+      @class_name   = @options[:class_name]
+      @foreign_key  = @options[:foreign_key]
+      @foreign_type = @options[:foreign_type]
+
       @reader_method_name = name.to_s
       @writer_method_name = "#{@reader_method_name}="
-      @ivar_name = "@#{@reader_method_name}"
+      @association_class = ASSOCIATION_CLASS[@macro].call(self)
+    end
+
+    # ActiveRecord method
+    def klass
+      @klass ||= (@class_name.to_s.constantize if @class_name)
+    end
+
+    def define_accessor_on(fake_record_class)
+      reflection = self
+      fake_record_class.class_eval do
+
+        define_method(reflection.reader_method_name) do
+          self.association(reflection.name).read
+        end
+        define_method(reflection.writer_method_name) do |value|
+          self.association(reflection.name).write(value)
+        end
+
+      end
     end
 
     def <=>(other)
-      if other.kind_of?(Association)
-        self.reflection <=> other.reflection
+      if other.kind_of?(self.class)
+        [ self.macro,  self.options[:polymorphic],  self.name ].map(&:to_s) <=>
+        [ other.macro, other.options[:polymorphic], other.name ].map(&:to_s)
       else
         super
       end
     end
+  end
+
+  class Association
+    # ActiveRecord method
+    attr_reader :reflection
+
+    def initialize(owner, reflection)
+      @owner = owner
+      @reflection = reflection
+      @ivar_name = "@#{@reflection.name}"
+    end
+
+    def read;         raise NotImplementedError; end
+    def write(value); raise NotImplementedError; end
 
     # ActiveRecord method
     def klass
       self.reflection.klass
     end
+
+    def <=>(other)
+      other.kind_of?(Association) ? self.reflection <=> other.reflection : super
+    end
   end
 
   class OneToOneAssociation < Association
-    def initialize(name, options = nil)
-      @foreign_key = "#{name.to_s.downcase}_id"
-      super(name, options.merge(:foreign_key => @foreign_key))
+    def read
+      @owner.instance_variable_get(@ivar_name)
     end
 
-    def write_attributes(associated_fake_record, fake_record)
-      fake_record.send("#{@foreign_key}=", associated_fake_record.id)
+    def write(value)
+      @owner.instance_variable_set(@ivar_name, value)
+      write_attributes(value || NULL_RECORD)
+      value
     end
 
-    def define_accessor_on(fake_record_class)
-      association = self
-      fake_record_class.class_eval do
+    private
 
-        define_method(association.reader_method_name) do
-          self.instance_variable_get(association.ivar_name)
-        end
-        define_method(association.writer_method_name) do |value|
-          self.instance_variable_set(association.ivar_name, value)
-          association.write_attributes(value || NULL_RECORD, self)
-          value
-        end
-
-      end
-    end
+    def write_attributes(associated_fake_record); end
 
     NullRecord  = Struct.new(:id, :class)
     NullClass   = Struct.new(:name)
@@ -167,82 +221,38 @@ module MR::FakeRecord
   end
 
   class OneToManyAssociation < Association
-    def define_accessor_on(fake_record_class)
-      association = self
-      fake_record_class.class_eval do
+    def read
+      @owner.instance_variable_get(@ivar_name) ||
+      @owner.instance_variable_set(@ivar_name, [])
+    end
 
-        define_method(association.reader_method_name) do
-          self.instance_variable_get(association.ivar_name) ||
-          self.instance_variable_set(association.ivar_name, [])
-        end
-        define_method(association.writer_method_name) do |value|
-          self.instance_variable_set(association.ivar_name, [*value].compact)
-        end
-
-      end
+    def write(value)
+      @owner.instance_variable_set(@ivar_name, [*value].compact)
     end
   end
 
   class BelongsToAssociation < OneToOneAssociation
-    def initialize(name, class_name, options = nil)
-      options ||= {}
-      super(name, options.merge(:type => :belongs_to, :class_name => class_name))
+    def write_attributes(associated_fake_record)
+      super
+      associated_id = associated_fake_record.id
+      @owner.send("#{self.reflection.foreign_key}=", associated_id)
     end
   end
 
   class PolymorphicBelongsToAssociation < BelongsToAssociation
-    def initialize(name)
-      @foreign_type = "#{name.to_s.downcase}_type"
-      super(name, nil, :polymorphic => true, :foreign_type => @foreign_type)
-    end
-
-    def write_attributes(associated_fake_record, fake_record)
+    def write_attributes(associated_fake_record)
       super
-      fake_record.send("#{@foreign_type}=", associated_fake_record.class.to_s)
-    end
-  end
-
-  class HasOneAssociation < OneToOneAssociation
-    def initialize(name, class_name)
-      super(name, :type => :has_one, :class_name => class_name)
-    end
-  end
-
-  class HasManyAssociation < OneToManyAssociation
-    def initialize(name, class_name)
-      super(name, :type => :has_many, :class_name => class_name)
-    end
-  end
-
-  class Reflection
-    # All the methods on this class are ActiveRecord methods
-
-    attr_reader :name, :macro, :options
-    attr_reader :foreign_key, :foreign_type
-
-    def initialize(name, options = nil)
-      @name    = name
-      @options = options || {}
-      @macro   = options.delete(:type)
-      @class_name = options[:class_name].to_s
-      @foreign_key  = options[:foreign_key]
-      @foreign_type = options[:foreign_type]
+      associated_type = associated_fake_record.class.name
+      @owner.send("#{self.reflection.foreign_type}=", associated_type)
     end
 
     def klass
-      @klass ||= @class_name.constantize
+      class_name = @owner.send(self.reflection.foreign_type)
+      class_name.constantize if class_name
     end
-
-    def <=>(other)
-      if other.kind_of?(self.class)
-        a = [ self.macro,  self.options[:polymorphic],  self.name ].map(&:to_s)
-        b = [ other.macro, other.options[:polymorphic], other.name ].map(&:to_s)
-        a <=> b
-      else
-        super
-      end
-    end
-
   end
+
+  HasOneAssociation  = OneToOneAssociation
+  HasManyAssociation = OneToManyAssociation
 
 end
