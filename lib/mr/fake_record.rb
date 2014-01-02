@@ -96,7 +96,7 @@ module MR::FakeRecord
     end
 
     def attribute(name, type)
-      attribute = Attribute.new(name, type)
+      attribute = AttributeOld.new(name, type)
       attr_accessor attribute.name
       define_method("#{attribute.name}_changed?") do
         self.send(attribute.name) != @saved_attributes[attribute.name.to_sym]
@@ -154,7 +154,7 @@ module MR::FakeRecord
 
   end
 
-  class Attribute
+  class AttributeOld
     attr_reader :name, :type, :primary
     def initialize(name, type)
       @name = name.to_s

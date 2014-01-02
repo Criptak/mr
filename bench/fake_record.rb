@@ -30,13 +30,26 @@ profiler.run("MR::FakeRecord") do
   end
 
   section "Attributes" do
-    fake_record_class = Class.new{ include MR::FakeRecord }
+    fake_record_class = Class.new{ include MR::FakeRecord::Attributes }
 
     benchmark("attribute") do |n|
       fake_record_class.attribute "accessor_#{n}", :string
     end
 
-    fake_area_record = FakeAreaRecord.new({
+    # TODO - replace with FakeAreaRecord when Attributes is part of FakeRecord
+    fake_record_class = Class.new do
+      include MR::FakeRecord::Attributes
+
+      attribute :name,        :string
+      attribute :active,      :boolean
+      attribute :description, :text
+
+      def initialize(values = nil)
+        self.attributes = values || {}
+      end
+    end
+
+    fake_area_record = fake_record_class.new({
       :name        => 'Name',
       :active      => true,
       :description => 'description'
@@ -62,8 +75,8 @@ profiler.run("MR::FakeRecord") do
       }
     end
 
-    benchmark("column_names") do |n|
-      FakeAreaRecord.column_names
+    benchmark("columns") do |n|
+      fake_record_class.columns
     end
   end
 
