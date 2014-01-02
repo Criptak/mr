@@ -46,7 +46,7 @@ module MR::FakeRecord
     should "return it's attribute list with #attributes" do
       assert_instance_of Set, @fake_record_class.attributes
       @fake_record_class.attributes.each do |attribute|
-        assert_instance_of MR::FakeRecord::Attribute, attribute
+        assert_instance_of MR::FakeRecord::AttributeOld, attribute
       end
       expected = [
         [ 'id',         :primary_key ],
@@ -166,10 +166,10 @@ module MR::FakeRecord
 
   end
 
-  class AttributeTests < UnitTests
-    desc "Attribute"
+  class AttributeOldTests < UnitTests
+    desc "AttributeOld"
     setup do
-      @attribute = MR::FakeRecord::Attribute.new(:name, :string)
+      @attribute = MR::FakeRecord::AttributeOld.new(:name, :string)
     end
     subject{ @attribute }
 
@@ -180,7 +180,7 @@ module MR::FakeRecord
       assert_equal :string, subject.type
       assert_equal false,   subject.primary
 
-      attribute = MR::FakeRecord::Attribute.new(:id, :primary_key)
+      attribute = MR::FakeRecord::AttributeOld.new(:id, :primary_key)
       assert_equal true, attribute.primary
     end
 

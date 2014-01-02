@@ -58,10 +58,6 @@ module MR::Model
       @fields = {}
     end
 
-    def names
-      @fields.keys.sort
-    end
-
     def find(name)
       @fields[name.to_s] || raise(NoFieldError, "the '#{name}' field doesn't exist")
     end
