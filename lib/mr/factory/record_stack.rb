@@ -112,10 +112,9 @@ module MR::Factory
     private
 
     def belongs_to_associations(record)
-      record.class.reflect_on_all_associations.map do |reflection|
-        next unless reflection.belongs_to?
+      record.class.reflect_on_all_associations(:belongs_to).map do |reflection|
         Association.new(record, record.association(reflection.name))
-      end.compact.sort
+      end.sort
     end
 
     class Association

@@ -315,6 +315,9 @@ module MR::Model::Associations
 
   class FakeRecordWithAssociations
     include MR::FakeRecord
+    attribute :area_id, :integer
+    attribute :parent_type, :string
+    attribute :parent_id, :integer
     belongs_to :area, 'MR::Model::Associations::FakeRecordWithAssociations'
     polymorphic_belongs_to :parent
     has_one :image, 'MR::Model::Associations::FakeRecordWithAssociations'
@@ -323,6 +326,7 @@ module MR::Model::Associations
 
   class FakeTestRecord
     include MR::FakeRecord
+    attribute :area_id, :integer
     belongs_to :area, 'MR::Model::Associations::FakeTestRecord'
     has_many :comments, 'MR::Model::Associations::FakeTestRecord'
   end
