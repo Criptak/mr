@@ -1,3 +1,4 @@
+require 'thread'
 require 'mr/factory/model_factory'
 require 'mr/factory/read_model_factory'
 require 'mr/factory/record_factory'
