@@ -54,16 +54,12 @@ module MR::FakeRecord::Attributes
     end
     subject{ @fake_record }
 
-    should have_writers :saved_attributes, :previous_attributes
-    should have_imeths :saved_attributes, :previous_attributes
+    should have_writers :saved_attributes
+    should have_imeths :saved_attributes
     should have_imeths :attributes, :attributes=
 
     should "return an empty hash using `saved_attributes`" do
       assert_equal({}, subject.saved_attributes)
-    end
-
-    should "return an empty hash using `previous_attributes`" do
-      assert_equal({}, subject.previous_attributes)
     end
 
     should "return a hash of attribute values using `attributes`" do

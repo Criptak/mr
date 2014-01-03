@@ -54,6 +54,8 @@ module MR::FakeRecord::Persistence
     should have_imeths :transaction
     should have_imeths :new_record?, :destroyed?
     should have_imeths :errors, :valid?
+    should have_writers :current_saved_changes, :previous_saved_changes
+    should have_imeths :current_saved_changes, :current_saved_changes
 
     should "set it's id when saved for the first time using `save!`" do
       assert_nil subject.id
@@ -64,14 +66,6 @@ module MR::FakeRecord::Persistence
       assert_same id, subject.id
     end
 
-    should "copy it's saved attributes to it's previous attributes using `save!`" do
-      expected = { 'test' => true }
-      subject.saved_attributes = expected
-      assert_not_equal expected, subject.previous_attributes
-      subject.save!
-      assert_equal expected, subject.previous_attributes
-    end
-
     should "copy it's attributes to it's saved attributes using `save!`" do
       expected = { 'id' => @primary_key, 'name' => nil, 'active' => nil }
       assert_not_equal expected, subject.saved_attributes
@@ -79,12 +73,24 @@ module MR::FakeRecord::Persistence
       assert_equal expected, subject.saved_attributes
     end
 
-    should "only copy it's chagned attributes to it's saved attributes" do
+    should "copy it's current saved changes to it's " \
+           "previous saved changes using `save!`" do
+      expected = { 'test' => true }
+      subject.current_saved_changes = expected
+      assert_not_equal expected, subject.previous_saved_changes
       subject.save!
+      assert_equal expected, subject.previous_saved_changes
+    end
+
+    should "set it's changed attributes as it's current saved changes" do
+      expected = { 'id' => @primary_key, 'name' => nil, 'active' => nil }
+      subject.save!
+      assert_equal expected, subject.current_saved_changes
       subject.name = 'Test'
       subject.save!
-      assert subject.saved_attributes.key?('name')
-      assert_not subject.saved_attributes.key?('active')
+      assert subject.current_saved_changes.key?('name')
+      assert_not subject.current_saved_changes.key?('id')
+      assert_not subject.current_saved_changes.key?('active')
     end
 
     should "mark the fake record as destroyed using `destroy`" do
@@ -114,6 +120,14 @@ module MR::FakeRecord::Persistence
       assert subject.valid?
       subject.errors.add(:test, 'invalid')
       assert_not subject.valid?
+    end
+
+    should "return an empty hash using `current_saved_changes` by default" do
+      assert_equal({}, subject.current_saved_changes)
+    end
+
+    should "return an empty hash using `previous_saved_changes` by default" do
+      assert_equal({}, subject.previous_saved_changes)
     end
 
   end
