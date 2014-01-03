@@ -21,7 +21,8 @@ module MR::FakeRecord
       self.created_at ||= Time.now if self.respond_to?(:created_at=)
       self.updated_at   = Time.now if self.respond_to?(:updated_at=)
       self.previous_attributes = self.saved_attributes.dup
-      self.saved_attributes    = self.attributes.dup
+      changed_attributes = self.attributes.to_a - self.saved_attributes.to_a
+      self.saved_attributes = Hash[changed_attributes]
     end
 
     def destroy
