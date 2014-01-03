@@ -10,6 +10,7 @@ module MR::TestHelpers
     desc "MR::TestHelpers"
     subject{ MR::TestHelpers }
 
+    should have_imeths :assert_association_saved, :assert_not_association_saved
     should have_imeths :assert_destroyed, :assert_not_destroyed
     should have_imeths :assert_field_saved, :assert_not_field_saved
 
@@ -17,7 +18,12 @@ module MR::TestHelpers
 
   class WithModelTests < UnitTests
     setup do
-      @model = FakeTestModel.new(:name => 'Test')
+      @associated_model = FakeTestModel.new.tap(&:save)
+      @model = FakeTestModel.new({
+        :name   => 'Test',
+        :area   => @associated_model,
+        :parent => @associated_model
+      })
     end
   end
 
@@ -26,6 +32,22 @@ module MR::TestHelpers
 
     desc "with an actual model"
     subject{ @model }
+
+    should "be able to test if an association was saved or not" do
+      assert_not_association_saved subject, :parent
+      assert_not_association_saved subject, :parent, @associated_model
+      @model.save
+      assert_association_saved subject, :parent
+      assert_association_saved subject, :parent, @associated_model
+      @model.save
+      assert_not_association_saved subject, :parent
+      assert_not_association_saved subject, :parent, @associated_model
+      @other_model = FakeTestModel.new.tap(&:save)
+      @model.parent = @other_model
+      @model.save
+      assert_association_saved subject, :parent
+      assert_association_saved subject, :parent, @other_model
+    end
 
     should "be able to test if a field was saved or not" do
       assert_not_field_saved subject, :name
@@ -57,6 +79,252 @@ module MR::TestHelpers
       @model.save
       @assert_context_spy = AssertContextSpy.new
     end
+  end
+
+  class AssociationSavedAssertionBaseTests < WithAssertContextSpyTests
+    desc "AssociationSavedAssertionBase"
+
+    should "raise an ArgumentError when given a non belongs to association" do
+      assert_raises(ArgumentError) do
+        AssociationSavedAssertionBase.new(@model, :comments)
+      end
+    end
+
+  end
+
+  class AssociationSavedAssertionTests < WithAssertContextSpyTests
+    desc "AssociationSavedAssertion"
+    setup do
+      @assertion = AssociationSavedAssertion.new(@model, :area)
+    end
+    subject{ @assertion }
+
+    should have_imeths :run
+
+  end
+
+  class AssociationSavedAssertionNoValueTests < AssociationSavedAssertionTests
+    desc "with no expected value is run"
+    setup do
+      @assertion = AssociationSavedAssertion.new(@model, :area)
+      @assertion.run(@assert_context_spy)
+    end
+    subject{ @assert_context_spy.results }
+
+    should "have generated 1 positive assertion result" do
+      assert_equal 1, subject.size
+      assert_equal [ true ], subject.map(&:value)
+    end
+
+    should "have asserted that the association's foreign key was saved" do
+      expected = "Expected \"area_id\" field was saved."
+      assert_includes expected, subject.map(&:what_failed)
+    end
+
+  end
+
+  class AssociationSavedAssertionValueTests < AssociationSavedAssertionTests
+    desc "with an expected value is run"
+    setup do
+      @assertion = AssociationSavedAssertion.new(
+        @model,
+        :area,
+        @associated_model
+      )
+      @assertion.run(@assert_context_spy)
+    end
+    subject{ @assert_context_spy.results }
+
+    should "have generated 2 positive assertion results" do
+      assert_equal 2, subject.size
+      assert_equal [ true, true ], subject.map(&:value)
+    end
+
+    should "have asserted that the association's foreign key was saved and " \
+           "is equal to the expected value" do
+      expected = "Expected \"area_id\" field was saved."
+      assert_includes expected, subject.map(&:what_failed)
+      expected = "Expected \"area_id\" field was saved " \
+                 "as #{@associated_model.id}."
+      assert_includes expected, subject.map(&:desc)
+    end
+
+  end
+
+  class AssociationSavedAssertionPolyNoValueTests < AssociationSavedAssertionTests
+    desc "with no expected value is run for a polymorphic belongs to"
+    setup do
+      @assertion = AssociationSavedAssertion.new(@model, :parent)
+      @assertion.run(@assert_context_spy)
+    end
+    subject{ @assert_context_spy.results }
+
+    should "have generated 2 positive assertion result" do
+      assert_equal 2, subject.size
+      assert_equal [ true, true ], subject.map(&:value)
+    end
+
+    should "have asserted that the association's foreign key and type were saved" do
+      messages = subject.map(&:what_failed)
+      assert_includes "Expected \"parent_type\" field was saved.", messages
+      assert_includes "Expected \"parent_id\" field was saved.", messages
+    end
+
+  end
+
+  class AssociationSavedAssertionPolyValueTests < AssociationSavedAssertionTests
+    desc "with an expected value is run for a polymorphic belongs to"
+    setup do
+      @assertion = AssociationSavedAssertion.new(
+        @model,
+        :parent,
+        @associated_model
+      )
+      @assertion.run(@assert_context_spy)
+    end
+    subject{ @assert_context_spy.results }
+
+    should "have generated 4 positive assertion results" do
+      assert_equal 4, subject.size
+      assert_equal [ true, true, true, true ], subject.map(&:value)
+    end
+
+    should "have asserted that the association's foreign typed was saved and " \
+           "is equal to the expected value" do
+      expected = "Expected \"parent_type\" field was saved."
+      assert_includes expected, subject.map(&:what_failed)
+      expected = "Expected \"parent_type\" field was saved " \
+                 "as #{@associated_model.record_class.name.inspect}."
+      assert_includes expected, subject.map(&:desc)
+    end
+
+    should "have asserted that the association's foreign key was saved and " \
+           "is equal to the expected value" do
+      expected = "Expected \"parent_id\" field was saved."
+      assert_includes expected, subject.map(&:what_failed)
+      expected = "Expected \"parent_id\" field was saved " \
+                 "as #{@associated_model.id}."
+      assert_includes expected, subject.map(&:desc)
+    end
+
+  end
+
+  class AssociationNotSavedAssertionTests < WithAssertContextSpyTests
+    desc "AssociationNotSavedAssertion"
+    setup do
+      @assertion = AssociationNotSavedAssertion.new(@model, :area)
+    end
+    subject{ @assertion }
+
+    should have_imeths :run
+
+  end
+
+  class AssociationNotSavedAssertionNoValueTests < AssociationNotSavedAssertionTests
+    desc "with no expected value is run"
+    setup do
+      @assertion = AssociationNotSavedAssertion.new(@model, :area)
+      @assertion.run(@assert_context_spy)
+    end
+    subject{ @assert_context_spy.results }
+
+    should "have generated 1 negative assertion result" do
+      assert_equal 1, subject.size
+      assert_equal [ false ], subject.map(&:value)
+    end
+
+    should "have asserted that the association's foreign key was not saved" do
+      expected = "Expected \"area_id\" field was not saved."
+      assert_includes expected, subject.map(&:what_failed)
+    end
+
+  end
+
+  class AssociationNotSavedAssertionValueTests < AssociationNotSavedAssertionTests
+    desc "with an expected value is run"
+    setup do
+      @assertion = AssociationNotSavedAssertion.new(
+        @model,
+        :area,
+        @associated_model
+      )
+      @assertion.run(@assert_context_spy)
+    end
+    subject{ @assert_context_spy.results }
+
+    should "have generated 2 negative assertion results" do
+      assert_equal 2, subject.size
+      assert_equal [ false, false ], subject.map(&:value)
+    end
+
+    should "have asserted that the association's foreign key was not saved " \
+           "and is not equal to the expected value" do
+      expected = "Expected \"area_id\" field was not saved."
+      assert_includes expected, subject.map(&:what_failed)
+      expected = "Expected \"area_id\" field was not saved " \
+                 "as #{@associated_model.id}."
+      assert_includes expected, subject.map(&:desc)
+    end
+
+  end
+
+  class AssociationNotSavedAssertionPolyNoValueTests < AssociationNotSavedAssertionTests
+    desc "with no expected value is run for a polymorphic belongs to"
+    setup do
+      @assertion = AssociationNotSavedAssertion.new(@model, :parent)
+      @assertion.run(@assert_context_spy)
+    end
+    subject{ @assert_context_spy.results }
+
+    should "have generated 2 negative assertion results" do
+      assert_equal 2, subject.size
+      assert_equal [ false, false ], subject.map(&:value)
+    end
+
+    should "have asserted that the association's foreign key and " \
+           "type were not saved" do
+      messages = subject.map(&:what_failed)
+      assert_includes "Expected \"parent_type\" field was not saved.", messages
+      assert_includes "Expected \"parent_id\" field was not saved.", messages
+    end
+
+  end
+
+  class AssociationNotSavedAssertionPolyValueTests < AssociationNotSavedAssertionTests
+    desc "with an expected value is run for a polymorphic belongs to"
+    setup do
+      @assertion = AssociationNotSavedAssertion.new(
+        @model,
+        :parent,
+        @associated_model
+      )
+      @assertion.run(@assert_context_spy)
+    end
+    subject{ @assert_context_spy.results }
+
+    should "have generated 4 negative assertion results" do
+      assert_equal 4, subject.size
+      assert_equal [ false, false, false, false ], subject.map(&:value)
+    end
+
+    should "have asserted that the association's foreign type was not saved " \
+           "and is not equal to the expected value" do
+      expected = "Expected \"parent_type\" field was not saved."
+      assert_includes expected, subject.map(&:what_failed)
+      expected = "Expected \"parent_type\" field was not saved " \
+                 "as #{@associated_model.record_class.name.inspect}."
+      assert_includes expected, subject.map(&:desc)
+    end
+
+    should "have asserted that the association's foreign key was not saved " \
+           "and is not equal to the expected value" do
+      expected = "Expected \"parent_id\" field was not saved."
+      assert_includes expected, subject.map(&:what_failed)
+      expected = "Expected \"parent_id\" field was not saved " \
+                 "as #{@associated_model.id}."
+      assert_includes expected, subject.map(&:desc)
+    end
+
   end
 
   class FieldSavedAssertionBaseTests < WithAssertContextSpyTests
@@ -319,15 +587,23 @@ module MR::TestHelpers
 
   class FakeTestRecord
     include MR::FakeRecord
-    attribute :name,   :string
-    attribute :active, :boolean
+    attribute :name,        :string
+    attribute :active,      :boolean
+    attribute :area_id,     :integer
+    attribute :parent_type, :string
+    attribute :parent_id,   :integer
+    polymorphic_belongs_to :parent
+    belongs_to :area, self.to_s
+    has_many :comments, self.to_s
   end
 
   class FakeTestModel
     include MR::Model
     record_class FakeTestRecord
-    field_reader :id
-    field_accessor :name, :active
+    field_accessor :id, :name, :active, :parent_id, :parent_type
+    polymorphic_belongs_to :parent
+    belongs_to :area
+    has_many :comments
   end
 
 end
