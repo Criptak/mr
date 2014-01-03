@@ -1,8 +1,21 @@
 require 'mr/fake_record'
+require 'mr/model'
 
 module MR; end
 module MR::TestHelpers
   module_function
+
+  def assert_association_saved(model, association, *args)
+    with_backtrace(caller) do
+      AssociationSavedAssertion.new(model, association, *args).run(self)
+    end
+  end
+
+  def assert_not_association_saved(model, association, *args)
+    with_backtrace(caller) do
+      AssociationNotSavedAssertion.new(model, association, *args).run(self)
+    end
+  end
 
   def assert_destroyed(model)
     with_backtrace(caller) do
@@ -26,6 +39,49 @@ module MR::TestHelpers
     with_backtrace(caller) do
       FieldNotSavedAssertion.new(model, field, *args).run(self)
     end
+  end
+
+  class AssociationSavedAssertionBase
+    def initialize(model, association, *args)
+      fake_record = model.instance_eval{ record }
+      reflection = fake_record.association(association).reflection
+      if reflection.macro != :belongs_to
+        raise ArgumentError, "association must be a belongs to"
+      end
+      @expected_value = args[0] || NULL_MODEL
+      @check_value = !args.empty?
+      expected_foreign_type = @expected_value.record_class.name
+      expected_foreign_key  = @expected_value.id
+      @assertions = [
+        build_assertion(model, reflection.foreign_type, expected_foreign_type),
+        build_assertion(model, reflection.foreign_key,  expected_foreign_key)
+      ].compact
+    end
+
+    def run(context)
+      @assertions.each{ |a| a.run(context) }
+    end
+
+    private
+
+    def build_assertion(model, field, expected_value)
+      return unless field
+      args = [ model, field ]
+      (args << expected_value) if @check_value
+      self.field_assertion_class.new(*args)
+    end
+
+    NullModel = Struct.new(:id, :record_class)
+    NullRecordClass = Struct.new(:name)
+    NULL_MODEL = NullModel.new(nil, NullRecordClass.new)
+  end
+
+  class AssociationSavedAssertion < AssociationSavedAssertionBase
+    def field_assertion_class; FieldSavedAssertion; end
+  end
+
+  class AssociationNotSavedAssertion < AssociationSavedAssertionBase
+    def field_assertion_class; FieldNotSavedAssertion; end
   end
 
   class FieldSavedAssertionBase
