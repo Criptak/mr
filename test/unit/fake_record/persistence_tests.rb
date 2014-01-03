@@ -8,6 +8,8 @@ module MR::FakeRecord::Persistence
     setup do
       @fake_record_class = Class.new do
         include MR::FakeRecord::Persistence
+        attribute :name,   :string
+        attribute :active, :boolean
       end
     end
     subject{ @fake_record_class }
@@ -70,11 +72,19 @@ module MR::FakeRecord::Persistence
       assert_equal expected, subject.previous_attributes
     end
 
-    should "copy set it's attributes to it's saved attributes using `save!`" do
-      expected = { 'id' => @primary_key }
+    should "copy it's attributes to it's saved attributes using `save!`" do
+      expected = { 'id' => @primary_key, 'name' => nil, 'active' => nil }
       assert_not_equal expected, subject.saved_attributes
       subject.save!
       assert_equal expected, subject.saved_attributes
+    end
+
+    should "only copy it's chagned attributes to it's saved attributes" do
+      subject.save!
+      subject.name = 'Test'
+      subject.save!
+      assert subject.saved_attributes.key?('name')
+      assert_not subject.saved_attributes.key?('active')
     end
 
     should "mark the fake record as destroyed using `destroy`" do
