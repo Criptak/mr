@@ -166,6 +166,15 @@ module MR::FakeRecord::Persistence
       assert_equal new_time, subject.updated_at
     end
 
+    should "not overwrite updated at when its manually set" do
+      expected = Time.local(2013, 1, 1)
+      subject.updated_at = expected
+      subject.save!
+      assert_equal expected, subject.updated_at
+      subject.save!
+      assert_equal @current_time, subject.updated_at
+    end
+
   end
 
 end
