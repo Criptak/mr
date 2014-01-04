@@ -40,13 +40,16 @@ module MR::FakeRecord
 
   end
 
-  class InstanceTests < UnitTests
-    desc "for a fake record instance"
+  class WithFakeRecordInstanceTests < UnitTests
     setup do
       @fake_record = @fake_record_class.new(:name => 'test', :active => true)
       @fake_record.save!
     end
     subject{ @fake_record }
+  end
+
+  class InstanceTests < WithFakeRecordInstanceTests
+    desc "for a fake record instance"
 
     should have_imeths :inspect
 
@@ -62,6 +65,21 @@ module MR::FakeRecord
       assert_equal same_fake_record, subject
       other_fake_record = @fake_record_class.new.tap(&:save!)
       assert_not_equal other_fake_record, subject
+    end
+
+  end
+
+  class BehaviorTests < WithFakeRecordInstanceTests
+    desc "behavior"
+
+    should "ensure it's attribute changed methods work after an empty save" do
+      assert_not_nil subject.name
+      assert_true subject.active
+      subject.save! # empty save, nothing was changed
+      subject.name = nil # set a previously set attribute to `nil`
+      subject.active = true # set it to what it previous was
+      assert subject.name_changed?
+      assert_not subject.active_changed?
     end
 
   end

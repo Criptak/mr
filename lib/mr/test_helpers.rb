@@ -91,13 +91,13 @@ module MR::TestHelpers
         raise ArgumentError, "model must be using a fake record"
       end
       @field = field.to_s
-      previous_attributes = fake_record.previous_attributes
-      saved_attributes    = fake_record.saved_attributes
+      previous_saved_changes = fake_record.previous_saved_changes
+      current_saved_changes  = fake_record.current_saved_changes
 
       @expected_value, @check_value = args[0], !args.empty?
-      @saved_as = saved_attributes[@field]
-      @saved    = saved_attributes.key?(@field)
-      @changed  = @saved && previous_attributes[@field] != @saved_as
+      @saved_as = current_saved_changes[@field]
+      @saved    = current_saved_changes.key?(@field)
+      @changed  = @saved && previous_saved_changes[@field] != @saved_as
     end
   end
 

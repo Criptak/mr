@@ -16,13 +16,16 @@ module MR::FakeRecord
       end
     end
 
+    attr_writer :current_saved_changes, :previous_saved_changes
+
     def save!
       self.id ||= MR::Factory.primary_key(self.class)
       self.created_at ||= Time.now if self.respond_to?(:created_at=)
       self.updated_at   = Time.now if self.respond_to?(:updated_at=)
-      self.previous_attributes = self.saved_attributes.dup
-      changed_attributes = self.attributes.to_a - self.saved_attributes.to_a
-      self.saved_attributes = Hash[changed_attributes]
+      self.saved_attributes = self.attributes.dup
+      self.previous_saved_changes = self.current_saved_changes
+      changed_attributes = self.attributes.to_a - self.current_saved_changes.to_a
+      self.current_saved_changes = Hash[changed_attributes]
     end
 
     def destroy
@@ -47,6 +50,14 @@ module MR::FakeRecord
 
     def valid?
       self.errors.empty?
+    end
+
+    def current_saved_changes
+      @current_saved_changes ||= {}
+    end
+
+    def previous_saved_changes
+      @previous_saved_changes ||= {}
     end
 
     module ClassMethods

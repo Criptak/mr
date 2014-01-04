@@ -9,14 +9,10 @@ module MR::FakeRecord
       end
     end
 
-    attr_writer :saved_attributes, :previous_attributes
+    attr_writer :saved_attributes
 
     def saved_attributes
       @saved_attributes ||= {}
-    end
-
-    def previous_attributes
-      @previous_attributes ||= {}
     end
 
     # ActiveRecord methods
