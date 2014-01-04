@@ -36,14 +36,6 @@ module MR::ReadModel
         add_query_expression(:joins, *args, &block)
       end
 
-      def where(*args, &block)
-        add_query_expression(:where, *args, &block)
-      end
-
-      def order(*args, &block)
-        add_query_expression(:order, *args, &block)
-      end
-
       def group(*args, &block)
         add_query_expression(:group, *args, &block)
       end
@@ -63,6 +55,8 @@ module MR::ReadModel
       def merge(*args, &block)
         add_query_expression(:merge, *args, &block)
       end
+      alias :where :merge
+      alias :order :merge
 
       private
 
