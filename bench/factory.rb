@@ -71,6 +71,15 @@ profiler.run("MR::Factory") do
   benchmark("hex") do
     MR::Factory.slug
   end
+  benchmark("file_name") do
+    MR::Factory.file_name
+  end
+  benchmark("dir_path") do
+    MR::Factory.dir_path
+  end
+  benchmark("file_path") do
+    MR::Factory.file_path
+  end
   benchmark("binary") do
     MR::Factory.binary
   end
