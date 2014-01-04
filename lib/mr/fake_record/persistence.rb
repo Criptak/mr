@@ -21,7 +21,9 @@ module MR::FakeRecord
     def save!
       self.id ||= MR::Factory.primary_key(self.class)
       self.created_at ||= Time.now if self.respond_to?(:created_at=)
-      self.updated_at   = Time.now if self.respond_to?(:updated_at=)
+      if self.respond_to?(:updated_at=) && !self.updated_at_changed?
+        self.updated_at = Time.now
+      end
       self.saved_attributes = self.attributes.dup
       self.previous_saved_changes = self.current_saved_changes
       changed_attributes = self.attributes.to_a - self.current_saved_changes.to_a
