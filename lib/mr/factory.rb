@@ -73,6 +73,18 @@ module MR::Factory
     self.type_cast(Random.hex_string(length), :string)
   end
 
+  def self.file_name(length = nil)
+    self.type_cast(Random.file_name_string(length), :string)
+  end
+
+  def self.dir_path(length = nil)
+    self.type_cast(Random.dir_path_string(length), :string)
+  end
+
+  def self.file_path
+    self.type_cast(Random.file_path_string, :string)
+  end
+
   def self.binary
     self.type_cast(Random.binary, :binary)
   end
@@ -117,12 +129,27 @@ module MR::Factory
     end
 
     def self.slug_string(length = nil)
+      length ||= 8
       self.string(length).scan(/.{1,4}/).join('-')
     end
 
     def self.hex_string(length = nil)
       length ||= 10
       self.integer(("f" * length).hex - 1).to_s(16).rjust(length, '0')
+    end
+
+    def self.file_name_string(length = nil)
+      length ||= 6
+      "#{self.string(length)}.#{self.string(3)}"
+    end
+
+    def self.dir_path_string(length = nil)
+      length ||= 12
+      File.join(*self.string(length).scan(/.{1,4}/))
+    end
+
+    def self.file_path_string
+      File.join(self.dir_path_string, self.file_name_string)
     end
 
     def self.binary

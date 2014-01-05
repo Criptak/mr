@@ -21,6 +21,7 @@ module MR::Factory
     should have_imeths :string, :text
     should have_imeths :slug, :hex
     should have_imeths :binary
+    should have_imeths :file_name, :dir_path, :file_path
     should have_imeths :boolean
     should have_imeths :type_cast, :type_converter
 
@@ -114,7 +115,7 @@ module MR::Factory
 
     should "return a random hex string using `hex`" do
       assert_kind_of String, subject.hex
-      assert_match(/\A[0-9a-f]{10}\Z/, subject.hex)
+      assert_match /\A[0-9a-f]{10}\Z/, subject.hex
     end
 
     should "allow passing a maximum length using `hex`" do
@@ -123,11 +124,41 @@ module MR::Factory
 
     should "return a random slug string using `slug`" do
       assert_kind_of String, subject.slug
-      assert_match(/\A[a-z]{4}-[a-z]{4}-[a-z]{2}\Z/, subject.slug)
+      segments = subject.slug.split('-')
+      assert_equal 2, segments.size
+      segments.each{ |s| assert_match /\A[a-z]{4}\Z/, s }
     end
 
     should "allow passing a maximum length using `slug`" do
       assert_equal 1, subject.slug(1).length
+    end
+
+    should "return a random file name string using `file_name`" do
+      assert_kind_of String, subject.file_name
+      assert_match /\A[a-z]{6}\.[a-z]{3}\Z/, subject.file_name
+    end
+
+    should "allow passing a name length using `file_name`" do
+      assert_match /\A[a-z]{1}.[a-z]{3}\Z/, subject.file_name(1)
+    end
+
+    should "return a random folder path string using `dir_path`" do
+      assert_kind_of String, subject.dir_path
+      path_segments = subject.dir_path.split('/')
+      assert_equal 3, path_segments.size
+      path_segments.each{ |s| assert_match /\A[a-z]{4}\Z/, s }
+    end
+
+    should "allow passing a maximum length using `dir_path`" do
+      assert_equal 1, subject.dir_path(1).length
+    end
+
+    should "return a random folder path and file name using `file_path`" do
+      assert_kind_of String, subject.file_path
+      segments = subject.file_path.split('/')
+      assert_equal 4, segments.size
+      segments[0..-2].each{ |s| assert_match /\A[a-z]{4}\Z/, s }
+      assert_match /\A[a-z]{6}\.[a-z]{3}\Z/, segments.last
     end
 
     should "return a random binary string using `binary`" do
