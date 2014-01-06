@@ -10,8 +10,6 @@ class UserWithAreaData
   field :area_name, :string,      'areas.name'
   from UserRecord
   joins :area
-  where do |area_id|
-    [ "areas.id = ?", area_id ]
-  end
+  where{ |area_id| UserRecord.where("areas.id = ?", area_id) }
 
 end

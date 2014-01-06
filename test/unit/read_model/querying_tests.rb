@@ -114,30 +114,6 @@ module MR::ReadModel::Querying
       assert_dynamic_expression_added @relation, :joins, join_proc
     end
 
-    should "add a static where to the relation with `where`" do
-      where_args = { :column => 'value' }
-      subject.where(where_args)
-      assert_static_expression_added @relation, :where, where_args
-    end
-
-    should "add a dynamic where to the relation with `where`" do
-      where_proc = proc{ |name| { :column => name } }
-      subject.where(&where_proc)
-      assert_dynamic_expression_added @relation, :where, where_proc
-    end
-
-    should "add a static order to the relation with `order`" do
-      order_args = 'some_table.some_column'
-      subject.order(order_args)
-      assert_static_expression_added @relation, :order, order_args
-    end
-
-    should "add a dynamic order to the relation with `order`" do
-      order_proc = proc{ |column| column }
-      subject.order(&order_proc)
-      assert_dynamic_expression_added @relation, :order, order_proc
-    end
-
     should "add a static group to the relation with `group`" do
       group_args = 'some_table.some_column'
       subject.group(group_args)
@@ -196,6 +172,18 @@ module MR::ReadModel::Querying
       merge_proc = proc{ 'fake-relation' }
       subject.merge(&merge_proc)
       assert_dynamic_expression_added @relation, :merge, merge_proc
+    end
+
+    should "add a merge relation with `where`" do
+      where_args = 'fake-relation'
+      subject.where(where_args)
+      assert_static_expression_added @relation, :merge, where_args
+    end
+
+    should "add a merge relation with `order`" do
+      order_args = 'fake-relation'
+      subject.order(order_args)
+      assert_static_expression_added @relation, :merge, order_args
     end
 
     should "raise an ArgumentError when any query method isn't provided args or a block" do
