@@ -96,6 +96,8 @@ module MR::Model::Persistence
       end.sort.join(', ')
       expected = "Invalid #{subject.class} couldn't be saved: #{description}"
       assert_equal expected, exception.message
+      expected = "test/unit/model/persistence_tests.rb"
+      assert_match expected, exception.backtrace.first
     end
 
   end

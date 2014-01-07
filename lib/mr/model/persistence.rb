@@ -13,8 +13,9 @@ module MR::Model
     end
 
     def save
+      save_caller = caller
       self.transaction do
-        raise InvalidError.new(self, self.errors) unless self.valid?
+        raise InvalidError.new(self, self.errors, save_caller) unless self.valid?
         record.save!
       end
     end
@@ -56,12 +57,13 @@ module MR::Model
   class InvalidError < RuntimeError
     attr_reader :errors
 
-    def initialize(model, errors)
+    def initialize(model, errors, backtrace = nil)
       @errors = errors || {}
       desc = @errors.map do |(attribute, messages)|
         messages.map{ |message| "#{attribute.inspect} #{message}" }
       end.sort.join(', ')
       super "Invalid #{model.class} couldn't be saved: #{desc}"
+      set_backtrace(backtrace) if backtrace
     end
 
   end
