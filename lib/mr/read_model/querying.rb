@@ -20,11 +20,13 @@ module MR::ReadModel
 
       def query(args = nil)
         args ||= {}
-        MR::Query.new(self, relation.build(args))
+        MR::Query.new(self, self.relation.build_for_all(args))
       end
 
       def select(*args, &block)
         add_query_expression(:select, *args, &block)
+      rescue InvalidQueryExpression => exception
+        raise ArgumentError, exception.message, caller
       end
 
       def from(record_class)
@@ -34,38 +36,60 @@ module MR::ReadModel
 
       def joins(*args, &block)
         add_query_expression(:joins, *args, &block)
+      rescue InvalidQueryExpression => exception
+        raise ArgumentError, exception.message, caller
+      end
+
+      def where(*args, &block)
+        add_merge_query_expression(:where, *args, &block)
+      rescue InvalidQueryExpression => exception
+        raise ArgumentError, exception.message, caller
+      end
+
+      def order(*args, &block)
+        add_merge_query_expression(:order, *args, &block)
+      rescue InvalidQueryExpression => exception
+        raise ArgumentError, exception.message, caller
       end
 
       def group(*args, &block)
         add_query_expression(:group, *args, &block)
+      rescue InvalidQueryExpression => exception
+        raise ArgumentError, exception.message, caller
       end
 
       def having(*args, &block)
         add_query_expression(:having, *args, &block)
+      rescue InvalidQueryExpression => exception
+        raise ArgumentError, exception.message, caller
       end
 
       def limit(*args, &block)
         add_query_expression(:limit, *args, &block)
+      rescue InvalidQueryExpression => exception
+        raise ArgumentError, exception.message, caller
       end
 
       def offset(*args, &block)
         add_query_expression(:offset, *args, &block)
+      rescue InvalidQueryExpression => exception
+        raise ArgumentError, exception.message, caller
       end
 
       def merge(*args, &block)
-        add_query_expression(:merge, *args, &block)
+        add_merge_query_expression(:merge, *args, &block)
+      rescue InvalidQueryExpression => exception
+        raise ArgumentError, exception.message, caller
       end
-      alias :where :merge
-      alias :order :merge
 
       private
 
       def add_query_expression(type, *args, &block)
-        relation.expressions << QueryExpression.new(type, *args, &block)
-      rescue InvalidQueryExpression => exception
-        error = ArgumentError.new(exception.message)
-        error.set_backtrace(caller)
-        raise error
+        relation.add_expression QueryExpression.new(type, *args, &block)
+      end
+
+      def add_merge_query_expression(type, *args, &block)
+        relation.add_expression MergeQueryExpression.new(type, *args, &block)
       end
 
     end
@@ -78,20 +102,42 @@ module MR::ReadModel
 
     def initialize
       @record_class = nil
-      @expressions  = []
+      @expressions  = {}
     end
 
-    def build(args = nil)
+    def add_expression(expression)
+      @expressions[expression.type] ||= []
+      @expressions[expression.type] << expression
+    end
+
+    def build_for_all(args = nil)
+      build(@expressions.values.flatten, args)
+    end
+
+    private
+
+    def build(expressions, args = nil)
       raise NoRecordClassError if !@record_class
-      @expressions.inject(@record_class.scoped) do |relation, expression|
+      expressions.inject(@record_class.scoped) do |relation, expression|
         expression.apply_to(relation, args)
       end
     end
+  end
 
+  class MergeQueryExpression
+    attr_accessor :type, :query_expression
+
+    def initialize(type, *args, &block)
+      @type = type
+      @query_expression = QueryExpression.new(:merge, *args, &block)
+    end
+
+    def apply_to(relation, args = nil)
+      @query_expression.apply_to(relation, args)
+    end
   end
 
   module QueryExpression
-
     def self.new(type, *args, &block)
       if !args.empty?
         Static.new(type, *args)
@@ -129,7 +175,6 @@ module MR::ReadModel
         relation.send(@type, relation.instance_exec(args, &@block))
       end
     end
-
   end
 
   class NoRecordClassError < RuntimeError
