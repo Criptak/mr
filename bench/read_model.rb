@@ -156,6 +156,9 @@ profiler.run("MR::ReadModel") do
       u.save
     end
 
+    benchmark("find") do
+      UserWithAreaData.find(first_user.id)
+    end
     benchmark("query") do
       UserWithAreaData.query.results
     end
