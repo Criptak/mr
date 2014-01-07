@@ -48,24 +48,52 @@ module MR::ReadModel::Querying
 
     def assert_static_expression_added(relation, type, *args)
       with_backtrace(caller) do
-        assert_equal 1, relation.expressions.size
-        expression = relation.expressions.first
-        expected_class = MR::ReadModel::QueryExpression::Static
-        assert_instance_of expected_class, expression
-        assert_equal type, expression.type
-        assert_equal args, expression.args
+        assert_equal 1, relation.expressions[type].size
+        expression = relation.expressions[type].first
+        assert_static_expression expression, type, args
       end
     end
 
     def assert_dynamic_expression_added(relation, type, block)
       with_backtrace(caller) do
-        assert_equal 1, relation.expressions.size
-        expression = relation.expressions.first
-        expected_class = MR::ReadModel::QueryExpression::Dynamic
-        assert_instance_of expected_class, expression
-        assert_equal type,  expression.type
-        assert_equal block, expression.block
+        assert_equal 1, relation.expressions[type].size
+        expression = relation.expressions[type].first
+        assert_dynamic_expression expression, type, block
       end
+    end
+
+    def assert_static_merge_expression_added(relation, type, *args)
+      with_backtrace(caller) do
+        assert_equal 1, relation.expressions[type].size
+        merge_expression = relation.expressions[type].first
+        expected_class = MR::ReadModel::MergeQueryExpression
+        assert_instance_of expected_class, merge_expression
+        assert_static_expression merge_expression.query_expression, :merge, args
+      end
+    end
+
+    def assert_dynamic_merge_expression_added(relation, type, block)
+      with_backtrace(caller) do
+        assert_equal 1, relation.expressions[type].size
+        merge_expression = relation.expressions[type].first
+        expected_class = MR::ReadModel::MergeQueryExpression
+        assert_instance_of expected_class, merge_expression
+        assert_dynamic_expression merge_expression.query_expression, :merge, block
+      end
+    end
+
+    def assert_static_expression(expression, type, args)
+      expected_class = MR::ReadModel::QueryExpression::Static
+      assert_instance_of expected_class, expression
+      assert_equal type, expression.type
+      assert_equal args, expression.args
+    end
+
+    def assert_dynamic_expression(expression, type, block)
+      expected_class = MR::ReadModel::QueryExpression::Dynamic
+      assert_instance_of expected_class, expression
+      assert_equal type,  expression.type
+      assert_equal block, expression.block
     end
 
     def assert_expression_applied(relation_spy, type, *args)
@@ -90,7 +118,7 @@ module MR::ReadModel::Querying
       FakeTestRecord.unstub(:scoped)
     end
 
-    should "apply a static select to the relation with `select`" do
+    should "add a static select to the relation with `select`" do
       select_sql = "some_table.some_column AS 'something'"
       subject.select select_sql
       assert_static_expression_added @relation, :select, select_sql
@@ -112,6 +140,30 @@ module MR::ReadModel::Querying
       join_proc = proc{ |name| "CROSS JOIN #{name}" }
       subject.joins(&join_proc)
       assert_dynamic_expression_added @relation, :joins, join_proc
+    end
+
+    should "add a static merge to the relation with `where`" do
+      merge_args = 'fake-relation'
+      subject.where(merge_args)
+      assert_static_merge_expression_added @relation, :where, merge_args
+    end
+
+    should "add a dynamic merge to the relation with `where`" do
+      merge_proc = proc{ 'fake-relation' }
+      subject.where(&merge_proc)
+      assert_dynamic_merge_expression_added @relation, :where, merge_proc
+    end
+
+    should "add a static merge to the relation with `order`" do
+      merge_args = 'fake-relation'
+      subject.order(merge_args)
+      assert_static_merge_expression_added @relation, :order, merge_args
+    end
+
+    should "add a dynamic merge to the relation with `order`" do
+      merge_proc = proc{ 'fake-relation' }
+      subject.order(&merge_proc)
+      assert_dynamic_merge_expression_added @relation, :order, merge_proc
     end
 
     should "add a static group to the relation with `group`" do
@@ -165,25 +217,13 @@ module MR::ReadModel::Querying
     should "add a static merge to the relation with `merge`" do
       merge_args = 'fake-relation'
       subject.merge(merge_args)
-      assert_static_expression_added @relation, :merge, merge_args
+      assert_static_merge_expression_added @relation, :merge, merge_args
     end
 
     should "add a dynamic merge to the relation with `merge`" do
       merge_proc = proc{ 'fake-relation' }
       subject.merge(&merge_proc)
-      assert_dynamic_expression_added @relation, :merge, merge_proc
-    end
-
-    should "add a merge relation with `where`" do
-      where_args = 'fake-relation'
-      subject.where(where_args)
-      assert_static_expression_added @relation, :merge, where_args
-    end
-
-    should "add a merge relation with `order`" do
-      order_args = 'fake-relation'
-      subject.order(order_args)
-      assert_static_expression_added @relation, :merge, order_args
+      assert_dynamic_merge_expression_added @relation, :merge, merge_proc
     end
 
     should "raise an ArgumentError when any query method isn't provided args or a block" do
@@ -230,42 +270,76 @@ module MR::ReadModel::Querying
 
     should have_accessors :record_class
     should have_readers :expressions
+    should have_imeths :add_expression, :build_for_all
 
     should "default it's record class and query expressions" do
       relation = MR::ReadModel::Relation.new
       assert_nil relation.record_class
-      assert_equal [], relation.expressions
+      assert_equal({}, relation.expressions)
     end
 
-    should "return an ActiveRecord relation from the record class using `build`" do
-      assert_equal FakeTestRecord.scoped, subject.build
+    should "add an expression to it's expressions using `add_expression`" do
+      expression = MR::ReadModel::QueryExpression.new(:select, 'first_column')
+      subject.add_expression expression
     end
 
-    should "return a new relation everytime `build` is called" do
-      ar_relation = subject.build
-      assert_not_same ar_relation, subject.build
+    should "return a relation from the record class using `build_for_all`" do
+      assert_equal FakeTestRecord.scoped, subject.build_for_all
     end
 
-    should "apply query expressions in the order they are added using `build`" do
-      subject.expressions << MR::ReadModel::QueryExpression.new(:order, :first_column)
-      subject.expressions << MR::ReadModel::QueryExpression.new(:where, :second_column)
-      subject.expressions << MR::ReadModel::QueryExpression.new(:joins, :third_column)
-      ar_relation = subject.build
+    should "return a new relation everytime `build_for_all` is called" do
+      ar_relation = subject.build_for_all
+      assert_not_same ar_relation, subject.build_for_all
+    end
 
-      expected_order = subject.expressions.map{ |e| [ e.type, e.args ] }
+    should "apply query expressions of the same type " \
+           "in the order they are added using `build_for_all`" do
+      [ :first_column, :second_column, :third_column ].each do |column|
+        subject.add_expression MR::ReadModel::QueryExpression.new(:joins, column)
+      end
+      ar_relation = subject.build_for_all
+
+      expected_order = subject.expressions[:joins].map{ |e| [ e.type, e.args ] }
       actual_order   = ar_relation.applied.map{ |e| [ e.type, e.args ] }
       assert_equal expected_order, actual_order
     end
 
-    should "apply query expressions using the args passed to `build`" do
-      subject.expressions << MR::ReadModel::QueryExpression.new(:select){ |c| c }
-      ar_relation = subject.build('some_table.some_column')
+    should "apply query expressions using the args passed to `build_for_all`" do
+      subject.add_expression MR::ReadModel::QueryExpression.new(:select){ |c| c }
+      ar_relation = subject.build_for_all('some_table.some_column')
       assert_expression_applied ar_relation, :select, 'some_table.some_column'
     end
 
-    should "raise a no record class error using `build` with no record class" do
+    should "raise a no record class error using `build_for_all` with no record class" do
       subject.record_class = nil
-      assert_raises(MR::ReadModel::NoRecordClassError){ subject.build }
+      assert_raises(MR::ReadModel::NoRecordClassError){ subject.build_for_all }
+    end
+
+  end
+
+  class MergeQueryExpressionTests < UnitTests
+    desc "MergeQueryExpression"
+    setup do
+      @ar_relation       = FakeTestRecord.scoped
+      @to_merge_relation = FakeTestRecord.scoped
+      @expression  = MR::ReadModel::MergeQueryExpression.new(:order, @to_merge_relation)
+    end
+    subject{ @expression }
+
+    should have_readers :type, :query_expression
+    should have_imeths :apply_to
+
+    should "build a query expression for a merge" do
+      query_expression = subject.query_expression
+      assert_instance_of MR::ReadModel::QueryExpression::Static, query_expression
+      assert_equal :merge, query_expression.type
+      assert_equal [ @to_merge_relation ], query_expression.args
+    end
+
+    should "apply it's query expression using `apply_to`" do
+      query_expression = subject.query_expression
+      subject.apply_to(@ar_relation)
+      assert_expression_applied @ar_relation, query_expression.type, *query_expression.args
     end
 
   end
