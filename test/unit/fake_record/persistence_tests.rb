@@ -135,6 +135,7 @@ module MR::FakeRecord::Persistence
   class WithTimestampsTests < UnitTests
     desc "with timestamp attributes"
     setup do
+      @default_timezone = ActiveRecord::Base.default_timezone
       @current_time = Time.now
       Time.stubs(:now).returns(@current_time)
       @fake_record_class.attribute :created_at, :datetime
@@ -142,6 +143,7 @@ module MR::FakeRecord::Persistence
       @fake_record = @fake_record_class.new
     end
     teardown do
+      ActiveRecord::Base.default_timezone = @default_timezone
       Time.unstub(:now)
     end
     subject{ @fake_record }
@@ -173,6 +175,15 @@ module MR::FakeRecord::Persistence
       assert_equal expected, subject.updated_at
       subject.save!
       assert_equal @current_time, subject.updated_at
+    end
+
+    should "use ActiveRecord's configured default timezone" do
+      ActiveRecord::Base.default_timezone = :local
+      subject.save!
+      assert_equal Time.now.zone, subject.updated_at.zone
+      ActiveRecord::Base.default_timezone = :utc
+      subject.save!
+      assert_equal Time.now.utc.zone, subject.updated_at.zone
     end
 
   end
