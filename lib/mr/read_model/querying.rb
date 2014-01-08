@@ -18,9 +18,12 @@ module MR::ReadModel
         @relation ||= Relation.new
       end
 
+      def find(id, args = nil)
+        self.relation.build_for_find(args || {}).find(id)
+      end
+
       def query(args = nil)
-        args ||= {}
-        MR::Query.new(self, self.relation.build_for_all(args))
+        MR::Query.new(self, self.relation.build_for_all(args || {}))
       end
 
       def select(*args, &block)
@@ -108,6 +111,12 @@ module MR::ReadModel
     def add_expression(expression)
       @expressions[expression.type] ||= []
       @expressions[expression.type] << expression
+    end
+
+    FIND_EXCLUDED_TYPES = [ :where, :order, :limit, :offset ].freeze
+    def build_for_find(args = nil)
+      expressions = @expressions.reject{ |k, v| FIND_EXCLUDED_TYPES.include?(k) }
+      build(expressions.values.flatten, args)
     end
 
     def build_for_all(args = nil)

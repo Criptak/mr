@@ -20,10 +20,10 @@ module MR::ReadModel
   class FieldsTests < SystemTests
     desc "fields"
     setup do
-      @area    = Factory::Area.instance.tap{ |a| a.save }
-      @user    = Factory::User.instance(:area => @area).tap{ |u| u.save }
-      @image   = Factory::Image.instance(:user => @user).tap{ |i| i.save }
-      @comment = Factory::Comment.instance(:parent => @user).tap{ |c| c.save }
+      @area    = Factory::Area.instance.tap(&:save)
+      @user    = Factory::User.instance(:area => @area).tap(&:save)
+      @image   = Factory::Image.instance(:user => @user).tap(&:save)
+      @comment = Factory::Comment.instance(:parent => @user).tap(&:save)
       @comment_with_user_data = CommentWithUserData.query.results.first
     end
     teardown do
@@ -63,11 +63,11 @@ module MR::ReadModel
   end
 
   class QueryTests < SystemTests
-    desc "querying"
+    desc "query"
     setup do
-      @matching_user_stack = Factory::User.instance_stack.tap{ |s| s.create }
+      @matching_user_stack = Factory::User.instance_stack.tap(&:create)
       @matching_user = @matching_user_stack.model
-      @not_matching_user_stack = Factory::User.instance_stack.tap{ |s| s.create }
+      @not_matching_user_stack = Factory::User.instance_stack.tap(&:create)
       @not_matching_user = @not_matching_user_stack.model
       @query = UserWithAreaData.query(@matching_user.area_id)
     end
@@ -86,6 +86,24 @@ module MR::ReadModel
       assert_equal 1, results.size
       assert_equal @matching_user.id,      results.first.user_id
       assert_equal @matching_user.area_id, results.first.area_id
+    end
+
+  end
+
+  class FindTests < SystemTests
+    desc "find"
+    setup do
+      @matching_user_stack = Factory::User.instance_stack.tap(&:create)
+      @matching_user = @matching_user_stack.model
+      @user_with_area_data = UserWithAreaData.find(@matching_user.id)
+    end
+    teardown do
+      @matching_user_stack.destroy
+    end
+    subject{ @user_with_area_data }
+
+    should "find a specific record by it's id" do
+      assert_equal @matching_user.id, subject.user_id
     end
 
   end

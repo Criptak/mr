@@ -16,7 +16,7 @@ module MR::ReadModel::Querying
     subject{ @read_model_class }
 
     should have_imeths :relation
-    should have_imeths :query
+    should have_imeths :find, :query
     should have_imeths :select
     should have_imeths :from, :joins
     should have_imeths :where
@@ -98,11 +98,18 @@ module MR::ReadModel::Querying
 
     def assert_expression_applied(relation_spy, type, *args)
       with_backtrace(caller) do
-        applied = relation_spy.applied.detect do |e|
-          e.type == type && e.args == args
-        end
-        assert applied
+        assert_not_nil find_applied(relation_spy, type, args)
       end
+    end
+
+    def assert_not_expression_applied(relation_spy, type, *args)
+      with_backtrace(caller) do
+        assert_nil find_applied(relation_spy, type, args)
+      end
+    end
+
+    def find_applied(relation_spy, type, args)
+      relation_spy.applied.detect{ |e| e.type == type && e.args == args }
     end
 
   end
@@ -240,6 +247,34 @@ module MR::ReadModel::Querying
 
   end
 
+  class FindTests < WithFromRecordClassTests
+    desc "find"
+    setup do
+      @read_model_class.class_eval do
+        attr_accessor :id
+        select :id
+        limit 1
+        def initialize(data)
+          data.each{ |k, v| send("#{k}=", v) }
+        end
+      end
+      @read_model = @read_model_class.new(:id => 1)
+      @ar_relation_spy.results = [ @read_model ]
+      @result = @read_model_class.find(@read_model.id)
+    end
+    subject{ @result }
+
+    should "return the matching read model" do
+      assert_equal @read_model.id, subject.id
+    end
+
+    should "have only applied a subset of the query expressions to the relation" do
+      assert_expression_applied @ar_relation_spy, :select, :id
+      assert_not_expression_applied @ar_relation_spy, :limit, 1
+    end
+
+  end
+
   class QueryTests < WithFromRecordClassTests
     desc "query"
     setup do
@@ -270,7 +305,8 @@ module MR::ReadModel::Querying
 
     should have_accessors :record_class
     should have_readers :expressions
-    should have_imeths :add_expression, :build_for_all
+    should have_imeths :add_expression
+    should have_imeths :build_for_all, :build_for_find
 
     should "default it's record class and query expressions" do
       relation = MR::ReadModel::Relation.new
@@ -281,6 +317,45 @@ module MR::ReadModel::Querying
     should "add an expression to it's expressions using `add_expression`" do
       expression = MR::ReadModel::QueryExpression.new(:select, 'first_column')
       subject.add_expression expression
+    end
+
+    should "return a relation from the record class using `build_for_find`" do
+      assert_equal FakeTestRecord.scoped, subject.build_for_find
+    end
+
+    should "return a new relation everytime `build_for_find` is called" do
+      ar_relation = subject.build_for_find
+      assert_not_same ar_relation, subject.build_for_find
+    end
+
+    should "apply query expressions of the same type " \
+           "in the order they are added using `build_for_find`" do
+      [ :first_column, :second_column, :third_column ].each do |column|
+        subject.add_expression MR::ReadModel::QueryExpression.new(:joins, column)
+      end
+      ar_relation = subject.build_for_find
+      expected_order = subject.expressions[:joins].map{ |e| [ e.type, e.args ] }
+      actual_order   = ar_relation.applied.map{ |e| [ e.type, e.args ] }
+      assert_equal expected_order, actual_order
+    end
+
+    should "apply query expressions using the args passed to `build_for_find`" do
+      subject.add_expression MR::ReadModel::QueryExpression.new(:select){ |c| c }
+      ar_relation = subject.build_for_find('some_table.some_column')
+      assert_expression_applied ar_relation, :select, 'some_table.some_column'
+    end
+
+    should "not apply where, order, limit or offset expressions using `build_for_find`" do
+      expression_class = MR::ReadModel::MergeQueryExpression
+      subject.add_expression expression_class.new(:where,  'relation')
+      subject.add_expression expression_class.new(:order,  'relation')
+      subject.add_expression expression_class.new(:limit,  'relation')
+      subject.add_expression expression_class.new(:offset, 'relation')
+      ar_relation = subject.build_for_find
+      assert_not_expression_applied ar_relation, :where,  'relation'
+      assert_not_expression_applied ar_relation, :order,  'relation'
+      assert_not_expression_applied ar_relation, :limit,  'relation'
+      assert_not_expression_applied ar_relation, :offset, 'relation'
     end
 
     should "return a relation from the record class using `build_for_all`" do
@@ -298,7 +373,6 @@ module MR::ReadModel::Querying
         subject.add_expression MR::ReadModel::QueryExpression.new(:joins, column)
       end
       ar_relation = subject.build_for_all
-
       expected_order = subject.expressions[:joins].map{ |e| [ e.type, e.args ] }
       actual_order   = ar_relation.applied.map{ |e| [ e.type, e.args ] }
       assert_equal expected_order, actual_order
@@ -320,9 +394,8 @@ module MR::ReadModel::Querying
   class MergeQueryExpressionTests < UnitTests
     desc "MergeQueryExpression"
     setup do
-      @ar_relation       = FakeTestRecord.scoped
-      @to_merge_relation = FakeTestRecord.scoped
-      @expression  = MR::ReadModel::MergeQueryExpression.new(:order, @to_merge_relation)
+      @ar_relation = FakeTestRecord.scoped
+      @expression  = MR::ReadModel::MergeQueryExpression.new(:order, 'relation')
     end
     subject{ @expression }
 
@@ -333,13 +406,13 @@ module MR::ReadModel::Querying
       query_expression = subject.query_expression
       assert_instance_of MR::ReadModel::QueryExpression::Static, query_expression
       assert_equal :merge, query_expression.type
-      assert_equal [ @to_merge_relation ], query_expression.args
+      assert_equal [ 'relation' ], query_expression.args
     end
 
     should "apply it's query expression using `apply_to`" do
       query_expression = subject.query_expression
       subject.apply_to(@ar_relation)
-      assert_expression_applied @ar_relation, query_expression.type, *query_expression.args
+      assert_expression_applied @ar_relation, query_expression.type, 'relation'
     end
 
   end

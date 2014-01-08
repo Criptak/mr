@@ -24,7 +24,7 @@ Gem::Specification.new do |gem|
 
   gem.add_development_dependency("assert",       ["~> 2.5"])
   gem.add_development_dependency("assert-mocha", ["~> 1.0"])
-  gem.add_development_dependency("ardb",         ["~> 0.15"])
+  gem.add_development_dependency("ardb",         ["~> 0.17"])
   gem.add_development_dependency("sqlite3",      ["~> 1.3"])
 
 end
