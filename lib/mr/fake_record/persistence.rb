@@ -20,9 +20,10 @@ module MR::FakeRecord
 
     def save!
       self.id ||= MR::Factory.primary_key(self.class)
-      self.created_at ||= Time.now if self.respond_to?(:created_at=)
+      current_time = CurrentTime.new
+      self.created_at ||= current_time if self.respond_to?(:created_at=)
       if self.respond_to?(:updated_at=) && !self.updated_at_changed?
-        self.updated_at = Time.now
+        self.updated_at = current_time
       end
       self.saved_attributes = self.attributes.dup
       self.previous_saved_changes = self.current_saved_changes
@@ -68,6 +69,16 @@ module MR::FakeRecord
         yield
       end
 
+    end
+
+    module CurrentTime
+      def self.new
+        if ActiveRecord::Base.default_timezone == :utc
+          Time.now.utc
+        else
+          Time.now
+        end
+      end
     end
 
   end
