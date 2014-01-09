@@ -1,7 +1,6 @@
 require 'assert'
 require 'mr/factory'
 
-require 'test/support/setup_test_db'
 require 'test/support/models/user'
 
 module MR::Factory

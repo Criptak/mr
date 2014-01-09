@@ -12,7 +12,7 @@ require 'test/support/read_models/user_with_area_data'
 
 module MR::ReadModel
 
-  class SystemTests < Assert::Context
+  class SystemTests < DbTests
     desc "MR::ReadModel"
 
   end
@@ -25,12 +25,6 @@ module MR::ReadModel
       @image   = Factory::Image.instance(:user => @user).tap(&:save)
       @comment = Factory::Comment.instance(:parent => @user).tap(&:save)
       @comment_with_user_data = CommentWithUserData.query.results.first
-    end
-    teardown do
-      @comment.destroy
-      @image.destroy
-      @user.destroy
-      @area.destroy
     end
     subject{ @comment_with_user_data }
 
@@ -71,10 +65,6 @@ module MR::ReadModel
       @not_matching_user = @not_matching_user_stack.model
       @query = UserWithAreaData.query(@matching_user.area_id)
     end
-    teardown do
-      @not_matching_user_stack.destroy
-      @matching_user_stack.destroy
-    end
     subject{ @query }
 
     should "return an MR::Query" do
@@ -96,9 +86,6 @@ module MR::ReadModel
       @matching_user_stack = Factory::User.instance_stack.tap(&:create)
       @matching_user = @matching_user_stack.model
       @user_with_area_data = UserWithAreaData.find(@matching_user.id)
-    end
-    teardown do
-      @matching_user_stack.destroy
     end
     subject{ @user_with_area_data }
 

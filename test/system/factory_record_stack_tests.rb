@@ -8,14 +8,11 @@ require 'test/support/models/user'
 
 class MR::Factory::RecordStack
 
-  class SystemTests < Assert::Context
+  class SystemTests < DbTests
     desc "MR::Factory::RecordStack"
     setup do
       @comment_record = CommentRecord.new(:parent_type => 'UserRecord')
       @record_stack = MR::Factory::RecordStack.new(@comment_record)
-    end
-    teardown do
-      @record_stack.destroy
     end
     subject{ @record_stack }
 
@@ -79,9 +76,6 @@ class MR::Factory::RecordStack
       @fake_comment_record = FakeCommentRecord.new(:parent_type => 'FakeUserRecord')
       @record_stack = MR::Factory::RecordStack.new(@fake_comment_record)
     end
-    teardown do
-      @record_stack.destroy rescue nil
-    end
     subject{ @record_stack }
 
     should "build an instance of the record with " \
@@ -141,9 +135,6 @@ class MR::Factory::RecordStack
       @comment_record = CommentRecord.new(:parent => @user_record)
       @record_stack = MR::Factory::RecordStack.new(@comment_record)
     end
-    teardown do
-      UserRecord.destroy_all
-    end
 
     should "use a preset association for other cases of the record class" do
       assert_same @user_record, @comment_record.parent
@@ -165,14 +156,11 @@ class MR::Factory::RecordStack
 
   end
 
-  class StackRecordTests < Assert::Context
+  class StackRecordTests < DbTests
     desc "MR::Factory::Record"
     setup do
       @user_record  = UserRecord.new(:name => 'test')
       @stack_record = MR::Factory::Record.new(@user_record)
-    end
-    teardown do
-      @stack_record.destroy
     end
     subject{ @stack_record }
 
