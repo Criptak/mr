@@ -1,7 +1,6 @@
 require 'assert'
 require 'mr/model/configuration'
 
-require 'ns-options/assert_macros'
 require 'mr/fake_record'
 
 module MR::Model::Configuration
