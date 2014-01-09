@@ -6,13 +6,10 @@ require 'test/support/models/area'
 require 'test/support/models/comment'
 require 'test/support/models/user'
 
-class WithModelTests < Assert::Context
+class WithModelTests < DbTests
   desc "MR with an ActiveRecord model"
   setup do
     @user = User.new(:name => "Joe Test")
-  end
-  teardown do
-    @user.destroy
   end
   subject{ @user }
 
@@ -103,9 +100,6 @@ class BelongsToTests < WithModelTests
     @area = Area.new(:name => 'Alpha')
     @area.save
   end
-  teardown do
-    @area.destroy
-  end
 
   should "be able to read it and write to it" do
     assert_nil subject.area
@@ -124,10 +118,6 @@ class HasManyTests < WithModelTests
     @user.save
     @comment = Comment.new(:body => "Test", :parent => @user)
   end
-  teardown do
-    @comment.destroy
-    @user.destroy
-  end
 
   should "be able to read it" do
     @comment.save
@@ -141,10 +131,6 @@ class HasOneTests < WithModelTests
   setup do
     @user.save
     @image = Image.new(:file_path => "test", :user => @user)
-  end
-  teardown do
-    @image.destroy
-    @user.destroy
   end
 
   should "be able to read it" do
@@ -161,11 +147,6 @@ class PolymorphicBelongsToTests < WithModelTests
     @area = Area.new(:name => 'Alpha')
     @area.save
     @comment = Comment.new(:body => "Test")
-  end
-  teardown do
-    @comment.destroy
-    @area.destroy
-    @user.destroy
   end
   subject{ @comment }
 
@@ -197,13 +178,10 @@ class QueryTests < WithModelTests
     end
     @query = MR::Query.new(User, UserRecord.scoped)
   end
-  teardown do
-    @users.each(&:destroy)
-  end
   subject{ @query }
 
   should "allow fetching the models with #models" do
-    assert_equal @users, subject.models
+    assert_equal @users.map(&:name), subject.models.map(&:name)
   end
 
   should "allow counting the models with #count" do
@@ -242,18 +220,14 @@ class FinderTests < WithModelTests
   setup do
     @users = [*(1..3)].map do |i|
       record = UserRecord.new({ :name => "test #{i}" }).tap do |u|
-        u.id = i
         u.save!
       end
       User.new(record)
     end
   end
-  teardown do
-    @users.each(&:destroy)
-  end
 
   should "allow fetching a single user with find" do
-    assert_equal @users[0], User.find(1)
+    assert_equal @users.first, User.find(@users.first.id)
 
     assert_raises(ActiveRecord::RecordNotFound) do
       User.find(1000)

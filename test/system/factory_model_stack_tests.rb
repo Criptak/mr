@@ -6,14 +6,11 @@ require 'test/support/models/comment'
 
 class MR::Factory::ModelStack
 
-  class SystemTests < Assert::Context
+  class SystemTests < DbTests
     desc "MR::Factory::ModelStack"
     setup do
       @comment     = Comment.new(:parent_type => 'UserRecord')
       @model_stack = MR::Factory::ModelStack.new(@comment)
-    end
-    teardown do
-      @model_stack.destroy rescue nil
     end
     subject{ @model_stack }
 
@@ -76,9 +73,6 @@ class MR::Factory::ModelStack
         :parent_type => 'FakeUserRecord'
       })
       @model_stack  = MR::Factory::ModelStack.new(@fake_comment)
-    end
-    teardown do
-      @model_stack.destroy rescue nil
     end
     subject{ @model_stack }
 

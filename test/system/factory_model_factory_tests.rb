@@ -9,7 +9,7 @@ require 'test/support/models/user'
 
 class MR::Factory::ModelFactory
 
-  class SystemTests < Assert::Context
+  class SystemTests < DbTests
     desc "MR::Factory::Model"
     setup do
       @factory = MR::Factory::ModelFactory.new(User)
