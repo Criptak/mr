@@ -49,16 +49,18 @@ module MR::ReadModel::Fields
     should "add a select to its relation when `field` is passed select args" do
       subject.field :test, :string, 'some_table.some_column'
 
-      assert_equal 1, subject.relation.expressions[:select].size
-      expression = subject.relation.expressions[:select].first
+      assert_equal 1, subject.relation.expressions.size
+      expression = subject.relation.expressions.first
+      assert_equal :select, expression.type
       assert_equal 'some_table.some_column AS test', expression.args.first
     end
 
     should "add a select to its relation when `field` is passed a block" do
       subject.field(:test, :string){ |column| column }
 
-      assert_equal 1, subject.relation.expressions[:select].size
-      expression = subject.relation.expressions[:select].first
+      assert_equal 1, subject.relation.expressions.size
+      expression = subject.relation.expressions.first
+      assert_equal :select, expression.type
       expected = 'some_table.some_column AS test'
       assert_equal expected, expression.block.call('some_table.some_column')
     end
