@@ -18,7 +18,8 @@ module MR::TestHelpers
 
   class WithModelTests < UnitTests
     setup do
-      @associated_model = FakeTestModel.new.tap(&:save)
+      @associated_record = FakeTestRecord.new
+      @associated_model = FakeTestModel.new(@associated_record).tap(&:save)
       @model = FakeTestModel.new({
         :name   => 'Test',
         :area   => @associated_model,
@@ -47,6 +48,16 @@ module MR::TestHelpers
       @model.save
       assert_association_saved subject, :parent
       assert_association_saved subject, :parent, @other_model
+    end
+
+    should "be able to test if an polymorphic association was saved when " \
+           "the model `record_class` doesn't match it's actual record's class" do
+      associated_record = OtherFakeTestRecord.new
+      associated_model  = FakeTestModel.new(associated_record).tap(&:save)
+      @model.parent = associated_model
+      @model.save
+      assert_association_saved subject, :parent
+      assert_association_saved subject, :parent, associated_model
     end
 
     should "be able to test if a field was saved or not" do
@@ -194,7 +205,7 @@ module MR::TestHelpers
       expected = "Expected \"parent_type\" field was saved."
       assert_includes expected, subject.map(&:what_failed)
       expected = "Expected \"parent_type\" field was saved " \
-                 "as #{@associated_model.record_class.name.inspect}."
+                 "as #{@associated_record.class.name.inspect}."
       assert_includes expected, subject.map(&:desc)
     end
 
@@ -312,7 +323,7 @@ module MR::TestHelpers
       expected = "Expected \"parent_type\" field was not saved."
       assert_includes expected, subject.map(&:what_failed)
       expected = "Expected \"parent_type\" field was not saved " \
-                 "as #{@associated_model.record_class.name.inspect}."
+                 "as #{@associated_record.class.name.inspect}."
       assert_includes expected, subject.map(&:desc)
     end
 
@@ -595,6 +606,10 @@ module MR::TestHelpers
     polymorphic_belongs_to :parent
     belongs_to :area, self.to_s
     has_many :comments, self.to_s
+  end
+
+  class OtherFakeTestRecord
+    include MR::FakeRecord
   end
 
   class FakeTestModel

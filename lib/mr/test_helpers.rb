@@ -50,7 +50,7 @@ module MR::TestHelpers
       end
       @expected_value = args[0] || NULL_MODEL
       @check_value = !args.empty?
-      expected_foreign_type = @expected_value.record_class.name
+      expected_foreign_type = @expected_value.send(:record).class.name
       expected_foreign_key  = @expected_value.id
       @assertions = [
         build_assertion(model, reflection.foreign_type, expected_foreign_type),
@@ -71,9 +71,10 @@ module MR::TestHelpers
       self.field_assertion_class.new(*args)
     end
 
-    NullModel = Struct.new(:id, :record_class)
+    NullModel = Struct.new(:id, :record)
+    NullRecord = Struct.new(:class)
     NullRecordClass = Struct.new(:name)
-    NULL_MODEL = NullModel.new(nil, NullRecordClass.new)
+    NULL_MODEL = NullModel.new(nil, NullRecord.new(NullRecordClass.new))
   end
 
   class AssociationSavedAssertion < AssociationSavedAssertionBase
