@@ -88,11 +88,11 @@ module MR::ReadModel
       private
 
       def add_query_expression(type, *args, &block)
-        relation.add_expression QueryExpression.new(type, *args, &block)
+        relation.expressions << QueryExpression.new(type, *args, &block)
       end
 
       def add_merge_query_expression(type, *args, &block)
-        relation.add_expression MergeQueryExpression.new(type, *args, &block)
+        relation.expressions << MergeQueryExpression.new(type, *args, &block)
       end
 
     end
@@ -105,22 +105,17 @@ module MR::ReadModel
 
     def initialize
       @record_class = nil
-      @expressions  = {}
-    end
-
-    def add_expression(expression)
-      @expressions[expression.type] ||= []
-      @expressions[expression.type] << expression
+      @expressions  = []
     end
 
     FIND_EXCLUDED_TYPES = [ :where, :order, :limit, :offset ].freeze
     def build_for_find(args = nil)
-      expressions = @expressions.reject{ |k, v| FIND_EXCLUDED_TYPES.include?(k) }
-      build(expressions.values.flatten, args)
+      expressions = @expressions.reject{ |e| FIND_EXCLUDED_TYPES.include?(e.type) }
+      build(expressions, args)
     end
 
     def build_for_all(args = nil)
-      build(@expressions.values.flatten, args)
+      build(@expressions, args)
     end
 
     private

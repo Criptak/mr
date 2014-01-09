@@ -48,24 +48,24 @@ module MR::ReadModel::Querying
 
     def assert_static_expression_added(relation, type, *args)
       with_backtrace(caller) do
-        assert_equal 1, relation.expressions[type].size
-        expression = relation.expressions[type].first
+        assert_equal 1, relation.expressions.size
+        expression = relation.expressions.first
         assert_static_expression expression, type, args
       end
     end
 
     def assert_dynamic_expression_added(relation, type, block)
       with_backtrace(caller) do
-        assert_equal 1, relation.expressions[type].size
-        expression = relation.expressions[type].first
+        assert_equal 1, relation.expressions.size
+        expression = relation.expressions.first
         assert_dynamic_expression expression, type, block
       end
     end
 
     def assert_static_merge_expression_added(relation, type, *args)
       with_backtrace(caller) do
-        assert_equal 1, relation.expressions[type].size
-        merge_expression = relation.expressions[type].first
+        assert_equal 1, relation.expressions.size
+        merge_expression = relation.expressions.first
         expected_class = MR::ReadModel::MergeQueryExpression
         assert_instance_of expected_class, merge_expression
         assert_static_expression merge_expression.query_expression, :merge, args
@@ -74,8 +74,8 @@ module MR::ReadModel::Querying
 
     def assert_dynamic_merge_expression_added(relation, type, block)
       with_backtrace(caller) do
-        assert_equal 1, relation.expressions[type].size
-        merge_expression = relation.expressions[type].first
+        assert_equal 1, relation.expressions.size
+        merge_expression = relation.expressions.first
         expected_class = MR::ReadModel::MergeQueryExpression
         assert_instance_of expected_class, merge_expression
         assert_dynamic_expression merge_expression.query_expression, :merge, block
@@ -305,18 +305,12 @@ module MR::ReadModel::Querying
 
     should have_accessors :record_class
     should have_readers :expressions
-    should have_imeths :add_expression
     should have_imeths :build_for_all, :build_for_find
 
     should "default it's record class and query expressions" do
       relation = MR::ReadModel::Relation.new
       assert_nil relation.record_class
-      assert_equal({}, relation.expressions)
-    end
-
-    should "add an expression to it's expressions using `add_expression`" do
-      expression = MR::ReadModel::QueryExpression.new(:select, 'first_column')
-      subject.add_expression expression
+      assert_equal [], relation.expressions
     end
 
     should "return a relation from the record class using `build_for_find`" do
@@ -331,26 +325,26 @@ module MR::ReadModel::Querying
     should "apply query expressions of the same type " \
            "in the order they are added using `build_for_find`" do
       [ :first_column, :second_column, :third_column ].each do |column|
-        subject.add_expression MR::ReadModel::QueryExpression.new(:joins, column)
+        subject.expressions << MR::ReadModel::QueryExpression.new(:joins, column)
       end
       ar_relation = subject.build_for_find
-      expected_order = subject.expressions[:joins].map{ |e| [ e.type, e.args ] }
+      expected_order = subject.expressions.map{ |e| [ e.type, e.args ] }
       actual_order   = ar_relation.applied.map{ |e| [ e.type, e.args ] }
       assert_equal expected_order, actual_order
     end
 
     should "apply query expressions using the args passed to `build_for_find`" do
-      subject.add_expression MR::ReadModel::QueryExpression.new(:select){ |c| c }
+      subject.expressions << MR::ReadModel::QueryExpression.new(:select){ |c| c }
       ar_relation = subject.build_for_find('some_table.some_column')
       assert_expression_applied ar_relation, :select, 'some_table.some_column'
     end
 
     should "not apply where, order, limit or offset expressions using `build_for_find`" do
       expression_class = MR::ReadModel::MergeQueryExpression
-      subject.add_expression expression_class.new(:where,  'relation')
-      subject.add_expression expression_class.new(:order,  'relation')
-      subject.add_expression expression_class.new(:limit,  'relation')
-      subject.add_expression expression_class.new(:offset, 'relation')
+      subject.expressions << expression_class.new(:where,  'relation')
+      subject.expressions << expression_class.new(:order,  'relation')
+      subject.expressions << expression_class.new(:limit,  'relation')
+      subject.expressions << expression_class.new(:offset, 'relation')
       ar_relation = subject.build_for_find
       assert_not_expression_applied ar_relation, :where,  'relation'
       assert_not_expression_applied ar_relation, :order,  'relation'
@@ -370,16 +364,16 @@ module MR::ReadModel::Querying
     should "apply query expressions of the same type " \
            "in the order they are added using `build_for_all`" do
       [ :first_column, :second_column, :third_column ].each do |column|
-        subject.add_expression MR::ReadModel::QueryExpression.new(:joins, column)
+        subject.expressions << MR::ReadModel::QueryExpression.new(:joins, column)
       end
       ar_relation = subject.build_for_all
-      expected_order = subject.expressions[:joins].map{ |e| [ e.type, e.args ] }
+      expected_order = subject.expressions.map{ |e| [ e.type, e.args ] }
       actual_order   = ar_relation.applied.map{ |e| [ e.type, e.args ] }
       assert_equal expected_order, actual_order
     end
 
     should "apply query expressions using the args passed to `build_for_all`" do
-      subject.add_expression MR::ReadModel::QueryExpression.new(:select){ |c| c }
+      subject.expressions << MR::ReadModel::QueryExpression.new(:select){ |c| c }
       ar_relation = subject.build_for_all('some_table.some_column')
       assert_expression_applied ar_relation, :select, 'some_table.some_column'
     end
