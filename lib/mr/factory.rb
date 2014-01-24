@@ -42,19 +42,19 @@ module MR::Factory
   # and use the same value no matter when it's called, this should make for
   # easier equality checks in tests
   def self.date
-    @date ||= self.type_cast(Random.date_string, :date)
+    self.type_cast(Random.date_string, :date)
   end
 
   def self.time
-    @time ||= self.type_cast(Random.time_string, :time)
+    self.type_cast(Random.time_string, :time)
   end
 
   def self.datetime
-    @datetime ||= self.type_cast(Random.datetime_string, :datetime)
+    self.type_cast(Random.datetime_string, :datetime)
   end
 
   def self.timestamp
-    @timestamp ||= self.type_cast(Random.datetime_string, :timestamp)
+    self.type_cast(Random.datetime_string, :timestamp)
   end
 
   def self.string(length = nil)
@@ -111,16 +111,17 @@ module MR::Factory
       (self.integer((max || 100) - 1) + rand).to_f
     end
 
+    SECONDS_IN_DAY = (24 * 60 * 60).freeze
     def self.date_string
-      Time.now.strftime("%Y-%m-%d")
+      (Time.now + (self.float * SECONDS_IN_DAY)).strftime("%Y-%m-%d")
     end
 
     def self.datetime_string
-      Time.now.strftime("%Y-%m-%d %H:%M:%S")
+      (Time.now + (self.float * SECONDS_IN_DAY)).strftime("%Y-%m-%d %H:%M:%S")
     end
 
     def self.time_string
-      Time.now.strftime("%H:%M:%S")
+      (Time.now + (self.float * SECONDS_IN_DAY)).strftime("%H:%M:%S")
     end
 
     DICTIONARY = [*'a'..'z'].freeze

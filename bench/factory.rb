@@ -23,39 +23,16 @@ profiler.run("MR::Factory") do
     MR::Factory.decimal
   end
 
-  benchmark("date new") do
-    MR::Factory.date
-    MR::Factory.instance_variable_set("@date", nil)
-  end
-  MR::Factory.date
-  benchmark("date existing") do
+  benchmark("date") do
     MR::Factory.date
   end
-
-  benchmark("datetime new") do
-    MR::Factory.datetime
-    MR::Factory.instance_variable_set("@datetime", nil)
-  end
-  MR::Factory.datetime
-  benchmark("datetime existing") do
+  benchmark("datetime") do
     MR::Factory.datetime
   end
-
-  benchmark("time new") do
-    MR::Factory.time
-    MR::Factory.instance_variable_set("@time", nil)
-  end
-  MR::Factory.time
-  benchmark("time existing") do
+  benchmark("time") do
     MR::Factory.time
   end
-
-  benchmark("timestamp new") do
-    MR::Factory.timestamp
-    MR::Factory.instance_variable_set("@timestamp", nil)
-  end
-  MR::Factory.timestamp
-  benchmark("timestamp existing") do
+  benchmark("timestamp") do
     MR::Factory.timestamp
   end
 

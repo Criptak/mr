@@ -63,36 +63,16 @@ module MR::Factory
       assert_kind_of Date, subject.date
     end
 
-    should "return the same date with every call to `date`" do
-      date = subject.date
-      assert_same date, subject.date
-    end
-
     should "return a random time object using `time`" do
       assert_kind_of Time, subject.time
-    end
-
-    should "return the same time object with every call to `time`" do
-      time = subject.time
-      assert_same time, subject.time
     end
 
     should "return a random time object using `datetime`" do
       assert_kind_of Time, subject.datetime
     end
 
-    should "return the same time object with every call to `datetime`" do
-      datetime = subject.datetime
-      assert_same datetime, subject.datetime
-    end
-
     should "return a random time object using `timestamp`" do
       assert_kind_of Time, subject.timestamp
-    end
-
-    should "return the same time object with every call to `timestamp`" do
-      timestamp = subject.timestamp
-      assert_same timestamp, subject.timestamp
     end
 
     should "return a random string using `string`" do
