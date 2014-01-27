@@ -93,7 +93,10 @@ module MR::Factory
     end
 
     def create
-      @instance.save! if @instance.new_record?
+      if @instance.new_record?
+        @instance.save!
+        @instance.reset_save_called if @instance.kind_of?(MR::FakeRecord)
+      end
     end
 
     def destroy
