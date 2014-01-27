@@ -54,8 +54,11 @@ module MR::FakeRecord::Persistence
     should have_imeths :transaction
     should have_imeths :new_record?, :destroyed?
     should have_imeths :errors, :valid?
-    should have_writers :current_saved_changes, :previous_saved_changes
-    should have_imeths :current_saved_changes, :current_saved_changes
+    should have_imeths :save_called, :reset_save_called
+
+    should "default it's save called to `false`" do
+      assert_false subject.save_called
+    end
 
     should "set it's id when saved for the first time using `save!`" do
       assert_nil subject.id
@@ -73,24 +76,9 @@ module MR::FakeRecord::Persistence
       assert_equal expected, subject.saved_attributes
     end
 
-    should "copy it's current saved changes to it's " \
-           "previous saved changes using `save!`" do
-      expected = { 'test' => true }
-      subject.current_saved_changes = expected
-      assert_not_equal expected, subject.previous_saved_changes
+    should "set its save called to `true` using `save!`" do
       subject.save!
-      assert_equal expected, subject.previous_saved_changes
-    end
-
-    should "set it's changed attributes as it's current saved changes" do
-      expected = { 'id' => @primary_key, 'name' => nil, 'active' => nil }
-      subject.save!
-      assert_equal expected, subject.current_saved_changes
-      subject.name = 'Test'
-      subject.save!
-      assert subject.current_saved_changes.key?('name')
-      assert_not subject.current_saved_changes.key?('id')
-      assert_not subject.current_saved_changes.key?('active')
+      assert_true subject.save_called
     end
 
     should "mark the fake record as destroyed using `destroy`" do
@@ -122,12 +110,10 @@ module MR::FakeRecord::Persistence
       assert_not subject.valid?
     end
 
-    should "return an empty hash using `current_saved_changes` by default" do
-      assert_equal({}, subject.current_saved_changes)
-    end
-
-    should "return an empty hash using `previous_saved_changes` by default" do
-      assert_equal({}, subject.previous_saved_changes)
+    should "allow resetting save called to `false` using `reset_save_called`" do
+      subject.save!
+      subject.reset_save_called
+      assert_false subject.save_called
     end
 
   end

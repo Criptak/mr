@@ -16,8 +16,6 @@ module MR::FakeRecord
       end
     end
 
-    attr_writer :current_saved_changes, :previous_saved_changes
-
     def save!
       self.id ||= MR::Factory.primary_key(self.class)
       current_time = CurrentTime.new
@@ -26,9 +24,7 @@ module MR::FakeRecord
         self.updated_at = current_time
       end
       self.saved_attributes = self.attributes.dup
-      self.previous_saved_changes = self.current_saved_changes
-      changed_attributes = self.attributes.to_a - self.current_saved_changes.to_a
-      self.current_saved_changes = Hash[changed_attributes]
+      @save_called = true
     end
 
     def destroy
@@ -55,12 +51,13 @@ module MR::FakeRecord
       self.errors.empty?
     end
 
-    def current_saved_changes
-      @current_saved_changes ||= {}
+    def save_called
+      @save_called = false if @save_called.nil?
+      @save_called
     end
 
-    def previous_saved_changes
-      @previous_saved_changes ||= {}
+    def reset_save_called
+      @save_called = false
     end
 
     module ClassMethods
