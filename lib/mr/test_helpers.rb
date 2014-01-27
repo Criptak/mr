@@ -109,8 +109,11 @@ module MR::TestHelpers
 
   class FieldSavedAssertion < FieldSavedAssertionBase
     def run(context)
-      context.assert_true @saved, saved_desc
-      context.assert_equal @expected_value, @saved_as, saved_as_desc
+      if @saved
+        context.assert_equal @expected_value, @saved_as, saved_as_desc
+      else
+        context.assert_true @saved, saved_desc
+      end
     end
 
     private
@@ -126,8 +129,11 @@ module MR::TestHelpers
 
   class FieldNotSavedAssertion < FieldSavedAssertionBase
     def run(context)
-      context.assert_false @saved, saved_desc
-      context.assert_not_equal @expected_value, @saved_as, saved_as_desc
+      if @saved
+        context.assert_not_equal @expected_value, @saved_as, saved_as_desc
+      else
+        context.assert_false @saved, saved_desc
+      end
     end
 
     private
