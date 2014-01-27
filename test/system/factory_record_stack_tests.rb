@@ -199,4 +199,19 @@ class MR::Factory::RecordStack
 
   end
 
+  class StackRecordWithAFakeRecordTests < StackRecordTests
+    desc "with a fake record"
+    setup do
+      @fake_user_record = FakeUserRecord.new
+      @stack_record = MR::Factory::Record.new(@fake_user_record)
+    end
+
+    should "reset the fake record's `save_called` flag using `create`" do
+      @stack_record.create
+      assert_false @fake_user_record.new_record?
+      assert_false @fake_user_record.save_called
+    end
+
+  end
+
 end
