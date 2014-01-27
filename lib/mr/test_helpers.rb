@@ -5,6 +5,15 @@ module MR; end
 module MR::TestHelpers
   module_function
 
+  def model_reset_save_called(model, &block)
+    fake_record = model.instance_eval{ record }
+    if !fake_record.kind_of?(MR::FakeRecord)
+      raise ArgumentError, "model must be using a fake record"
+    end
+    yield model if block
+    fake_record.reset_save_called
+  end
+
   def assert_association_saved(model, association, expected_value)
     with_backtrace(caller) do
       AssociationSavedAssertion.new(model, association, expected_value).run(self)
