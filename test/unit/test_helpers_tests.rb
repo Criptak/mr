@@ -10,6 +10,7 @@ module MR::TestHelpers
     desc "MR::TestHelpers"
     subject{ MR::TestHelpers }
 
+    should have_imeths :model_reset_save_called
     should have_imeths :assert_association_saved, :assert_not_association_saved
     should have_imeths :assert_model_destroyed, :assert_not_model_destroyed
     should have_imeths :assert_model_saved, :assert_not_model_saved
@@ -74,6 +75,28 @@ module MR::TestHelpers
       assert_not_model_destroyed subject
       @model.destroy
       assert_model_destroyed subject
+    end
+
+    should "reset a fake model's `save_called` state using `model_reset_save_called`" do
+      @model.save
+      model_reset_save_called @model
+      assert_not_model_saved @model
+    end
+
+    should "yield the model passed to it before resetting using `model_reset_save_called`" do
+      yielded = nil
+      model_reset_save_called(@model) do |m|
+        yielded = m
+        m.save
+      end
+      assert_equal @model, yielded
+      assert_not_model_saved @model
+    end
+
+    should "raise an ArgumentError when passed a model not using a fake record" do
+      record_class = Class.new{ include MR::Record }
+      model = FakeTestModel.new(record_class.new)
+      assert_raises(ArgumentError){ model_reset_save_called(model) }
     end
 
   end
