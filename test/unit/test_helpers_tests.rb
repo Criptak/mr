@@ -112,11 +112,9 @@ module MR::TestHelpers
     should "assert that the association's foreign key was saved as " \
            "the expected value when run" do
       subject.run(@assert_context_spy)
-      assert_equal 2, @assert_context_spy.results.size
-      assert_equal [ true, true ], @assert_context_spy.results.map(&:value)
+      assert_equal 1, @assert_context_spy.results.size
+      assert_equal [ true ], @assert_context_spy.results.map(&:value)
       descriptions = @assert_context_spy.results.map(&:desc)
-      expected = "Expected \"area_id\" field was saved."
-      assert_includes expected, descriptions
       expected = "Expected \"area_id\" field was saved " \
                  "as #{@associated_model.id}."
       assert_includes expected, descriptions
@@ -138,15 +136,11 @@ module MR::TestHelpers
 
     should "have asserted that the association's foreign type and key " \
            "were saved as the expected value" do
-      assert_equal 4, subject.size
-      assert_equal [ true, true, true, true ], subject.map(&:value)
+      assert_equal 2, subject.size
+      assert_equal [ true, true ], subject.map(&:value)
       descriptions = @assert_context_spy.results.map(&:desc)
-      expected = "Expected \"parent_type\" field was saved."
-      assert_includes expected, descriptions
       expected = "Expected \"parent_type\" field was saved " \
                  "as #{@associated_record.class.name.inspect}."
-      assert_includes expected, descriptions
-      expected = "Expected \"parent_id\" field was saved."
       assert_includes expected, descriptions
       expected = "Expected \"parent_id\" field was saved " \
                  "as #{@associated_model.id}."
@@ -171,11 +165,9 @@ module MR::TestHelpers
     should "assert that the association's foreign key was not saved " \
            "as the expected value when run" do
       subject.run(@assert_context_spy)
-      assert_equal 2, @assert_context_spy.results.size
-      assert_equal [ false, false ], @assert_context_spy.results.map(&:value)
+      assert_equal 1, @assert_context_spy.results.size
+      assert_equal [ false ], @assert_context_spy.results.map(&:value)
       descriptions = @assert_context_spy.results.map(&:desc)
-      expected = "Expected \"area_id\" field was not saved."
-      assert_includes expected, descriptions
       expected = "Expected \"area_id\" field was not saved " \
                  "as #{@associated_model.id}."
       assert_includes expected, descriptions
@@ -197,15 +189,11 @@ module MR::TestHelpers
 
     should "have asserted that the association's foreign type was not saved " \
            "as the expected value" do
-      assert_equal 4, subject.size
-      assert_equal [ false, false, false, false ], subject.map(&:value)
+      assert_equal 2, subject.size
+      assert_equal [ false, false ], subject.map(&:value)
       descriptions = @assert_context_spy.results.map(&:desc)
-      expected = "Expected \"parent_type\" field was not saved."
-      assert_includes expected, descriptions
       expected = "Expected \"parent_type\" field was not saved " \
                  "as #{@associated_record.class.name.inspect}."
-      assert_includes expected, descriptions
-      expected = "Expected \"parent_id\" field was not saved."
       assert_includes expected, descriptions
       expected = "Expected \"parent_id\" field was not saved " \
                  "as #{@associated_model.id}."
@@ -238,15 +226,40 @@ module MR::TestHelpers
 
     should have_imeths :run
 
+  end
+
+  class FieldSavedAssertionSavedTests < FieldSavedAssertionTests
+    desc "when run for a field on a saved model"
+    setup do
+      @assertion = FieldSavedAssertion.new(@model, :name, 'Test')
+      @assertion.run(@assert_context_spy)
+      @results = @assert_context_spy.results
+    end
+
     should "assert that the field was saved as the expected value when run" do
-      subject.run(@assert_context_spy)
-      assert_equal 2, @assert_context_spy.results.size
-      assert_equal [ true, true ], @assert_context_spy.results.map(&:value)
-      descriptions = @assert_context_spy.results.map(&:desc)
-      expected = "Expected \"name\" field was saved."
-      assert_includes expected, descriptions
+      assert_equal 1, @results.size
+      assert_equal [ true ], @results.map(&:value)
       expected = "Expected \"name\" field was saved as \"Test\"."
-      assert_includes expected, descriptions
+      assert_includes expected, @results.map(&:desc)
+    end
+
+  end
+
+  class FieldSavedAssertionUnsavedTests < FieldSavedAssertionTests
+    desc "when run for a field on an unsaved model"
+    setup do
+      # this ensures that this test doesn't pass, a `nil` expected value would
+      # pass if the assertion class only used `assert_equal`
+      @assertion = FieldSavedAssertion.new(FakeTestModel.new, :name, nil)
+      @assertion.run(@assert_context_spy)
+      @results = @assert_context_spy.results
+    end
+
+    should "assert that the field was saved when run" do
+      assert_equal 1, @results.size
+      assert_equal [ false ], @results.map(&:value)
+      expected = "Expected \"name\" field was saved."
+      assert_includes expected, @results.map(&:desc)
     end
 
   end
@@ -260,15 +273,40 @@ module MR::TestHelpers
 
     should have_imeths :run
 
+  end
+
+  class FieldNotSavedAssertionSavedTests < FieldNotSavedAssertionTests
+    desc "when run for a field on a saved model"
+    setup do
+      @assertion = FieldNotSavedAssertion.new(@model, :name, 'Test')
+      @assertion.run(@assert_context_spy)
+      @results = @assert_context_spy.results
+    end
+
     should "assert that the field was not saved as the expected value when run" do
-      subject.run(@assert_context_spy)
-      assert_equal 2, @assert_context_spy.results.size
-      assert_equal [ true, true ], @assert_context_spy.results.map(&:value)
-      descriptions = @assert_context_spy.results.map(&:desc)
-      expected = "Expected \"other\" field was not saved."
-      assert_includes expected, descriptions
-      expected = "Expected \"other\" field was not saved as \"Test\"."
-      assert_includes expected, descriptions
+      assert_equal 1, @results.size
+      assert_equal [ false ], @results.map(&:value)
+      expected = "Expected \"name\" field was not saved as \"Test\"."
+      assert_includes expected, @results.map(&:desc)
+    end
+
+  end
+
+  class FieldNotSavedAssertionUnsavedTests < FieldNotSavedAssertionTests
+    desc "when run for a field on an unsaved model"
+    setup do
+      # this ensures that this test does pass, a non `nil` expected value would
+      # fail if the assertion class only used `assert_not_equal`
+      @assertion = FieldNotSavedAssertion.new(FakeTestModel.new, :name, 'Test')
+      @assertion.run(@assert_context_spy)
+      @results = @assert_context_spy.results
+    end
+
+    should "assert that the field was not saved when run" do
+      assert_equal 1, @results.size
+      assert_equal [ true ], @results.map(&:value)
+      expected = "Expected \"name\" field was not saved."
+      assert_includes expected, @results.map(&:desc)
     end
 
   end
