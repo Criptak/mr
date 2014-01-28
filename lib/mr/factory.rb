@@ -38,23 +38,27 @@ module MR::Factory
     self.type_cast(Random.float(max), :decimal)
   end
 
-  # allow working from a 'known' time/date/datetime/timestamp, this will cache
-  # and use the same value no matter when it's called, this should make for
-  # easier equality checks in tests
+  DAYS_IN_A_YEAR = 365
+  SECONDS_IN_DAY = 24 * 60 * 60
+
   def self.date
-    self.type_cast(Random.date_string, :date)
+    @date ||= self.type_cast(Random.date_string, :date)
+    @date + Random.integer(DAYS_IN_A_YEAR)
   end
 
   def self.time
-    self.type_cast(Random.time_string, :time)
+    @time ||= self.type_cast(Random.time_string, :time)
+    @time + (Random.float(DAYS_IN_A_YEAR) * SECONDS_IN_DAY).to_i
   end
 
   def self.datetime
-    self.type_cast(Random.datetime_string, :datetime)
+    @datetime ||= self.type_cast(Random.datetime_string, :datetime)
+    @datetime + (Random.float(DAYS_IN_A_YEAR) * SECONDS_IN_DAY).to_i
   end
 
   def self.timestamp
-    self.type_cast(Random.datetime_string, :timestamp)
+    @timestamp ||= self.type_cast(Random.datetime_string, :timestamp)
+    @timestamp + (Random.float(DAYS_IN_A_YEAR) * SECONDS_IN_DAY).to_i
   end
 
   def self.string(length = nil)
@@ -111,17 +115,16 @@ module MR::Factory
       (self.integer((max || 100) - 1) + rand).to_f
     end
 
-    SECONDS_IN_DAY = (24 * 60 * 60).freeze
     def self.date_string
-      (Time.now + (self.float * SECONDS_IN_DAY)).strftime("%Y-%m-%d")
+      Time.now.strftime("%Y-%m-%d")
     end
 
     def self.datetime_string
-      (Time.now + (self.float * SECONDS_IN_DAY)).strftime("%Y-%m-%d %H:%M:%S")
+      Time.now.strftime("%Y-%m-%d %H:%M:%S")
     end
 
     def self.time_string
-      (Time.now + (self.float * SECONDS_IN_DAY)).strftime("%H:%M:%S")
+      Time.now.strftime("%H:%M:%S")
     end
 
     DICTIONARY = [*'a'..'z'].freeze
