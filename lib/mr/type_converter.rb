@@ -23,11 +23,6 @@ module MR
       @ar_column_class = ar_column_class || ActiveRecord::ConnectionAdapters::Column
     end
 
-    # TODO - temporary, till it's no longer used by read model and factory
-    def convert(value, type)
-      self.send(type, value)
-    end
-
     def binary(value)
       return if value.nil?
       @ar_column_class.binary_to_string(value)

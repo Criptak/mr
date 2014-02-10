@@ -85,7 +85,7 @@ module MR::ReadModel
 
     def read(data)
       @converter ||= MR::TypeConverter.new(determine_ar_column_class(data))
-      @converter.convert(data[@attribute_name], @type)
+      @converter.send(@type, data[@attribute_name])
     end
 
     def define_on(model_class)
