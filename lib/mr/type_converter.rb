@@ -3,43 +3,79 @@ require 'active_record'
 module MR
 
   class TypeConverter
-    TYPES = {
-      :boolean  => [ :boolean ],
-      :binary   => [ :binary ],
-      :date     => [ :date ],
-      :datetime => [ :datetime, :timestamp ],
-      :decimal  => [ :decimal ],
-      :float    => [ :float ],
-      :integer  => [ :integer, :primary_key ],
-      :string   => [ :string, :text ],
-      :time     => [ :time ]
-    }.freeze
-    VALID_TYPES = TYPES.values.flatten.freeze
+    TYPES = [
+      :binary,
+      :boolean,
+      :date,
+      :datetime, :timestamp,
+      :decimal,
+      :float,
+      :integer, :primary_key,
+      :string, :text,
+      :time
+    ].freeze
 
     def self.valid?(type)
-      VALID_TYPES.include?(type.to_sym)
+      TYPES.include?(type.to_sym)
     end
 
     def initialize(ar_column_class = nil)
       @ar_column_class = ar_column_class || ActiveRecord::ConnectionAdapters::Column
     end
 
+    # TODO - temporary, till it's no longer used by read model and factory
     def convert(value, type)
-      return if value.nil?
-      case type.to_sym
-      when *TYPES[:string]   then value
-      when *TYPES[:integer]  then @ar_column_class.value_to_integer(value)
-      when *TYPES[:float]    then value.to_f
-      when *TYPES[:decimal]  then @ar_column_class.value_to_decimal(value)
-      when *TYPES[:datetime] then @ar_column_class.string_to_time(value)
-      when *TYPES[:time]     then @ar_column_class.string_to_dummy_time(value)
-      when *TYPES[:date]     then @ar_column_class.string_to_date(value)
-      when *TYPES[:binary]   then @ar_column_class.binary_to_string(value)
-      when *TYPES[:boolean]  then @ar_column_class.value_to_boolean(value)
-      else
-        raise ArgumentError, "#{type.inspect} is not a valid type"
-      end
+      self.send(type, value)
     end
+
+    def binary(value)
+      return if value.nil?
+      @ar_column_class.binary_to_string(value)
+    end
+
+    def boolean(value)
+      return if value.nil?
+      @ar_column_class.value_to_boolean(value)
+    end
+
+    def float(value)
+      return if value.nil?
+      value.to_f
+    end
+
+    def date(value)
+      return if value.nil?
+      @ar_column_class.string_to_date(value)
+    end
+
+    def datetime(value)
+      return if value.nil?
+      @ar_column_class.string_to_time(value)
+    end
+    alias :timestamp :datetime
+
+    def decimal(value)
+      return if value.nil?
+      @ar_column_class.value_to_decimal(value)
+    end
+
+    def integer(value)
+      return if value.nil?
+      @ar_column_class.value_to_integer(value)
+    end
+    alias :primary_key :integer
+
+    def string(value)
+      return if value.nil?
+      value.to_s
+    end
+    alias :text :string
+
+    def time(value)
+      return if value.nil?
+      @ar_column_class.string_to_dummy_time(value)
+    end
+
   end
 
 end

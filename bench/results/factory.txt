@@ -1,21 +1,21 @@
 MR::Factory
 -----------
-  primary_key new provider               |      68.26 ms |       3.17 MB |
-  primary_key existing provider          |      38.52 ms |        0.0 MB |
-  integer                                |      28.16 ms |        0.0 MB |
-  float                                  |      28.49 ms |        0.0 MB |
-  decimal                                |      70.25 ms |        0.0 MB |
-  date                                   |      79.15 ms |       0.05 MB |
-  datetime                               |      33.35 ms |        0.0 MB |
-  time                                   |      33.96 ms |        0.0 MB |
-  timestamp                              |      33.51 ms |        0.0 MB |
-  string                                 |      102.4 ms |        0.0 MB |
-  text                                   |     157.41 ms |       0.91 MB |
-  slug                                   |     141.76 ms |       1.08 MB |
-  hex                                    |     142.87 ms |       0.03 MB |
-  file_name                              |     143.34 ms |       1.74 MB |
-  dir_path                               |     168.83 ms |        0.3 MB |
-  file_path                              |     290.54 ms |      27.59 MB |
-  binary                                 |      51.38 ms |        0.0 MB |
-  boolean                                |      43.57 ms |        0.0 MB |
-Total                                    |       2.82 s  |      26.01 MB |
+  primary_key new provider               |      72.25 ms |       3.17 MB |
+  primary_key existing provider          |      37.15 ms |        0.0 MB |
+  integer                                |      25.97 ms |        0.0 MB |
+  float                                  |      22.71 ms |        0.0 MB |
+  decimal                                |      68.49 ms |        0.0 MB |
+  date                                   |      83.09 ms |       0.12 MB |
+  datetime                               |      37.35 ms |        0.0 MB |
+  time                                   |      36.75 ms |        0.0 MB |
+  timestamp                              |      37.49 ms |        0.0 MB |
+  string                                 |     102.55 ms |        0.0 MB |
+  text                                   |     156.51 ms |       0.05 MB |
+  slug                                   |     139.15 ms |       1.03 MB |
+  hex                                    |     139.56 ms |       0.94 MB |
+  file_name                              |     160.83 ms |       0.87 MB |
+  dir_path                               |     169.27 ms |       0.14 MB |
+  file_path                              |     296.58 ms |       27.7 MB |
+  binary                                 |      37.11 ms |        0.0 MB |
+  boolean                                |      26.49 ms |        0.0 MB |
+Total                                    |       2.83 s  |      25.99 MB |
