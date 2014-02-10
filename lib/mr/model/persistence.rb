@@ -13,11 +13,9 @@ module MR::Model
     end
 
     def save
-      save_caller = caller
-      self.transaction do
-        raise InvalidError.new(self, self.errors, save_caller) unless self.valid?
-        record.save!
-      end
+      self.transaction{ record.save! }
+    rescue ActiveRecord::RecordInvalid
+      raise InvalidError.new(self, self.errors, caller)
     end
 
     def destroy

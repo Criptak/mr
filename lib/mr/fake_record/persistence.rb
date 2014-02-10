@@ -1,4 +1,5 @@
 require 'active_model'
+require 'active_record'
 require 'mr/factory'
 require 'mr/fake_record/attributes'
 
@@ -16,7 +17,10 @@ module MR::FakeRecord
       end
     end
 
+    # ActiveRecord methods
+
     def save!
+      raise ActiveRecord::RecordInvalid.new(self) unless self.valid?
       self.id ||= MR::Factory.primary_key(self.class)
       current_time = CurrentTime.new
       self.created_at ||= current_time if self.respond_to?(:created_at=)
@@ -51,6 +55,8 @@ module MR::FakeRecord
       self.errors.empty?
     end
 
+    # Non-ActiveRecord methods
+
     def save_called
       @save_called = false if @save_called.nil?
       @save_called
@@ -62,8 +68,15 @@ module MR::FakeRecord
 
     module ClassMethods
 
+      # ActiveRecord methods
+
       def transaction
         yield
+      end
+
+      # this is needed to raise ActiveRecord::RecordInvalid
+      def human_attribute_name(attribute, options = {})
+        options[:default] || attribute.to_s.split('.').last
       end
 
     end
