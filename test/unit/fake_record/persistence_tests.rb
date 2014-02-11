@@ -14,7 +14,7 @@ module MR::FakeRecord::Persistence
     end
     subject{ @fake_record_class }
 
-    should have_imeths :transaction
+    should have_imeths :transaction, :human_attribute_name
 
     should "include FakeRecord Attributes mixin" do
       assert_includes MR::FakeRecord::Attributes, subject
@@ -30,6 +30,17 @@ module MR::FakeRecord::Persistence
       called = nil
       subject.transaction{ called = true }
       assert called
+    end
+
+    should "return the default option using `human_attribute_name`" do
+      attribute_name = subject.human_attribute_name(:name, :default => "Name")
+      assert_equal "Name", attribute_name
+    end
+
+    should "return the last part of the attribute name as a string when " \
+           "no default option is passed using `human_attribute_name`" do
+      attribute_name = subject.human_attribute_name('a.i18n.translation.name')
+      assert_equal "name", attribute_name
     end
 
   end
@@ -58,6 +69,20 @@ module MR::FakeRecord::Persistence
 
     should "default it's save called to `false`" do
       assert_false subject.save_called
+    end
+
+    should "not raise an invalid record error using `save!` when its valid" do
+      subject.errors.clear
+      assert_nothing_raised{ subject.save! }
+    end
+
+    should "raise a invalid record error using `save!` when its invalid" do
+      subject.errors.add(:name, 'invalid')
+      exception = nil
+      begin; subject.save!; rescue StandardError => exception; end
+
+      assert_instance_of ActiveRecord::RecordInvalid, exception
+      assert_equal 'Validation failed: Name invalid', exception.message
     end
 
     should "set it's id when saved for the first time using `save!`" do
