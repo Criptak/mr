@@ -98,7 +98,7 @@ module MR::Factory
   end
 
   def self.type_cast(value, type)
-    self.type_converter.convert(value, type)
+    self.type_converter.send(type, value)
   end
 
   def self.type_converter
