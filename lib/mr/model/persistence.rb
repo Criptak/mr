@@ -14,8 +14,11 @@ module MR::Model
 
     def save
       self.transaction{ record.save! }
-    rescue ActiveRecord::RecordInvalid
-      raise InvalidError.new(self, self.errors, caller)
+    rescue ActiveRecord::RecordInvalid => exception
+      # `caller` is not consistent between 1.8 and 2.0, if we stop supporting
+      # older versions, we can switch to using `caller`
+      called_from = exception.backtrace[6..-1]
+      raise InvalidError.new(self, self.errors, called_from)
     end
 
     def destroy
