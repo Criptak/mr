@@ -19,7 +19,7 @@ module MR::ReadModel
       end
 
       def find(id, args = nil)
-        self.relation.build_for_find(args || {}).find(id)
+        self.new(self.relation.build_for_find(args || {}).find(id))
       end
 
       def query(args = nil)

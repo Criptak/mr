@@ -254,18 +254,19 @@ module MR::ReadModel::Querying
         attr_accessor :id
         select :id
         limit 1
-        def initialize(data)
-          data.each{ |k, v| send("#{k}=", v) }
+        def initialize(record_data)
+          self.id = record_data.id
         end
       end
-      @read_model = @read_model_class.new(:id => 1)
-      @ar_relation_spy.results = [ @read_model ]
-      @result = @read_model_class.find(@read_model.id)
+      @fake_record = FakeTestRecord.new
+      @ar_relation_spy.results = [ @fake_record ]
+      @result = @read_model_class.find(@fake_record.id)
     end
     subject{ @result }
 
     should "return the matching read model" do
-      assert_equal @read_model.id, subject.id
+      assert_kind_of @read_model_class, subject
+      assert_equal @fake_record.id, subject.id
     end
 
     should "have only applied a subset of the query expressions to the relation" do

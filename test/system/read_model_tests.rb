@@ -90,6 +90,7 @@ module MR::ReadModel
     subject{ @user_with_area_data }
 
     should "find a specific record by it's id" do
+      assert_kind_of UserWithAreaData, subject
       assert_equal @matching_user.id, subject.user_id
     end
 
