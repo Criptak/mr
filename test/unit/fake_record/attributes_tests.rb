@@ -26,6 +26,7 @@ module MR::FakeRecord::Attributes
 
       assert_respond_to :name,          fake_record
       assert_respond_to :name=,         fake_record
+      assert_respond_to :name_was,      fake_record
       assert_respond_to :name_changed?, fake_record
       fake_record.name = 'test'
       assert_equal 'test', fake_record.name
@@ -153,7 +154,8 @@ module MR::FakeRecord::Attributes
 
     should have_readers :name, :type, :primary
     should have_readers :reader_method_name, :writer_method_name
-    should have_readers :changed_method_name
+    should have_readers :was_method_name, :changed_method_name
+    should have_imeths :read, :write, :was, :changed?
 
     should "know it's name and type" do
       assert_equal 'name',  subject.name
@@ -170,6 +172,7 @@ module MR::FakeRecord::Attributes
     should "know it's method names" do
       assert_equal "name",          subject.reader_method_name
       assert_equal "name=",         subject.writer_method_name
+      assert_equal "name_was",      subject.was_method_name
       assert_equal "name_changed?", subject.changed_method_name
     end
 
@@ -182,6 +185,13 @@ module MR::FakeRecord::Attributes
     should "write an attribute's value using `write`" do
       subject.write('test', @fake_record)
       assert_equal 'test', @fake_record.name
+    end
+
+    should "read an attribute's previous value using `was`" do
+      @fake_record.saved_attributes = {}
+      assert_nil subject.was(@fake_record)
+      @fake_record.saved_attributes = { 'name' => 'test' }
+      assert_equal 'test', subject.was(@fake_record)
     end
 
     should "detect if an attribute's changed using `changed?`" do
@@ -215,6 +225,7 @@ module MR::FakeRecord::Attributes
 
       assert_respond_to :name,          fake_record
       assert_respond_to :name=,         fake_record
+      assert_respond_to :name_was,      fake_record
       assert_respond_to :name_changed?, fake_record
     end
 

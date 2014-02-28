@@ -80,6 +80,12 @@ profiler.run("MR::Model") do
     benchmark("write single field") do |n|
       area.name = "Name #{n}"
     end
+    benchmark("read single field was") do |n|
+      area.name_was
+    end
+    benchmark("single field changed") do |n|
+      area.name_changed?
+    end
     benchmark("fields") do |n|
       area.fields
     end

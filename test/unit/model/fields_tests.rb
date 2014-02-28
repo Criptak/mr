@@ -34,8 +34,10 @@ module MR::Model::Fields
       model = subject.new(@record)
 
       assert_respond_to :name, model
+      assert_respond_to :name_was, model
       assert_respond_to :name_changed?, model
       assert_equal @record.name, model.name
+      assert_equal @record.name_was, model.name_was
       assert_equal @record.name_changed?, model.name_changed?
     end
 
@@ -182,15 +184,16 @@ module MR::Model::Fields
     subject{ @field }
 
     should have_readers :name
-    should have_readers :reader_method_name, :changed_method_name
-    should have_readers :writer_method_name
+    should have_readers :reader_method_name, :writer_method_name
+    should have_readers :was_method_name, :changed_method_name
 
-    should have_imeths :read, :write, :changed?
+    should have_imeths :read, :write, :was, :changed?
     should have_imeths :define_reader_on, :define_writer_on
 
     should "know it's name and method names" do
       assert_equal 'name',          subject.name
       assert_equal 'name',          subject.reader_method_name
+      assert_equal 'name_was',      subject.was_method_name
       assert_equal 'name_changed?', subject.changed_method_name
       assert_equal 'name=',         subject.writer_method_name
     end
@@ -205,6 +208,16 @@ module MR::Model::Fields
       assert_equal 'test', @record.name
     end
 
+    should "read a record attribute's prevous value using `was`" do
+      assert_nil subject.was(@record)
+      @record.name = 'Test'
+      assert_nil subject.was(@record)
+      @record.save!
+      assert_equal 'Test', subject.was(@record)
+      @record.name = 'New test'
+      assert_equal 'Test', subject.was(@record)
+    end
+
     should "return if a record's attribute has changed using `changed`" do
       assert_equal false, subject.changed?(@record)
       subject.write('test', @record)
@@ -215,6 +228,7 @@ module MR::Model::Fields
       subject.define_reader_on(@model_class)
       model = @model_class.new(@record)
       assert_respond_to :name, model
+      assert_respond_to :name_was, model
       assert_respond_to :name_changed?, model
     end
 

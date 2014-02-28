@@ -98,16 +98,18 @@ module MR::Model
 
   class Field
     attr_reader :name
-    attr_reader :reader_method_name, :changed_method_name
+    attr_reader :reader_method_name, :was_method_name, :changed_method_name
     attr_reader :writer_method_name
 
     def initialize(name)
       @name = name.to_s
       @reader_method_name  = @name
+      @was_method_name     = "#{@name}_was"
       @changed_method_name = "#{@name}_changed?"
       @writer_method_name  = "#{@reader_method_name}="
       @attribute_reader_method_name = @reader_method_name
       @attribute_writer_method_name = @writer_method_name
+      @attribute_was_method_name = "#{@reader_method_name}_was"
       @attribute_changed_method_name = "#{@reader_method_name}_changed?"
     end
 
@@ -117,6 +119,10 @@ module MR::Model
 
     def write(value, record)
       record.send(@attribute_writer_method_name, value)
+    end
+
+    def was(record)
+      record.send(@attribute_was_method_name)
     end
 
     def changed?(record)
@@ -132,6 +138,9 @@ module MR::Model
         end
         define_method(field.changed_method_name) do
           field.changed?(record)
+        end
+        define_method(field.was_method_name) do
+          field.was(record)
         end
 
       end

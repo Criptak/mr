@@ -48,6 +48,9 @@ profiler.run("MR::FakeRecord") do
     benchmark("write single attribute") do |n|
       fake_area_record.name = "Name #{n}"
     end
+    benchmark("read single attribute was") do |n|
+      fake_area_record.name_was
+    end
     benchmark("single attribute changed?") do |n|
       fake_area_record.name_changed?
     end
