@@ -85,7 +85,8 @@ module MR::FakeRecord
 
   class Attribute
     attr_reader :name, :type
-    attr_reader :reader_method_name, :writer_method_name, :changed_method_name
+    attr_reader :reader_method_name, :writer_method_name
+    attr_reader :was_method_name, :changed_method_name
 
     # ActiveRecord methods
     attr_reader :primary
@@ -97,6 +98,7 @@ module MR::FakeRecord
 
       @reader_method_name  = @name
       @writer_method_name  = "#{@reader_method_name}="
+      @was_method_name     = "#{@reader_method_name}_was"
       @changed_method_name = "#{@reader_method_name}_changed?"
     end
 
@@ -108,8 +110,12 @@ module MR::FakeRecord
       record.send(@writer_method_name, value)
     end
 
+    def was(record)
+      record.saved_attributes[@name]
+    end
+
     def changed?(record)
-      read(record) != record.saved_attributes[@name]
+      read(record) != was(record)
     end
 
     def ==(other)
@@ -125,6 +131,9 @@ module MR::FakeRecord
       record_class.class_eval do
 
         attr_accessor attribute.reader_method_name
+        define_method(attribute.was_method_name) do
+          attribute.was(self)
+        end
         define_method(attribute.changed_method_name) do
           attribute.changed?(self)
         end

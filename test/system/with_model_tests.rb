@@ -29,6 +29,16 @@ class WithModelTests < DbTests
     assert_equal 12345,      subject.number
   end
 
+  should "allow reading previous values for a record's attribute" do
+    assert_nil subject.name_was
+    subject.name = 'Test'
+    assert_nil subject.name_was
+    subject.save
+    assert_equal 'Test', subject.name_was
+    subject.name = 'New Test'
+    assert_equal 'Test', subject.name_was
+  end
+
   should "allow mass setting and reading the record's attributes" do
     assert_nothing_raised do
       subject.fields = {
