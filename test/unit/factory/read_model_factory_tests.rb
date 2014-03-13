@@ -36,13 +36,13 @@ class MR::Factory::ReadModelFactory
     should "return an instance of the read model using `instance`" do
       read_model = subject.instance
       assert_instance_of TestReadModel, read_model
-      assert_kind_of String,    read_model.string
-      assert_kind_of Integer,   read_model.integer
-      assert_kind_of Float,     read_model.float
-      assert_kind_of Time,      read_model.datetime
-      assert_kind_of Time,      read_model.time
-      assert_kind_of Date,      read_model.date
-      assert_kind_of Integer,   read_model.primary_key
+      assert_kind_of String,  read_model.string
+      assert_kind_of Integer, read_model.integer
+      assert_kind_of Float,   read_model.float
+      assert_kind_of Time,    read_model.datetime
+      assert_kind_of Time,    read_model.time
+      assert_kind_of Date,    read_model.date
+      assert_kind_of Integer, read_model.primary_key
       assert_includes read_model.boolean.class, [ TrueClass, FalseClass ]
     end
 
