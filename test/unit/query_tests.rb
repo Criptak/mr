@@ -22,7 +22,7 @@ class MR::Query
     should have_readers :model_class, :relation
     should have_imeths :models, :results, :count
 
-    should "call count om the relation with #count" do
+    should "call count on the relation with #count" do
       assert_equal 2, subject.count
     end
 
@@ -68,6 +68,14 @@ class MR::Query
     end
 
     should "count the total number of models with #total_count" do
+      assert_equal 2, subject.total_count
+    end
+
+    should "handle hash results from the relation's count using `total_count`" do
+      grouped_count = @relation.results.inject({}) do |h, record|
+        h.merge(record.id => 1)
+      end
+      @relation.stubs(:count).returns(grouped_count)
       assert_equal 2, subject.total_count
     end
 

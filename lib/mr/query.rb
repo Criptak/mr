@@ -43,7 +43,12 @@ module MR
     # expensive) and should only be done when it's needed. If it's never used
     # then, running it in the `initialize` would be wasteful.
     def total_count
-      @unpaged_relation.count
+      result = @unpaged_relation.count
+      if result.kind_of?(Hash)
+        result.values.inject(:+)
+      else
+        result
+      end
     end
 
     module PageNumber
