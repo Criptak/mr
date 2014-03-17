@@ -17,11 +17,15 @@ module MR
     alias :results :models
 
     def count
-      @relation.count
+      self.count_relation.count
     end
 
     def paged(page_num = nil, page_size = nil)
       PagedQuery.new(self, page_num, page_size)
+    end
+
+    def count_relation
+      @count_relation ||= CountRelation.new(@relation)
     end
 
   end
@@ -43,12 +47,11 @@ module MR
     # expensive) and should only be done when it's needed. If it's never used
     # then, running it in the `initialize` would be wasteful.
     def total_count
-      result = @unpaged_relation.count
-      if result.kind_of?(Hash)
-        result.values.inject(:+)
-      else
-        result
-      end
+      self.total_count_relation.count
+    end
+
+    def total_count_relation
+      @count_relation ||= CountRelation.new(@unpaged_relation)
     end
 
     module PageNumber
@@ -69,6 +72,18 @@ module MR
       end
     end
 
+  end
+
+  module CountRelation
+    def self.new(relation)
+      relation = relation.except(:select, :order)
+      if relation.group_values.empty?
+        relation
+      else
+        subquery = relation.select(:id).to_sql
+        relation.klass.scoped.from("(#{subquery}) AS grouped_records")
+      end
+    end
   end
 
 end
