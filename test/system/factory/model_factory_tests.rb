@@ -2,7 +2,6 @@ require 'assert'
 require 'mr/factory/model_factory'
 
 require 'test/support/setup_test_db'
-require 'test/support/models/image'
 require 'test/support/models/user'
 
 class MR::Factory::ModelFactory

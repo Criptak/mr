@@ -1,3 +1,4 @@
+require 'active_support/core_ext'
 require 'mr/fake_record/attributes'
 
 module MR; end
