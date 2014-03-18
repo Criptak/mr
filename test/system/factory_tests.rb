@@ -15,7 +15,9 @@ module MR::Factory
     end
 
     should "return a ModelFactory when a Model is passed to `new`" do
-      factory = subject.new(User)
+      factory = subject.new(User, UserRecord)
+      assert_instance_of MR::Factory::ModelFactory, factory
+      factory = subject.new(User, FakeUserRecord)
       assert_instance_of MR::Factory::ModelFactory, factory
     end
 
@@ -23,14 +25,6 @@ module MR::Factory
       read_model_class = Class.new{ include MR::ReadModel }
       factory = subject.new(read_model_class)
       assert_instance_of MR::Factory::ReadModelFactory, factory
-    end
-
-    should "pass args and blocks through to the individual factories" do
-      factory = subject.new(User, FakeUserRecord) do
-        default_args :test => true
-      end
-      assert_equal FakeUserRecord,    factory.instance_variable_get("@fake_record_class")
-      assert_equal({ 'test' => true }, factory.default_args)
     end
 
   end
