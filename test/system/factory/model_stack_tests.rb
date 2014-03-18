@@ -14,16 +14,14 @@ class MR::Factory::ModelStack
     end
     subject{ @model_stack }
 
-    should have_readers :model
-
     should "build an instance of the model with all " \
            "belongs to associations set" do
       assert_instance_of Comment, @comment
-      assert @comment.new?
+      assert_true @comment.new?
       assert_instance_of User, @comment.parent
-      assert @comment.parent.new?
+      assert_true @comment.parent.new?
       assert_instance_of Area, @comment.parent.area
-      assert @comment.parent.area.new?
+      assert_true @comment.parent.area.new?
     end
 
   end

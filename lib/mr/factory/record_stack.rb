@@ -54,21 +54,21 @@ module MR::Factory
 
     def create
       create_children
-      @stack_record.create
+      self.stack_record.create
     end
 
     def create_children
-      @children.each(&:create)
-      @stack_record.refresh_associations
+      self.children.each(&:create)
+      self.stack_record.refresh_associations
     end
 
     def destroy
-      @stack_record.destroy
+      self.stack_record.destroy
       destroy_children
     end
 
     def destroy_children
-      @children.each(&:destroy)
+      self.children.each(&:destroy)
     end
 
     private
