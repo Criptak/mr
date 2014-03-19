@@ -1,13 +1,12 @@
 require 'mr/factory'
 require 'mr/factory/apply_args'
-require 'mr/factory/record_factory'
-require 'mr/factory/model_stack'
+require 'mr/model_stack'
+require 'mr/record_factory'
 
-module MR; end
-module MR::Factory
+module MR
 
   class ModelFactory
-    include ApplyArgs
+    include MR::Factory::ApplyArgs
 
     def initialize(model_class, record_class, &block)
       @model_class  = model_class
@@ -15,7 +14,7 @@ module MR::Factory
       @defaults     = {}
       self.instance_eval(&block) if block
 
-      @record_factory = MR::Factory::RecordFactory.new(@record_class)
+      @record_factory = MR::RecordFactory.new(@record_class)
     end
 
     def instance(args = nil)
@@ -24,7 +23,7 @@ module MR::Factory
     end
 
     def instance_stack(args = nil)
-      MR::Factory::ModelStack.new(self.instance(args))
+      MR::ModelStack.new(self.instance(args))
     end
 
     def apply_args(model, args = nil)
@@ -54,7 +53,7 @@ module MR::Factory
         associated_record_class = ar_association.klass ||
                                   NullRecordClass.new(association.name)
         associated_model_class  = associated_record_class.model_class
-        new_model = ModelFactory.new(
+        new_model = MR::ModelFactory.new(
           associated_model_class,
           associated_record_class
         ).instance
@@ -84,6 +83,5 @@ module MR::Factory
     NoRecordClassError = Class.new(RuntimeError)
 
   end
-
 
 end

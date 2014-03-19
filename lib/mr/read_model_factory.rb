@@ -2,11 +2,10 @@ require 'mr/factory'
 require 'mr/factory/apply_args'
 require 'mr/read_model'
 
-module MR; end
-module MR::Factory
+module MR
 
   class ReadModelFactory
-    include ApplyArgs
+    include MR::Factory::ApplyArgs
 
     def initialize(read_model_class, &block)
       raise ArgumentError, "takes a MR::ReadModel" unless read_model_class < MR::ReadModel

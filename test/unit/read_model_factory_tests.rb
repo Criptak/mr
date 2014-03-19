@@ -1,11 +1,14 @@
 require 'assert'
-require 'mr/factory/read_model_factory'
+require 'mr/read_model_factory'
 
-class MR::Factory::ReadModelFactory
+class MR::ReadModelFactory
 
   class UnitTests < Assert::Context
-    desc "MR::Factory::ReadModelFactory"
-    subject{ MR::Factory::ReadModelFactory }
+    desc "MR::ReadModelFactory"
+    setup do
+      @factory_class = MR::ReadModelFactory
+    end
+    subject{ @factory_class }
 
     should "instance eval a block thats passed to it's `new`" do
       eval_scope = nil
@@ -22,7 +25,7 @@ class MR::Factory::ReadModelFactory
   class InstanceTests < UnitTests
     desc "instance"
     setup do
-      @factory = MR::Factory::ReadModelFactory.new(TestReadModel)
+      @factory = @factory_class.new(TestReadModel)
     end
     subject{ @factory }
 

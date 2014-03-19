@@ -1,12 +1,11 @@
 require 'mr/factory'
 require 'mr/factory/apply_args'
-require 'mr/factory/record_stack'
+require 'mr/record_stack'
 
-module MR; end
-module MR::Factory
+module MR
 
   class RecordFactory
-    include ApplyArgs
+    include MR::Factory::ApplyArgs
 
     def initialize(record_class, &block)
       @record_class = record_class
@@ -19,7 +18,7 @@ module MR::Factory
     end
 
     def instance_stack(args = nil)
-      MR::Factory::RecordStack.new(self.instance(args))
+      MR::RecordStack.new(self.instance(args))
     end
 
     def apply_args(record, args = nil)
@@ -51,7 +50,7 @@ module MR::Factory
 
     def get_associated_record(record, association)
       record.send(association.reflection.name) || begin
-        new_record = RecordFactory.new(association.klass).instance
+        new_record = MR::RecordFactory.new(association.klass).instance
         record.send("#{association.reflection.name}=", new_record)
       end
     end

@@ -1,16 +1,16 @@
 require 'assert'
-require 'mr/factory/model_stack'
+require 'mr/model_stack'
 
 require 'test/support/setup_test_db'
 require 'test/support/models/comment'
 
-class MR::Factory::ModelStack
+class MR::ModelStack
 
   class SystemTests < DbTests
-    desc "MR::Factory::ModelStack"
+    desc "MR::ModelStack"
     setup do
       @comment     = Comment.new(:parent_type => 'UserRecord')
-      @model_stack = MR::Factory::ModelStack.new(@comment)
+      @model_stack = MR::ModelStack.new(@comment)
     end
     subject{ @model_stack }
 

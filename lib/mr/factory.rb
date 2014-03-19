@@ -1,8 +1,11 @@
 require 'assert/factory'
 require 'thread'
-require 'mr/factory/model_factory'
-require 'mr/factory/read_model_factory'
-require 'mr/factory/record_factory'
+require 'mr/model'
+require 'mr/model_factory'
+require 'mr/read_model'
+require 'mr/read_model_factory'
+require 'mr/record'
+require 'mr/record_factory'
 require 'mr/type_converter'
 
 module MR; end
@@ -11,11 +14,11 @@ module MR::Factory
 
   def self.new(object_class, *args, &block)
     if object_class < MR::Model
-      ModelFactory.new(object_class, *args, &block)
+      MR::ModelFactory.new(object_class, *args, &block)
     elsif object_class < MR::ReadModel
-      ReadModelFactory.new(object_class, *args, &block)
+      MR::ReadModelFactory.new(object_class, *args, &block)
     elsif object_class < MR::Record
-      RecordFactory.new(object_class, *args, &block)
+      MR::RecordFactory.new(object_class, *args, &block)
     else
       raise ArgumentError, "takes a MR::Model, MR::Record, or MR::ReadModel"
     end

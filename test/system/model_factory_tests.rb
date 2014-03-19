@@ -1,15 +1,15 @@
 require 'assert'
-require 'mr/factory/model_factory'
+require 'mr/model_factory'
 
 require 'test/support/setup_test_db'
 require 'test/support/models/user'
 
-class MR::Factory::ModelFactory
+class MR::ModelFactory
 
   class SystemTests < DbTests
-    desc "MR::Factory::Model"
+    desc "MR::ModelFactory"
     setup do
-      @factory_class = MR::Factory::ModelFactory
+      @factory_class = MR::ModelFactory
     end
 
   end
@@ -35,7 +35,7 @@ class MR::Factory::ModelFactory
 
     should "build a model stack for an instance using `instance_stack`" do
       stack = subject.instance_stack
-      assert_instance_of MR::Factory::ModelStack, stack
+      assert_instance_of MR::ModelStack, stack
     end
 
   end
@@ -61,7 +61,7 @@ class MR::Factory::ModelFactory
 
     should "build a model stack for an instance using `instance_stack`" do
       stack = subject.instance_stack
-      assert_instance_of MR::Factory::ModelStack, stack
+      assert_instance_of MR::ModelStack, stack
     end
 
   end

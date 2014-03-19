@@ -1,12 +1,12 @@
 require 'assert'
-require 'mr/factory/record_stack'
+require 'mr/record_stack'
 
 require 'mr/fake_record'
 
-class MR::Factory::RecordStack
+class MR::RecordStack
 
   class UnitTests < Assert::Context
-    desc "MR::Factory::RecordStack"
+    desc "MR::RecordStack"
     setup do
       @record = TestFakeRecord.new
     end
@@ -16,22 +16,22 @@ class MR::Factory::RecordStack
   class RecordStackTests < UnitTests
     setup do
       @stack_record_spy = StackRecordSpy.new
-      MR::Factory::Record.stubs(:new).tap do |s|
+      MR::RecordStack::Record.stubs(:new).tap do |s|
         s.with(@record)
         s.returns(@stack_record_spy)
       end
 
       @tree_node_spy = TreeNodeSpy.new
-      MR::Factory::TreeNode.stubs(:new).tap do |s|
+      MR::RecordStack::TreeNode.stubs(:new).tap do |s|
         s.with(@stack_record_spy, {})
         s.returns(@tree_node_spy)
       end
 
-      @record_stack = MR::Factory::RecordStack.new(@record)
+      @record_stack = MR::RecordStack.new(@record)
     end
     teardown do
-      MR::Factory::TreeNode.unstub(:new)
-      MR::Factory::Record.unstub(:new)
+      MR::RecordStack::TreeNode.unstub(:new)
+      MR::RecordStack::Record.unstub(:new)
     end
     subject{ @record_stack }
 
@@ -64,9 +64,9 @@ class MR::Factory::RecordStack
   class TreeNodeTests < UnitTests
     desc "TreeNode"
     setup do
-      @stack_record = MR::Factory::Record.new(@record)
+      @stack_record = MR::RecordStack::Record.new(@record)
       @dependency_lookup = {}
-      @tree_node = MR::Factory::TreeNode.new(@stack_record, @dependency_lookup)
+      @tree_node = MR::RecordStack::TreeNode.new(@stack_record, @dependency_lookup)
     end
     subject{ @tree_node }
 
@@ -80,7 +80,7 @@ class MR::Factory::RecordStack
 
     should "build associated tree nodes as its children" do
       assert_equal 2, subject.children.size
-      subject.children.each{ |c| assert_instance_of MR::Factory::TreeNode, c }
+      subject.children.each{ |c| assert_instance_of MR::RecordStack::TreeNode, c }
       record_classes = subject.children.map{ |c| c.stack_record.instance.class }
       assert_equal [ AnotherFakeRecord, OtherFakeRecord ], record_classes
     end
@@ -100,7 +100,7 @@ class MR::Factory::RecordStack
 
     should "reuse associated records that are built for associations " \
            "that aren't preset in its children" do
-      prefix = 'MR::Factory::RecordStack'
+      prefix = 'MR::RecordStack'
       other_stack_record   = @dependency_lookup["#{prefix}::OtherFakeRecord"]
       another_stack_record = @dependency_lookup["#{prefix}::AnotherFakeRecord"]
       assert_same other_stack_record.instance,   @record.other
@@ -173,9 +173,9 @@ class MR::Factory::RecordStack
       @other_record = OtherFakeRecord.new.tap(&:save!)
       @record.other = @other_record
 
-      @stack_record = MR::Factory::Record.new(@record)
+      @stack_record = MR::RecordStack::Record.new(@record)
       @dependency_lookup = {}
-      @tree_node = MR::Factory::TreeNode.new(@stack_record, @dependency_lookup)
+      @tree_node = MR::RecordStack::TreeNode.new(@stack_record, @dependency_lookup)
     end
     subject{ @tree_node }
 
@@ -198,7 +198,7 @@ class MR::Factory::RecordStack
   class StackRecordTests < UnitTests
     desc "Record"
     setup do
-      @stack_record = MR::Factory::Record.new(@record)
+      @stack_record = MR::RecordStack::Record.new(@record)
     end
     subject{ @stack_record }
 
@@ -213,7 +213,7 @@ class MR::Factory::RecordStack
     should "build stack associations from it's record's associations" do
       assert_equal 2, subject.associations.size
       subject.associations.each do |association|
-        assert_instance_of MR::Factory::Record::Association, association
+        assert_instance_of MR::RecordStack::Association, association
       end
       assert_equal [ :another, :other ], subject.associations.map(&:name)
     end
@@ -234,7 +234,7 @@ class MR::Factory::RecordStack
 
     should "set an association from a stack record using `set_association`" do
       another_record = AnotherFakeRecord.new.tap(&:save!)
-      another_stack_record = MR::Factory::Record.new(another_record)
+      another_stack_record = MR::RecordStack::Record.new(another_record)
       subject.set_association(:another, another_stack_record)
       assert_equal another_record, @record.another
     end
@@ -258,19 +258,18 @@ class MR::Factory::RecordStack
       @record.another = @associated_record
       @association = @record.association(:another)
 
-      @stack_association_class = MR::Factory::Record::Association
-      @stack_association = @stack_association_class.new(@record, @association)
+      @stack_association = MR::RecordStack::Association.new(@record, @association)
 
-      @factory = MR::Factory::RecordFactory.new(@stack_association.record_class)
+      @factory = MR::RecordFactory.new(@stack_association.record_class)
       @factory_record = @stack_association.record_class.new
-      MR::Factory::RecordFactory.stubs(:new).tap do |s|
+      MR::RecordFactory.stubs(:new).tap do |s|
         s.with(@stack_association.record_class)
         s.returns(@factory)
       end
       @factory.stubs(:instance).returns(@factory_record)
     end
     teardown do
-      MR::Factory::RecordFactory.unstub(:new)
+      MR::RecordFactory.unstub(:new)
     end
     subject{ @stack_association }
 
@@ -285,11 +284,11 @@ class MR::Factory::RecordStack
 
     should "know if it was preset or not" do
       @record.another = @associated_record
-      sa = @stack_association_class.new(@record, @association)
+      sa = MR::RecordStack::Association.new(@record, @association)
       assert_true sa.preset?
 
       @record.another = nil
-      sa = @stack_association_class.new(@record, @association)
+      sa = MR::RecordStack::Association.new(@record, @association)
       assert_false sa.preset?
     end
 
@@ -301,8 +300,8 @@ class MR::Factory::RecordStack
       other_association   = @record.association(:other)
       another_association = @record.association(:another)
       associations = [
-        @stack_association_class.new(@record, other_association),
-        @stack_association_class.new(@record, another_association)
+        MR::RecordStack::Association.new(@record, other_association),
+        MR::RecordStack::Association.new(@record, another_association)
       ].sort
       assert_equal [ :another, :other ], associations.map(&:name)
     end
@@ -315,8 +314,8 @@ class MR::Factory::RecordStack
     attribute :other_id, :integer
     attribute :another_id, :integer
 
-    belongs_to :other, 'MR::Factory::RecordStack::OtherFakeRecord'
-    belongs_to :another, 'MR::Factory::RecordStack::AnotherFakeRecord'
+    belongs_to :other,   'MR::RecordStack::OtherFakeRecord'
+    belongs_to :another, 'MR::RecordStack::AnotherFakeRecord'
 
   end
 
@@ -330,7 +329,7 @@ class MR::Factory::RecordStack
 
     attribute :other_id, :integer
 
-    belongs_to :other, 'MR::Factory::RecordStack::OtherFakeRecord'
+    belongs_to :other, 'MR::RecordStack::OtherFakeRecord'
 
   end
 

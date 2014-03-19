@@ -11,20 +11,20 @@ module MR::Factory
 
     should "return a RecordFactory when a Record is passed to `new`" do
       factory = subject.new(UserRecord)
-      assert_instance_of MR::Factory::RecordFactory, factory
+      assert_instance_of MR::RecordFactory, factory
     end
 
     should "return a ModelFactory when a Model is passed to `new`" do
       factory = subject.new(User, UserRecord)
-      assert_instance_of MR::Factory::ModelFactory, factory
+      assert_instance_of MR::ModelFactory, factory
       factory = subject.new(User, FakeUserRecord)
-      assert_instance_of MR::Factory::ModelFactory, factory
+      assert_instance_of MR::ModelFactory, factory
     end
 
     should "return a ReadModelFactory when a ReadModel is passed to `new`" do
       read_model_class = Class.new{ include MR::ReadModel }
       factory = subject.new(read_model_class)
-      assert_instance_of MR::Factory::ReadModelFactory, factory
+      assert_instance_of MR::ReadModelFactory, factory
     end
 
   end
