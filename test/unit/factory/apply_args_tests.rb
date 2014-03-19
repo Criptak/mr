@@ -8,17 +8,15 @@ module MR::Factory::ApplyArgs
     setup do
       @class = Class.new do
         include MR::Factory::ApplyArgs
-        public :hash_key?, :deep_merge, :stringify_hash
+        public :apply_args!, :hash_key?, :deep_merge, :stringify_hash
       end
       @instance = @class.new
     end
     subject{ @instance }
 
-    should have_imeths :apply_args
-
     should "raise a not implemented error unless " \
            "`apply_args_to_associations!` is overwritten" do
-      assert_raises(NotImplementedError){ subject.apply_args('object') }
+      assert_raises(NotImplementedError){ subject.apply_args!('object', {}) }
     end
 
     should "return if a value in a hash is a `Hash` using `hash_key?`" do
@@ -82,22 +80,22 @@ module MR::Factory::ApplyArgs
       @object = TestObject.new
     end
 
-    should "write a hash's values to an object using `apply_args`" do
-      subject.apply_args(@object, :name => 'Test', :active => true)
+    should "write a hash's values to an object using `apply_args!`" do
+      subject.apply_args!(@object, :name => 'Test', :active => true)
       assert_equal 'Test', @object.name
       assert_equal true,   @object.active
     end
 
-    should "allow passing proc values in the hash using `apply_args`" do
+    should "allow passing proc values in the hash using `apply_args!`" do
       object = TestObject.new
-      subject.apply_args(@object, :name => proc{ 'Test' })
+      subject.apply_args!(@object, :name => proc{ 'Test' })
       assert_equal 'Test', @object.name
     end
 
     should "call `apply_args_to_associations!` with " \
            "the object and args using `apply_args`" do
       args = { :name => 'Test' }
-      subject.apply_args(@object, args)
+      subject.apply_args!(@object, args)
       call = subject.apply_to_associations_calls.first
       assert_equal @object, call.object
       assert_equal args,    call.args
@@ -120,7 +118,7 @@ module MR::Factory::ApplyArgs
 
     should "not modify hashes passed to `apply_args`" do
       args = { :name => 'Test' }
-      subject.apply_args(@object, args)
+      subject.apply_args!(@object, args)
       assert_not_empty args
       assert_not_equal 'Test', @object.name
     end
