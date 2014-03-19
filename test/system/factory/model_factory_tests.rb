@@ -16,7 +16,7 @@ class MR::Factory::ModelFactory
 
   class BuildingRealModelTests < SystemTests
     setup do
-      @factory = @factory_class.new(User)
+      @factory = @factory_class.new(User, UserRecord)
     end
     subject{ @factory }
 
@@ -46,8 +46,8 @@ class MR::Factory::ModelFactory
     end
     subject{ @factory }
 
-    should "build a model with it's fields set using `fake`" do
-      user = subject.fake
+    should "build a model with it's fields set using `instance`" do
+      user = subject.instance
       assert_instance_of User, user
       assert_instance_of FakeUserRecord, user.send(:record)
       assert user.new?
@@ -59,8 +59,8 @@ class MR::Factory::ModelFactory
       assert_nil user.area_id
     end
 
-    should "build a model stack for an instance using `fake_stack`" do
-      stack = subject.fake_stack
+    should "build a model stack for an instance using `instance_stack`" do
+      stack = subject.instance_stack
       assert_instance_of MR::Factory::ModelStack, stack
     end
 
