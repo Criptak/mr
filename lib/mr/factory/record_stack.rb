@@ -4,12 +4,12 @@ module MR; end
 module MR::Factory
 
   class RecordStack
-    attr_reader :record
+    attr_reader :record, :dependency_lookup
 
     def initialize(record)
       @record       = record
       @stack_record = Record.new(@record)
-      @dependency_lookup    = {}
+      @dependency_lookup    = build_lookup(@stack_record)
       @dependency_tree_root = TreeNode.new(@stack_record, @dependency_lookup)
     end
 
@@ -33,6 +33,21 @@ module MR::Factory
       true
     end
 
+    private
+
+    def build_lookup(stack_record)
+      load_preset_associations_into_lookup({}, stack_record)
+    end
+
+    def load_preset_associations_into_lookup(lookup, stack_record)
+      stack_record.associations.select(&:preset?).each do |association|
+        associated_stack_record = Record.new(association.preset_record)
+        lookup[association.key] ||= associated_stack_record
+        load_preset_associations_into_lookup(lookup, associated_stack_record)
+      end
+      lookup
+    end
+
   end
 
   class TreeNode
@@ -40,14 +55,14 @@ module MR::Factory
     def initialize(stack_record, lookup)
       @stack_record = stack_record
       @lookup       = lookup
-      @children = associations_with_preset_first.map do |association|
+      @children = self.stack_record.associations.map do |association|
         associated_stack_record = if association.preset?
           Record.new(association.preset_record)
         else
           @lookup[association.key] || Record.new(association.build_record)
         end
         @lookup[association.key] ||= associated_stack_record
-        @stack_record.set_association(association.name, associated_stack_record)
+        self.stack_record.set_association(association.name, associated_stack_record)
         TreeNode.new(associated_stack_record, @lookup)
       end
     end
@@ -69,14 +84,6 @@ module MR::Factory
 
     def destroy_children
       self.children.each(&:destroy)
-    end
-
-    private
-
-    # preset associations are sorted first, these should be used first by stacks
-    # so it will build
-    def associations_with_preset_first
-      @stack_record.associations.sort_by{ |a| a.preset? ? 1 : 2 }
     end
   end
 

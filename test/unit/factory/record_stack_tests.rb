@@ -35,7 +35,7 @@ class MR::Factory::RecordStack
     end
     subject{ @record_stack }
 
-    should have_readers :record
+    should have_readers :record, :dependency_lookup
     should have_imeths :create, :destroy
     should have_imeths :create_dependencies, :destroy_dependencies
 
@@ -57,6 +57,28 @@ class MR::Factory::RecordStack
     should "call destroy children on its tree node using `destroy_dependencies`" do
       subject.destroy_dependencies
       assert_true @tree_node_spy.destroy_children_called
+    end
+
+  end
+
+  class WithPresetAssociationsTests < UnitTests
+    desc "with preset associations"
+    setup do
+      @another_record = AnotherFakeRecord.new.tap(&:save!)
+      @record.another = @another_record
+
+      @other_record = OtherFakeRecord.new.tap(&:save!)
+      @another_record.other = @other_record
+
+      @record_stack = MR::Factory::RecordStack.new(@record)
+    end
+    subject{ @record_stack }
+
+    should "build out its dependency lookup using preset associations" do
+      lookup = subject.dependency_lookup[@another_record.class.to_s]
+      assert_equal @another_record, lookup.instance
+      lookup = subject.dependency_lookup[@other_record.class.to_s]
+      assert_equal @other_record, lookup.instance
     end
 
   end
@@ -85,8 +107,7 @@ class MR::Factory::RecordStack
       assert_equal [ AnotherFakeRecord, OtherFakeRecord ], record_classes
     end
 
-    should "build new associated records for associations that aren't preset" \
-           "in its children" do
+    should "build new associated records for associations that aren't preset" do
       subject.children.each do |c|
         assert_true c.stack_record.instance.new_record?
       end
@@ -98,8 +119,7 @@ class MR::Factory::RecordStack
       assert_instance_of OtherFakeRecord,   @record.another.other
     end
 
-    should "reuse associated records that are built for associations " \
-           "that aren't preset in its children" do
+    should "reuse associated records that are built for associations" do
       prefix = 'MR::Factory::RecordStack'
       other_stack_record   = @dependency_lookup["#{prefix}::OtherFakeRecord"]
       another_stack_record = @dependency_lookup["#{prefix}::AnotherFakeRecord"]
@@ -170,27 +190,32 @@ class MR::Factory::RecordStack
   class TreeNodeWithPresetAssociationsTests < UnitTests
     desc "TreeNode with preset associations"
     setup do
+      @another_record = AnotherFakeRecord.new.tap(&:save!)
+      @record.another = @another_record
+
       @other_record = OtherFakeRecord.new.tap(&:save!)
       @record.other = @other_record
 
+      @lookup_record = OtherFakeRecord.new.tap(&:save!)
+      @lookup_stack_record = MR::Factory::Record.new(@lookup_record)
+
       @stack_record = MR::Factory::Record.new(@record)
-      @dependency_lookup = {}
+      @dependency_lookup = { OtherFakeRecord.to_s => @lookup_stack_record }
       @tree_node = MR::Factory::TreeNode.new(@stack_record, @dependency_lookup)
     end
     subject{ @tree_node }
 
-    should "sort preset associations first in its children" do
-      record_classes = subject.children.map{ |c| c.stack_record.instance.class }
-      assert_equal [ OtherFakeRecord, AnotherFakeRecord ], record_classes
+    should "not override preset associations with new records" do
+      assert_same @record.another, @another_record
     end
 
-    should "not override preset associations with new records" do
+    should "not override preset associations with records in the lookup" do
       assert_same @record.other, @other_record
     end
 
-    should "reuse preset records in its children" do
-      assert_same @other_record, @record.other
-      assert_same @other_record, @record.another.other
+    should "use records in the lookup to different associations " \
+           "of the same record class" do
+      assert_same @lookup_record, @record.another.other
     end
 
   end
@@ -312,6 +337,7 @@ class MR::Factory::RecordStack
   class TestFakeRecord
     include MR::FakeRecord
 
+    attribute :id, :primary_key
     attribute :other_id, :integer
     attribute :another_id, :integer
 
@@ -323,11 +349,14 @@ class MR::Factory::RecordStack
   class OtherFakeRecord
     include MR::FakeRecord
 
+    attribute :id, :primary_key
+
   end
 
   class AnotherFakeRecord
     include MR::FakeRecord
 
+    attribute :id, :primary_key
     attribute :other_id, :integer
 
     belongs_to :other, 'MR::Factory::RecordStack::OtherFakeRecord'
@@ -369,11 +398,13 @@ class MR::Factory::RecordStack
   end
 
   class StackRecordSpy
+    attr_reader :associations
     attr_reader :create_called, :create_called_at
     attr_reader :destroy_called, :destroy_called_at
     attr_reader :refresh_associations_called, :refresh_associations_called_at
 
     def initialize
+      @associations = []
       @create_called = false
       @create_called_at = nil
       @destroy_called = false
