@@ -27,33 +27,7 @@ class MR::Factory::RecordFactory
     subject{ @factory }
 
     should have_imeths :instance, :instance_stack
-    should have_imeths :apply_args, :default_args
-
-    should "allow applying args to a record using `apply_args`" do
-      @record = @record_class.new
-      subject.apply_args(@record, :name => 'test')
-      assert_equal 'test', @record.name
-    end
-
-    should "apply column defaults to a record using `apply_args`" do
-      @record = @record_class.new
-      subject.apply_args(@record)
-      assert_instance_of String, @record.name
-    end
-
-    should "use default args when applying args using `apply_args`" do
-      @record = @record_class.new
-      subject.default_args(:name => 'test')
-      subject.apply_args(@record)
-      assert_equal 'test', @record.name
-    end
-
-    should "use passed args over default args using `apply_args`" do
-      @record = @record_class.new
-      subject.default_args(:name => 'first')
-      subject.apply_args(@record, :name => 'second')
-      assert_equal 'second', @record.name
-    end
+    should have_imeths :default_args
 
     should "allow reading/writing default args using `default_args`" do
       assert_equal({}, subject.default_args)

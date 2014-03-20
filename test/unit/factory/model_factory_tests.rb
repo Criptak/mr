@@ -39,28 +39,7 @@ class MR::Factory::ModelFactory
     subject{ @factory }
 
     should have_imeths :instance, :instance_stack
-    should have_imeths :apply_args
     should have_imeths :default_args
-
-    should "allow applying args to a model using `apply_args`" do
-      @model = @model_class.new
-      subject.apply_args(@model, :name => 'test')
-      assert_equal 'test', @model.name
-    end
-
-    should "use default args when applying args using `apply_args`" do
-      @model = @model_class.new
-      subject.default_args(:name => 'test')
-      subject.apply_args(@model)
-      assert_equal 'test', @model.name
-    end
-
-    should "use passed args over default args using `apply_args`" do
-      @model = @model_class.new
-      subject.default_args(:name => 'first')
-      subject.apply_args(@model, :name => 'second')
-      assert_equal 'second', @model.name
-    end
 
     should "allow reading/writing default args using `default_args`" do
       assert_equal({}, subject.default_args)

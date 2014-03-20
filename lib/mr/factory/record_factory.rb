@@ -15,15 +15,11 @@ module MR::Factory
     end
 
     def instance(args = nil)
-      @record_class.new.tap{ |record| apply_args(record, args) }
+      apply_args(@record_class.new, args)
     end
 
     def instance_stack(args = nil)
       MR::Factory::RecordStack.new(self.instance(args))
-    end
-
-    def apply_args(record, args = nil)
-      super record, deep_merge(build_defaults, stringify_hash(args || {}))
     end
 
     def default_args(value = nil)
@@ -33,12 +29,18 @@ module MR::Factory
 
     private
 
-    def build_defaults
+    def apply_args(record, args = nil)
+      apply_args!(record, column_args)
+      apply_args!(record, @defaults)
+      apply_args!(record, stringify_hash(args || {}))
+      record
+    end
+
+    def column_args
       @columns ||= non_association_columns(@record_class)
-      column_defaults = @columns.inject({}) do |a, column|
+      @columns.inject({}) do |a, column|
         a.merge(column.name.to_s => MR::Factory.send(column.type))
       end
-      column_defaults.merge(@defaults)
     end
 
     def apply_args_to_associations!(record, args)
