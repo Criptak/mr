@@ -26,6 +26,12 @@ module MR::FakeRecord
       self.class.attributes.batch_write(new_attributes, self)
     end
 
+    def column_for_attribute(name)
+      self.class.attributes.find(name)
+    rescue NoAttributeError
+      return nil
+    end
+
     module ClassMethods
 
       def attributes
