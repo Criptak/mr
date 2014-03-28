@@ -32,8 +32,8 @@ module MR::FakeRecord
         @attributes ||= MR::FakeRecord::AttributeSet.new
       end
 
-      def attribute(name, type)
-        self.attributes.add(name, type, self)
+      def attribute(name, type, options = nil)
+        self.attributes.add(self, name, type, options)
       end
 
       # ActiveRecord methods
@@ -75,10 +75,10 @@ module MR::FakeRecord
       @attributes.values.sort
     end
 
-    def add(name, type, record_class)
-      @attributes[name.to_s] = Attribute.new(name, type).tap do |attribute|
-        attribute.define_on(record_class)
-      end
+    def add(record_class, name, type, options = nil)
+      attribute = Attribute.new(name, type, options)
+      attribute.define_on(record_class)
+      @attributes[name.to_s] = attribute
     end
 
   end
@@ -89,12 +89,14 @@ module MR::FakeRecord
     attr_reader :was_method_name, :changed_method_name
 
     # ActiveRecord methods
-    attr_reader :primary
+    attr_reader :primary, :null
 
-    def initialize(name, type)
+    def initialize(name, type, options = nil)
+      options ||= {}
       @name = name.to_s
       @type = type.to_sym
       @primary = (@type == :primary_key)
+      @null = options.key?(:null) ? !!options[:null] : true
 
       @reader_method_name  = @name
       @writer_method_name  = "#{@reader_method_name}="
@@ -119,7 +121,9 @@ module MR::FakeRecord
     end
 
     def ==(other)
-      self.name == other.name
+      self.name == other.name &&
+      self.type == other.type &&
+      self.null == other.null
     end
 
     def <=>(other)

@@ -21,7 +21,7 @@ module MR::FakeRecord::Attributes
     end
 
     should "add attribute methods with `attribute`" do
-      subject.attribute :name, :string
+      subject.attribute :name, :string, :null => false
       fake_record = subject.new
 
       assert_respond_to :name,          fake_record
@@ -30,6 +30,8 @@ module MR::FakeRecord::Attributes
       assert_respond_to :name_changed?, fake_record
       fake_record.name = 'test'
       assert_equal 'test', fake_record.name
+      attribute = subject.attributes.find(:name)
+      assert_equal false, attribute.null
     end
 
     should "return an array of fake record attributes with `columns`" do
@@ -99,17 +101,18 @@ module MR::FakeRecord::Attributes
     end
 
     should "add an attribute to the set with `add` and return it using `find`" do
-      subject.add :created_at, :timestamp, @fake_record_class
+      subject.add @fake_record_class, :created_at, :timestamp, :null => false
 
       attribute = subject.find(:created_at)
       assert_instance_of MR::FakeRecord::Attribute, attribute
       assert_equal 'created_at', attribute.name
       assert_equal :timestamp,   attribute.type
+      assert_equal false,        attribute.null
     end
 
     should "allow mass reading and writing using `read_all` and `batch_write`" do
-      subject.add :name, :string, @fake_record_class
-      subject.add :active, :boolean, @fake_record_class
+      subject.add @fake_record_class, :name, :string
+      subject.add @fake_record_class, :active, :boolean
       values = { 'name' => 'test', 'active' => true }
       subject.batch_write(values, @fake_record)
       assert_equal 'test', @fake_record.name
@@ -124,8 +127,8 @@ module MR::FakeRecord::Attributes
     end
 
     should "return it's attributes sorted using `to_a`" do
-      subject.add :name, :string, @fake_record_class
-      subject.add :active, :boolean, @fake_record_class
+      subject.add @fake_record_class, :name, :string
+      subject.add @fake_record_class, :active, :boolean
       array = subject.to_a
 
       expected = [
@@ -152,7 +155,7 @@ module MR::FakeRecord::Attributes
     end
     subject{ @attribute }
 
-    should have_readers :name, :type, :primary
+    should have_readers :name, :type, :primary, :null
     should have_readers :reader_method_name, :writer_method_name
     should have_readers :was_method_name, :changed_method_name
     should have_imeths :read, :write, :was, :changed?
@@ -167,6 +170,17 @@ module MR::FakeRecord::Attributes
       assert_equal false, attribute.primary
       attribute = MR::FakeRecord::Attribute.new(:id, :primary_key)
       assert_equal true, attribute.primary
+    end
+
+    should "default its null attribute to true" do
+      assert_equal true, subject.null
+    end
+
+    should "allow setting its null attribute using an options hash" do
+      attribute = MR::FakeRecord::Attribute.new(:name, :string, :null => false)
+      assert_equal false, attribute.null
+      attribute = MR::FakeRecord::Attribute.new(:name, :string, :null => true)
+      assert_equal true, attribute.null
     end
 
     should "know it's method names" do
@@ -206,7 +220,11 @@ module MR::FakeRecord::Attributes
     should "be comparable" do
       attribute = MR::FakeRecord::Attribute.new(:name, :string)
       assert_equal attribute, subject
-      attribute = MR::FakeRecord::Attribute.new(:id, :primary_key)
+      attribute = MR::FakeRecord::Attribute.new(:id, :string)
+      assert_not_equal attribute, subject
+      attribute = MR::FakeRecord::Attribute.new(:name, :boolean)
+      assert_not_equal attribute, subject
+      attribute = MR::FakeRecord::Attribute.new(:name, :string, :null => false)
       assert_not_equal attribute, subject
     end
 
