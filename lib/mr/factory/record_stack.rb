@@ -123,8 +123,9 @@ module MR::Factory
 
     def belongs_to_associations(record)
       record.class.reflect_on_all_associations(:belongs_to).map do |reflection|
-        Association.new(record, record.association(reflection.name))
-      end.sort
+        association = Association.new(record, record.association(reflection.name))
+        association if association.required?
+      end.compact.sort
     end
 
     class Association
@@ -136,10 +137,17 @@ module MR::Factory
         @key          = @record_class.to_s
 
         @preset_record = @owner_record.send(@name)
+        @required = !!@preset_record ||
+                    column_required?(association.reflection.foreign_key) ||
+                    column_required?(association.reflection.foreign_type)
       end
 
       def preset?
         !!@preset_record
+      end
+
+      def required?
+        @required
       end
 
       def build_record
@@ -152,6 +160,13 @@ module MR::Factory
         else
           super
         end
+      end
+
+      private
+
+      def column_required?(column_name)
+        column = @owner_record.column_for_attribute(column_name)
+        !!(column && !column.null)
       end
     end
 

@@ -33,8 +33,8 @@ class FakeCommentRecord
   model_class Comment
 
   attribute :body,          :text
-  attribute :parent_type,   :string
-  attribute :parent_id,     :integer
+  attribute :parent_type,   :string,   :null => false
+  attribute :parent_id,     :integer,  :null => false
   attribute :created_at,    :datetime
   attribute :created_by_id, :integer
 

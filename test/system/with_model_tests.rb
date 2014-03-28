@@ -2,6 +2,8 @@ require 'assert'
 require 'mr'
 
 require 'test/support/setup_test_db'
+require 'test/support/factory/area'
+require 'test/support/factory/user'
 require 'test/support/models/area'
 require 'test/support/models/comment'
 require 'test/support/models/user'
@@ -9,7 +11,8 @@ require 'test/support/models/user'
 class WithModelTests < DbTests
   desc "MR with an ActiveRecord model"
   setup do
-    @user = User.new(:name => "Joe Test")
+    @area = Factory::Area.instance_stack.tap(&:create).model
+    @user = User.new(:name => "Joe Test", :area => @area)
   end
   subject{ @user }
 
@@ -59,7 +62,7 @@ class WithModelTests < DbTests
       'salary'     => nil,
       'started_on' => nil,
       'dob'        => nil,
-      'area_id'    => nil,
+      'area_id'    => @area.id,
     }
     assert_equal expected, subject.fields
   end
@@ -86,7 +89,7 @@ end
 
 class DetectChangedFieldsTests < WithModelTests
   setup do
-    @user = User.new
+    @user = User.new(:area => @area)
   end
 
   should "detect when it's fields have changed" do
@@ -107,8 +110,8 @@ end
 class BelongsToTests < WithModelTests
   desc "using a belongs to association"
   setup do
-    @area = Area.new(:name => 'Alpha')
-    @area.save
+    @user.area = nil
+    @area = Area.new(:name => 'Alpha').tap(&:save)
   end
 
   should "be able to read it and write to it" do
@@ -184,7 +187,7 @@ class QueryTests < WithModelTests
   desc "using a MR::Query"
   setup do
     @users = [*(0..4)].map do |i|
-      User.new(:name => "test #{i}").tap{ |u| u.save }
+      User.new(:name => "test #{i}", :area => @area).tap(&:save)
     end
     @query = MR::Query.new(User, UserRecord.scoped)
   end
@@ -228,11 +231,8 @@ end
 
 class FinderTests < WithModelTests
   setup do
-    @users = [*(1..3)].map do |i|
-      record = UserRecord.new({ :name => "test #{i}" }).tap do |u|
-        u.save!
-      end
-      User.new(record)
+    @users = [*1..2].map do |i|
+      Factory::User.instance(:area => @area).tap(&:save)
     end
   end
 

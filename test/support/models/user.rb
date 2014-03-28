@@ -46,7 +46,7 @@ class FakeUserRecord
   attribute :salary,     :float
   attribute :started_on, :date
   attribute :dob,        :timestamp
-  attribute :area_id,    :integer
+  attribute :area_id,    :integer,   :null => false
 
   belongs_to :area, 'FakeAreaRecord'
   has_one :image, 'FakeImageRecord'
