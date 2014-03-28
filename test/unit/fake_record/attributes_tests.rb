@@ -60,6 +60,7 @@ module MR::FakeRecord::Attributes
     should have_writers :saved_attributes
     should have_imeths :saved_attributes
     should have_imeths :attributes, :attributes=
+    should have_imeths :column_for_attribute
 
     should "return an empty hash using `saved_attributes`" do
       assert_equal({}, subject.saved_attributes)
@@ -80,6 +81,12 @@ module MR::FakeRecord::Attributes
 
     should "ignore non hash arguments passed to `attributes=`" do
       assert_nothing_raised{ subject.attributes = 'test' }
+    end
+
+    should "return the matching attribute column using `column_for_attribute`" do
+      expected = @fake_record_class.columns.detect{ |c| c.name == 'name' }
+      assert_equal expected, subject.column_for_attribute('name')
+      assert_nil subject.column_for_attribute('doesnt_exist')
     end
 
   end
