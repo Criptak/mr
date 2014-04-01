@@ -235,12 +235,14 @@ class MR::Factory::RecordStack
       assert_equal @record, subject.instance
     end
 
-    should "build stack associations from it's record's associations" do
+    should "build stack associations from it's record's required associations" do
       assert_equal 2, subject.associations.size
       subject.associations.each do |association|
         assert_instance_of MR::Factory::Record::Association, association
       end
-      assert_equal [ :another, :other ], subject.associations.map(&:name)
+      association_names = subject.associations.map(&:name)
+      assert_equal [ :another, :other ], association_names
+      assert_not_includes :not_required, association_names
     end
 
     should "save a record using `create` if its a new record" do
@@ -300,6 +302,7 @@ class MR::Factory::RecordStack
     subject{ @stack_association }
 
     should have_readers :name, :record_class, :key, :preset_record
+    should have_imeths :preset?, :required?, :build_record
 
     should "know its attributes" do
       assert_equal @association.reflection.name, subject.name
@@ -316,6 +319,36 @@ class MR::Factory::RecordStack
       @record.another = nil
       sa = @stack_association_class.new(@record, @association)
       assert_false sa.preset?
+    end
+
+    should "be required if it is preset" do
+      associated_record = OtherFakeRecord.new
+      association = @record.association(:not_required)
+
+      @record.not_required = nil
+      sa = @stack_association_class.new(@record, association)
+      assert_false sa.required?
+
+      @record.not_required = associated_record
+      sa = @stack_association_class.new(@record, association)
+      assert_true sa.required?
+    end
+
+    should "be required if its columns are required" do
+      record = FakePolyRequiredKeyRecord.new
+      association = record.association(:parent)
+      sa = @stack_association_class.new(record, association)
+      assert_true sa.required?
+
+      record = FakePolyRequiredTypeRecord.new
+      association = record.association(:parent)
+      sa = @stack_association_class.new(record, association)
+      assert_true sa.required?
+
+      record = FakePolyNoRequiredRecord.new
+      association = record.association(:parent)
+      sa = @stack_association_class.new(record, association)
+      assert_false sa.required?
     end
 
     should "use a record factory to build a new instance using `build_record`" do
@@ -337,30 +370,60 @@ class MR::Factory::RecordStack
   class TestFakeRecord
     include MR::FakeRecord
 
-    attribute :id, :primary_key
-    attribute :other_id, :integer
-    attribute :another_id, :integer
+    attribute :id,              :primary_key
+    attribute :other_id,        :integer,     :null => false
+    attribute :another_id,      :integer,     :null => false
+    attribute :not_required_id, :integer,     :null => true
 
-    belongs_to :other, 'MR::Factory::RecordStack::OtherFakeRecord'
-    belongs_to :another, 'MR::Factory::RecordStack::AnotherFakeRecord'
-
+    belongs_to :other,        'MR::Factory::RecordStack::OtherFakeRecord'
+    belongs_to :another,      'MR::Factory::RecordStack::AnotherFakeRecord'
+    belongs_to :not_required, 'MR::Factory::RecordStack::OtherFakeRecord'
   end
 
   class OtherFakeRecord
     include MR::FakeRecord
 
     attribute :id, :primary_key
-
   end
 
   class AnotherFakeRecord
     include MR::FakeRecord
 
-    attribute :id, :primary_key
-    attribute :other_id, :integer
+    attribute :id,       :primary_key
+    attribute :other_id, :integer,     :null => false
 
     belongs_to :other, 'MR::Factory::RecordStack::OtherFakeRecord'
+  end
 
+  class FakePolyRequiredKeyRecord
+    include MR::FakeRecord
+
+    attribute :id,          :primary_key
+    attribute :parent_type, :string,      :null => true
+    attribute :parent_id,   :integer,     :null => false
+
+    polymorphic_belongs_to :parent
+  end
+
+  class FakePolyRequiredTypeRecord
+    include MR::FakeRecord
+
+    attribute :id,          :primary_key
+    attribute :parent_type, :string,      :null => false
+    attribute :parent_id,   :integer,     :null => true
+
+    polymorphic_belongs_to :parent
+  end
+
+
+  class FakePolyNoRequiredRecord
+    include MR::FakeRecord
+
+    attribute :id,          :primary_key
+    attribute :parent_type, :string,      :null => true
+    attribute :parent_id,   :integer,     :null => true
+
+    polymorphic_belongs_to :parent
   end
 
   class TreeNodeSpy

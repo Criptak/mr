@@ -15,19 +15,19 @@ ActiveRecord::Schema.define(:version => 1) do
     t.decimal   :salary
     t.date      :started_on
     t.timestamp :dob
-    t.integer   :area_id
+    t.integer   :area_id, :null => false
   end
 
   create_table :images do |t|
     t.string  :file_path
     t.binary  :data
-    t.integer :user_id
+    t.integer :user_id, :null => false
   end
 
   create_table :comments do |t|
     t.text     :body
-    t.string   :parent_type
-    t.integer  :parent_id
+    t.string   :parent_type, :null => false
+    t.integer  :parent_id,   :null => false
     t.datetime :created_at
     t.integer  :created_by_id
   end

@@ -30,7 +30,7 @@ class FakeImageRecord
 
   attribute :file_path, :string
   attribute :data,      :binary
-  attribute :user_id,   :integer
+  attribute :user_id,   :integer, :null => false
 
   belongs_to :user, 'FakeUserRecord'
 
