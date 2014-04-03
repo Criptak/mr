@@ -16,7 +16,7 @@ module MR::Factory
     end
 
     def instance(args = nil)
-      data = deep_merge(build_defaults, stringify_hash(args || {}))
+      data = apply_args(Data.new, args)
       @read_model_class.new(data)
     end
 
@@ -28,9 +28,39 @@ module MR::Factory
 
     private
 
+    def apply_args_to_associations!(object, args)
+      # no-op
+    end
+
+    def apply_args(data, args = nil)
+      apply_args!(data, build_defaults)
+      apply_args!(data, @defaults)
+      apply_args!(data, stringify_hash(args || {}))
+      data
+    end
+
     def build_defaults
       @read_model_class.fields.inject({}) do |h, field|
         h.merge(field.name.to_s => MR::Factory.send(field.type))
+      end
+    end
+
+    class Data
+      def initialize
+        @values = {}
+      end
+
+      def [](key)
+        @values[key]
+      end
+
+      def method_missing(method, *args, &block)
+        method_string = method.to_s
+        if method_string =~ /=\z/ && args.size == 1
+          @values[method_string.gsub('=', '')] = args.first
+        else
+          super
+        end
       end
     end
 
