@@ -15,9 +15,9 @@ module MR::Factory
       self.instance_eval(&block) if block
     end
 
-    def instance(args = nil)
+    def instance(args = nil, &block)
       data = apply_args(Data.new, args)
-      @read_model_class.new(data)
+      @read_model_class.new(data).tap(&(block || proc{ }))
     end
 
     def default_args(value = nil)

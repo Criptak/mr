@@ -33,12 +33,12 @@ class MR::Factory::ReadModelFactory
       assert_equal({ 'test' => true }, subject.default_args)
     end
 
-    should "return an instance of the read model" do
+    should "return an instance of the read model using `instance`" do
       read_model = subject.instance
       assert_instance_of TestReadModel, read_model
     end
 
-    should "default columns for the record" do
+    should "default columns for the record using `instance`" do
       read_model = subject.instance
       assert_kind_of String,  read_model.string
       assert_kind_of Integer, read_model.integer
@@ -50,21 +50,27 @@ class MR::Factory::ReadModelFactory
       assert_includes read_model.boolean.class, [ TrueClass, FalseClass ]
     end
 
-    should "apply passed args to the read model" do
+    should "apply passed args to the read model using `instance`" do
       read_model = subject.instance(:string => 'test')
       assert_equal 'test', read_model.string
     end
 
-    should "apply default args to the record" do
+    should "apply default args to the record using `instance`" do
       subject.default_args(:string => 'test')
       read_model = subject.instance
       assert_equal 'test', read_model.string
     end
 
-    should "apply passed args over default args to the record" do
+    should "apply passed args over default args to the record using `instance`" do
       subject.default_args(:string => 'first')
       read_model = subject.instance(:string => 'second')
       assert_equal 'second', read_model.string
+    end
+
+    should "yield the read model to a passed block using `instance`" do
+      yielded = nil
+      read_model = subject.instance{ |rm| yielded = rm }
+      assert_same read_model, yielded
     end
 
     should "raise an ArgumentError if a non-Hash is passed to `default_args`" do
