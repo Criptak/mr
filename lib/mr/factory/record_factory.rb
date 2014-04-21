@@ -14,12 +14,12 @@ module MR::Factory
       self.instance_eval(&block) if block
     end
 
-    def instance(args = nil)
-      apply_args(@record_class.new, args)
+    def instance(args = nil, &block)
+      apply_args(@record_class.new, args).tap(&(block || proc{ }))
     end
 
-    def instance_stack(args = nil)
-      MR::Factory::RecordStack.new(self.instance(args))
+    def instance_stack(args = nil, &block)
+      MR::Factory::RecordStack.new(self.instance(args)).tap(&(block || proc{ }))
     end
 
     def default_args(value = nil)

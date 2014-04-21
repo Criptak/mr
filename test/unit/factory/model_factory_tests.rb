@@ -89,6 +89,12 @@ class MR::Factory::ModelFactory
       assert_equal 'second', model.name
     end
 
+    should "yield the model to a passed block" do
+      yielded = nil
+      model = subject.instance{ |m| yielded = m }
+      assert_same model, yielded
+    end
+
   end
 
   class InstanceStackTests < InstanceTests
@@ -122,6 +128,12 @@ class MR::Factory::ModelFactory
 
     should "pass args when generating an instance for the model stack" do
       assert_equal @args_model_stack, subject.instance_stack(:name => 'test')
+    end
+
+    should "yield the stack to a passed block" do
+      yielded = nil
+      stack = subject.instance_stack{ |s| yielded = s }
+      assert_same stack, yielded
     end
 
   end

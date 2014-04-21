@@ -18,13 +18,13 @@ module MR::Factory
       @record_factory = MR::Factory::RecordFactory.new(@record_class)
     end
 
-    def instance(args = nil)
+    def instance(args = nil, &block)
       record = @record_factory.instance
-      apply_args(@model_class.new(record), args)
+      apply_args(@model_class.new(record), args).tap(&(block || proc{ }))
     end
 
-    def instance_stack(args = nil)
-      MR::Factory::ModelStack.new(self.instance(args))
+    def instance_stack(args = nil, &block)
+      MR::Factory::ModelStack.new(self.instance(args)).tap(&(block || proc{ }))
     end
 
     def default_args(value = nil)
