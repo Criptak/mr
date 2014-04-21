@@ -2,12 +2,15 @@ require 'assert'
 require 'mr/factory/model_factory'
 
 require 'mr/fake_record'
+require 'mr/test_helpers'
 require 'mr/model'
 require 'mr/record'
 
 class MR::Factory::ModelFactory
 
   class UnitTests < Assert::Context
+    include MR::TestHelpers
+
     desc "MR::Factory::ModelFactory"
     setup do
       @factory_class = MR::Factory::ModelFactory
@@ -38,7 +41,7 @@ class MR::Factory::ModelFactory
     end
     subject{ @factory }
 
-    should have_imeths :instance, :instance_stack
+    should have_imeths :instance, :saved_instance, :instance_stack
     should have_imeths :default_args
 
     should "allow reading/writing default args using `default_args`" do
@@ -93,6 +96,23 @@ class MR::Factory::ModelFactory
       yielded = nil
       model = subject.instance{ |m| yielded = m }
       assert_same model, yielded
+    end
+
+  end
+
+  class SavedInstanceMethodTests < InstanceTests
+    desc "saved_instance"
+
+    should "build an instance of the model and save it" do
+      model = subject.instance
+      subject.stubs(:instance).returns(model)
+      assert_same model, subject.saved_instance
+      assert_false subject.saved_instance.new?
+    end
+
+    should "reset the fake model's save called flag" do
+      model = subject.saved_instance
+      assert_not_model_saved model
     end
 
   end

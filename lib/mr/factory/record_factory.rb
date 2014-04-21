@@ -18,6 +18,12 @@ module MR::Factory
       apply_args(@record_class.new, args).tap(&(block || proc{ }))
     end
 
+    def saved_instance(args = nil, &block)
+      record = self.instance(args, &block).tap(&:save!)
+      record.reset_save_called if record.kind_of?(MR::FakeRecord)
+      record
+    end
+
     def instance_stack(args = nil, &block)
       MR::Factory::RecordStack.new(self.instance(args)).tap(&(block || proc{ }))
     end
