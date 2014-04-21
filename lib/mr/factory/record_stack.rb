@@ -134,7 +134,8 @@ module MR::Factory
         @owner_record = record
         @name         = association.reflection.name
         @record_class = association.klass
-        @key          = @record_class.to_s
+        raise(NoRecordClassError.new(association.reflection)) unless @record_class
+        @key = @record_class.to_s
 
         @preset_record = @owner_record.send(@name)
         @required = !!@preset_record ||
@@ -167,6 +168,18 @@ module MR::Factory
       def column_required?(column_name)
         column = @owner_record.column_for_attribute(column_name)
         !!(column && !column.null)
+      end
+
+      class NoRecordClassError < RuntimeError
+        def initialize(reflection)
+          message = "a record class couldn't be determined for the " \
+                    "'#{reflection.name}' association"
+          if reflection.options[:polymorphic]
+            message += " -- its '#{reflection.foreign_type}' attribute " \
+                       "should be set"
+          end
+          super message
+        end
       end
     end
 
