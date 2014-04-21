@@ -8,20 +8,20 @@ module MR::ReadModel
     # interface to avoid confusing errors and ensure that the data for a
     # read model should, as much as possible, work.
     #
-    # * Use the `data` protected method to access the data object.
-    # * Use the `set_data` private method to write a data object.
+    # * Use the `read_model_data` protected method to access the data object.
+    # * Use the `set_read_model_data` private method to write a data object.
 
     protected
 
-    def data
-      @data || raise(NoDataError.new(caller))
+    def read_model_data
+      @read_model_data || raise(NoDataError.new(caller))
     end
 
     private
 
-    def set_data(data)
+    def set_read_model_data(data)
       raise InvalidDataError unless data.respond_to?(:[])
-      @data = data
+      @read_model_data = data
     end
 
   end

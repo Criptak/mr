@@ -16,7 +16,7 @@ module MR::ReadModel
     end
 
     def fields
-      self.class.fields.read_all(data)
+      self.class.fields.read_all(self.read_model_data)
     end
 
     module ClassMethods
@@ -94,7 +94,7 @@ module MR::ReadModel
 
         define_method(field.method_name) do
           instance_variable_get(field.ivar_name) ||
-          instance_variable_set(field.ivar_name, field.read(data))
+          instance_variable_set(field.ivar_name, field.read(self.read_model_data))
         end
 
       end

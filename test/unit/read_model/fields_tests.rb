@@ -10,7 +10,7 @@ module MR::ReadModel::Fields
     setup do
       @read_model_class = Class.new do
         include MR::ReadModel::Fields
-        def initialize(data); set_data(data); end
+        def initialize(data); set_read_model_data(data); end
       end
     end
     subject{ @read_model_class }
