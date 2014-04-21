@@ -26,7 +26,7 @@ class MR::Factory::RecordFactory
     end
     subject{ @factory }
 
-    should have_imeths :instance, :instance_stack
+    should have_imeths :instance, :saved_instance, :instance_stack
     should have_imeths :default_args
 
     should "allow reading/writing default args using `default_args`" do
@@ -77,6 +77,23 @@ class MR::Factory::RecordFactory
       yielded = nil
       record = subject.instance{ |r| yielded = r }
       assert_same record, yielded
+    end
+
+  end
+
+  class SavedInstanceMethodTests < InstanceTests
+    desc "saved_instance"
+
+    should "build an instance of the record and save it" do
+      record = subject.instance
+      subject.stubs(:instance).returns(record)
+      assert_same record, subject.saved_instance
+      assert_false subject.saved_instance.new_record?
+    end
+
+    should "reset the fake record's save called flag" do
+      record = subject.saved_instance
+      assert_false record.save_called
     end
 
   end
