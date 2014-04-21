@@ -335,17 +335,17 @@ class MR::Factory::RecordStack
     end
 
     should "be required if its columns are required" do
-      record = FakePolyRequiredKeyRecord.new
+      record = FakePolyRequiredKeyRecord.new(:parent_type => @record.class.to_s)
       association = record.association(:parent)
       sa = @stack_association_class.new(record, association)
       assert_true sa.required?
 
-      record = FakePolyRequiredTypeRecord.new
+      record = FakePolyRequiredTypeRecord.new(:parent_type => @record.class.to_s)
       association = record.association(:parent)
       sa = @stack_association_class.new(record, association)
       assert_true sa.required?
 
-      record = FakePolyNoRequiredRecord.new
+      record = FakePolyNoRequiredRecord.new(:parent_type => @record.class.to_s)
       association = record.association(:parent)
       sa = @stack_association_class.new(record, association)
       assert_false sa.required?
@@ -363,6 +363,22 @@ class MR::Factory::RecordStack
         @stack_association_class.new(@record, another_association)
       ].sort
       assert_equal [ :another, :other ], associations.map(&:name)
+    end
+
+    should "raise a no record class error when an association's record class " \
+           "can't be determined" do
+      exception = nil
+      record = FakePolyNoRequiredRecord.new
+      association = record.association(:parent)
+      begin
+        @stack_association_class.new(record, association)
+      rescue StandardError => exception
+      end
+      expected = MR::Factory::Record::Association::NoRecordClassError
+      assert_instance_of expected, exception
+      expected = "a record class couldn't be determined for the 'parent' " \
+                 "association -- its 'parent_type' attribute should be set"
+      assert_equal expected, exception.message
     end
 
   end
