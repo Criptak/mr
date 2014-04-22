@@ -8,8 +8,9 @@ require 'mr/type_converter'
 module MR; end
 module MR::Factory
   extend Assert::Factory
+  extend self
 
-  def self.new(object_class, *args, &block)
+  def new(object_class, *args, &block)
     if object_class < MR::Model
       ModelFactory.new(object_class, *args, &block)
     elsif object_class < MR::ReadModel
@@ -21,22 +22,22 @@ module MR::Factory
     end
   end
 
-  def self.primary_key(identifier = nil)
+  def primary_key(identifier = nil)
     identifier    ||= 'MR::Factory'
     @primary_keys ||= {}
     @primary_keys[identifier.to_s] ||= PrimaryKeyProvider.new
     self.type_cast(@primary_keys[identifier.to_s].next, :primary_key)
   end
 
-  def self.decimal(max = nil)
+  def decimal(max = nil)
     self.type_cast(Assert::Factory::Random.float(max), :decimal)
   end
 
-  def self.timestamp
+  def timestamp
     self.datetime
   end
 
-  def self.type_converter
+  def type_converter
     @type_converter ||= MR::TypeConverter.new
   end
 
