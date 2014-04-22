@@ -24,11 +24,11 @@ module MR::ReadModel::Data
       @read_model_class.class_eval do
 
         def read_data
-          data
+          self.read_model_data
         end
 
         def write_data(data)
-          set_data(data)
+          set_read_model_data(data)
         end
 
       end

@@ -14,7 +14,7 @@ module MR::ReadModel
   end
 
   def initialize(data = nil)
-    set_data(data || {})
+    set_read_model_data(data || {})
   end
 
   def ==(other)
@@ -28,7 +28,7 @@ module MR::ReadModel
   def inspect
     object_hex = (self.object_id << 1).to_s(16)
     fields_inspect = self.class.fields.map do |field|
-      "#{field.ivar_name}=#{field.read(data).inspect}"
+      "#{field.ivar_name}=#{field.read(self.read_model_data).inspect}"
     end.sort.join(" ")
     "#<#{self.class}:0x#{object_hex} #{fields_inspect}>"
   end
