@@ -11,7 +11,8 @@ module MR
       :decimal,
       :float,
       :integer, :primary_key,
-      :string, :text,
+      :string, :text, :slug, :hex, :file_name, :dir_path, :file_path, :path,
+      :url, :email,
       :time
     ].freeze
 
@@ -64,7 +65,15 @@ module MR
       return if value.nil?
       value.to_s
     end
-    alias :text :string
+    alias :text      :string
+    alias :slug      :string
+    alias :hex       :string
+    alias :file_name :string
+    alias :dir_path  :string
+    alias :file_path :string
+    alias :path      :string
+    alias :url       :string
+    alias :email     :string
 
     def time(value)
       return if value.nil?

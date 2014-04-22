@@ -14,7 +14,8 @@ class MR::TypeConverter
     should have_imeths :date, :datetime, :timestamp
     should have_imeths :decimal, :float
     should have_imeths :integer, :primary_key
-    should have_imeths :string, :text
+    should have_imeths :string, :text, :slug, :hex, :file_name, :dir_path
+    should have_imeths :file_path, :path, :url, :email
     should have_imeths :time
     should have_cmeths :valid?
 
@@ -75,12 +76,44 @@ class MR::TypeConverter
       assert_nil subject.decimal(nil)
     end
 
+    should "properly type cast dir path values using `dir_path`" do
+      assert_equal 'a/path', subject.dir_path('a/path')
+    end
+
+    should "return `nil` when `dir_path` is passed a `nil` value" do
+      assert_nil subject.dir_path(nil)
+    end
+
+    should "properly type cast email values using `email`" do
+      assert_equal 'email@example.com', subject.email('email@example.com')
+    end
+
+    should "return `nil` when `email` is passed a `nil` value" do
+      assert_nil subject.email(nil)
+    end
+
+    should "properly type cast file name values using `file_name`" do
+      assert_equal 'file.txt', subject.file_name('file.txt')
+    end
+
+    should "return `nil` when `file_name` is passed a `nil` value" do
+      assert_nil subject.file_name(nil)
+    end
+
     should "properly type cast float values using `float`" do
       assert_equal 6.1374, subject.float('6.1374')
     end
 
     should "return `nil` when `float` is passed a `nil` value" do
       assert_nil subject.float(nil)
+    end
+
+    should "properly type cast hex values using `hex`" do
+      assert_equal '1a2b3c4d', subject.hex('1a2b3c4d')
+    end
+
+    should "return `nil` when `hex` is passed a `nil` value" do
+      assert_nil subject.hex(nil)
     end
 
     should "properly type cast integer values using `integer`" do
@@ -91,12 +124,28 @@ class MR::TypeConverter
       assert_nil subject.integer(nil)
     end
 
+    should "properly type cast path values using `path`" do
+      assert_equal 'a/path', subject.path('a/path')
+    end
+
+    should "return `nil` when `path` is passed a `nil` value" do
+      assert_nil subject.path(nil)
+    end
+
     should "properly type cast primary key values using `convert`" do
       assert_equal 100, subject.primary_key('100')
     end
 
     should "return `nil` when `primary_key` is passed a `nil` value" do
       assert_nil subject.primary_key(nil)
+    end
+
+    should "properly type cast slug values using `slug`" do
+      assert_equal 'a-slug', subject.slug('a-slug')
+    end
+
+    should "return `nil` when `slug` is passed a `nil` value" do
+      assert_nil subject.slug(nil)
     end
 
     should "properly type cast string values using `string`" do
@@ -131,6 +180,14 @@ class MR::TypeConverter
 
     should "return `nil` when `timestamp` is passed a `nil` value" do
       assert_nil subject.timestamp(nil)
+    end
+
+    should "properly type cast url values using `url`" do
+      assert_equal 'http://example.com/url', subject.url('http://example.com/url')
+    end
+
+    should "return `nil` when `url` is passed a `nil` value" do
+      assert_nil subject.url(nil)
     end
 
     should "allow using a custom ActiveRecord column class" do
