@@ -62,7 +62,7 @@ module MR::Factory
           @lookup[association.key] || Record.new(association.build_record)
         end
         @lookup[association.key] ||= associated_stack_record
-        self.stack_record.set_association(association.name, associated_stack_record)
+        association.set(associated_stack_record)
         TreeNode.new(associated_stack_record, @lookup)
       end
     end
@@ -93,10 +93,6 @@ module MR::Factory
     def initialize(record)
       @instance = record
       @associations = belongs_to_associations(@instance)
-    end
-
-    def set_association(name, stack_record)
-      @instance.send("#{name}=", stack_record.instance)
     end
 
     def create
@@ -132,6 +128,7 @@ module MR::Factory
       attr_reader :name, :record_class, :key, :preset_record
       def initialize(record, association)
         @owner_record = record
+        @ar_association = association
         @name         = association.reflection.name
         @record_class = association.klass
         raise(NoRecordClassError.new(association.reflection)) unless @record_class
@@ -149,6 +146,11 @@ module MR::Factory
 
       def required?
         @required
+      end
+
+      def set(stack_record)
+        @owner_record.send("#{@name}=", stack_record.instance)
+        @ar_association.set_inverse_instance(stack_record.instance)
       end
 
       def build_record
