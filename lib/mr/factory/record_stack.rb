@@ -134,13 +134,16 @@ module MR::Factory
         @owner_record = record
         @name         = association.reflection.name
         @record_class = association.klass
-        raise(NoRecordClassError.new(association.reflection)) unless @record_class
-        @key = @record_class.to_s
+        @key          = @record_class.to_s
 
         @preset_record = @owner_record.send(@name)
         @required = !!@preset_record ||
                     column_required?(association.reflection.foreign_key) ||
                     column_required?(association.reflection.foreign_type)
+
+        if !@record_class && @required
+          raise NoRecordClassError.new(association.reflection)
+        end
       end
 
       def preset?

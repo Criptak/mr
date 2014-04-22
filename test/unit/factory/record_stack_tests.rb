@@ -365,10 +365,10 @@ class MR::Factory::RecordStack
       assert_equal [ :another, :other ], associations.map(&:name)
     end
 
-    should "raise a no record class error when an association's record class " \
-           "can't be determined" do
+    should "raise a no record class error when a required association's " \
+           "record class can't be determined" do
       exception = nil
-      record = FakePolyNoRequiredRecord.new
+      record = FakePolyRequiredKeyRecord.new
       association = record.association(:parent)
       begin
         @stack_association_class.new(record, association)
@@ -379,6 +379,14 @@ class MR::Factory::RecordStack
       expected = "a record class couldn't be determined for the 'parent' " \
                  "association -- its 'parent_type' attribute should be set"
       assert_equal expected, exception.message
+    end
+
+    should "not raise an error when a non-required association's " \
+           "record class can't be determined" do
+      record = FakePolyNoRequiredRecord.new
+      association = record.association(:parent)
+
+      assert_nothing_raised{ @stack_association_class.new(record, association) }
     end
 
   end
