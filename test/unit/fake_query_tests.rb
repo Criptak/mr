@@ -9,20 +9,20 @@ class MR::FakeQuery
   class UnitTests < Assert::Context
     desc "MR::FakeQuery"
     setup do
-      @models = [
+      @results = [
         FakeTestModel.new.tap{ |m| m.save },
         FakeTestModel.new.tap{ |m| m.save },
         FakeTestModel.new.tap{ |m| m.save }
       ]
-      @query = MR::FakeQuery.new(@models)
+      @query = MR::FakeQuery.new(@results)
     end
     subject{ @query }
 
-    should have_imeths :models, :results, :count, :paged
+    should have_imeths :results, :count, :paged
 
-    should "return the models and their size with #models and #count" do
-      assert_equal @models, subject.models
-      assert_equal @models.size, subject.count
+    should "return the results and their size with #results and #count" do
+      assert_equal @results, subject.results
+      assert_equal @results.size, subject.count
     end
 
     should "return an instance of a `FakePagedQuery` with #paged" do
@@ -44,16 +44,16 @@ class MR::FakeQuery
       assert_kind_of MR::FakeQuery, subject
     end
 
-    should "return the first page of models with #models" do
-      models = subject.models
-      assert_equal @models[0, 1], models
+    should "fetch the paged results with #results" do
+      results = subject.results
+      assert_equal @results[0, 1], results
     end
 
-    should "count the first page of models with #count" do
+    should "count the paged results with #count" do
       assert_equal 1, subject.count
     end
 
-    should "count the total number of models with #total_count" do
+    should "count the total number of results with #total_count" do
       assert_equal 3, subject.total_count
     end
 

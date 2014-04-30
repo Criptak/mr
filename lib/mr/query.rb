@@ -11,10 +11,9 @@ module MR
       @relation = relation
     end
 
-    def models
+    def results
       @relation.all.map{ |record| @model_class.new(record) }
     end
-    alias :results :models
 
     def count
       self.count_relation.count

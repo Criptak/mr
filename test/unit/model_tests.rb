@@ -63,9 +63,8 @@ module MR::Model
     end
 
     should "call all on the record class and map building instances using `all`" do
-      models = subject.all
-      expected = @fake_records.map{ |fake_record| subject.new(fake_record) }
-      assert_equal expected, models
+      exp = @fake_records.map{ |fake_record| subject.new(fake_record) }
+      assert_equal exp, subject.all
     end
 
   end

@@ -193,11 +193,11 @@ class QueryTests < WithModelTests
   end
   subject{ @query }
 
-  should "allow fetching the models with #models" do
-    assert_equal @users.map(&:name), subject.models.map(&:name)
+  should "fetch the results with #results" do
+    assert_equal @users.map(&:name), subject.results.map(&:name)
   end
 
-  should "allow counting the models with #count" do
+  should "count the results with #count" do
     assert_equal 5, subject.count
   end
 
@@ -209,21 +209,21 @@ class PagedQueryTests < QueryTests
   end
   subject{ @paged_query }
 
-  should "allow fetching the models paged with #models" do
-    assert_equal @users[0, 3], subject.models
+  should "fetch the paged results with #results" do
+    assert_equal @users[0, 3], subject.results
 
     paged_query = @query.paged(2, 3)
-    assert_equal @users[3, 2], paged_query.models
+    assert_equal @users[3, 2], paged_query.results
   end
 
-  should "allow fetching the models paged with #models" do
+  should "count the paged results with #count" do
     assert_equal 3, subject.count
 
     paged_query = @query.paged(2, 3)
     assert_equal 2, paged_query.count
   end
 
-  should "allow counting the total number of models with #total_count" do
+  should "count the total number of results with #total_count" do
     assert_equal 5, subject.total_count
   end
 
