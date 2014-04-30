@@ -20,24 +20,21 @@ class MR::Query
     subject{ @query }
 
     should have_readers :model_class, :relation
-    should have_imeths :models, :results
-    should have_imeths :count, :count_relation
+    should have_imeths :results, :count, :count_relation
 
-    should "call `all` on the relation and build models using `results`" do
-      models = subject.models
-      expected = @relation.results.map{ |r| FakeTestModel.new(r) }
-
-      assert_equal expected, models
+    should "call `all` on the relation and build models using #results" do
+      exp = @relation.results.map{ |r| FakeTestModel.new(r) }
+      assert_equal exp, subject.results
     end
 
-    should "call `count` on the count relation using `count`" do
+    should "call `count` on the count relation using #count" do
       subject.stubs(:count_relation).returns(@relation)
       assert_equal 2, subject.count
       subject.stubs(:count_relation).returns(FakeTestRecord.scoped)
       assert_equal 0, subject.count
     end
 
-    should "return an instance of a PagedQuery using `paged`" do
+    should "return an instance of a PagedQuery using #paged" do
       paged_query = subject.paged(1, 10)
 
       assert_instance_of MR::PagedQuery, paged_query
@@ -46,7 +43,7 @@ class MR::Query
     end
 
     should "build and cache a relation for counting from the passed relation " \
-           "using `count_relation`" do
+           "using #count_relation" do
       count_relation = subject.count_relation
       expected = MR::CountRelation.new(@relation)
       assert_equal expected, count_relation
@@ -69,11 +66,9 @@ class MR::Query
       assert_kind_of MR::Query, subject
     end
 
-    should "return the first page of models using `models`" do
-      models = subject.models
-      expected = @relation.results[0, 1].map{ |r| FakeTestModel.new(r) }
-
-      assert_equal expected, models
+    should "fetch the paged results with #results" do
+      exp = @relation.results[0, 1].map{ |r| FakeTestModel.new(r) }
+      assert_equal exp, subject.results
     end
 
     should "default page number and page size" do
@@ -109,11 +104,11 @@ class MR::Query
       assert_equal 7,  @relation.limit_value
     end
 
-    should "count the first page of models with `count`" do
+    should "count the paged results with #count" do
       assert_equal 1, subject.count
     end
 
-    should "call `count` on the total count relation using `total_count`" do
+    should "call `count` on the total count relation with #total_count" do
       subject.stubs(:total_count_relation).returns(@unpaged_relation)
       assert_equal 2, subject.total_count
       subject.stubs(:total_count_relation).returns(FakeTestRecord.scoped)
@@ -121,7 +116,7 @@ class MR::Query
     end
 
     should "build and cache a relation for counting from the passed relation " \
-           "using `total_count_relation`" do
+           "with #total_count_relation" do
       count_relation = subject.total_count_relation
       expected = MR::CountRelation.new(@unpaged_relation)
       assert_equal expected, count_relation
