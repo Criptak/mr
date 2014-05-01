@@ -3,10 +3,13 @@ require 'mr/read_model/querying'
 
 require 'ardb/relation_spy'
 require 'mr/fake_record'
+require 'test/support/read_model/querying'
 
 module MR::ReadModel::Querying
 
   class UnitTests < Assert::Context
+    include MR::ReadModel::Querying::TestHelpers
+
     desc "MR::ReadModel::Querying"
     setup do
       @read_model_class = Class.new do
@@ -42,74 +45,6 @@ module MR::ReadModel::Querying
 
     should "raise a no record class error when using the relation before it's configured" do
       assert_raises(MR::ReadModel::NoRecordClassError){ subject.query }
-    end
-
-    private
-
-    def assert_static_expression_added(relation, type, *args)
-      with_backtrace(caller) do
-        assert_equal 1, relation.expressions.size
-        expression = relation.expressions.first
-        assert_static_expression expression, type, args
-      end
-    end
-
-    def assert_dynamic_expression_added(relation, type, block)
-      with_backtrace(caller) do
-        assert_equal 1, relation.expressions.size
-        expression = relation.expressions.first
-        assert_dynamic_expression expression, type, block
-      end
-    end
-
-    def assert_static_merge_expression_added(relation, type, *args)
-      with_backtrace(caller) do
-        assert_equal 1, relation.expressions.size
-        merge_expression = relation.expressions.first
-        expected_class = MR::ReadModel::MergeQueryExpression
-        assert_instance_of expected_class, merge_expression
-        assert_static_expression merge_expression.query_expression, :merge, args
-      end
-    end
-
-    def assert_dynamic_merge_expression_added(relation, type, block)
-      with_backtrace(caller) do
-        assert_equal 1, relation.expressions.size
-        merge_expression = relation.expressions.first
-        expected_class = MR::ReadModel::MergeQueryExpression
-        assert_instance_of expected_class, merge_expression
-        assert_dynamic_expression merge_expression.query_expression, :merge, block
-      end
-    end
-
-    def assert_static_expression(expression, type, args)
-      expected_class = MR::ReadModel::QueryExpression::Static
-      assert_instance_of expected_class, expression
-      assert_equal type, expression.type
-      assert_equal args, expression.args
-    end
-
-    def assert_dynamic_expression(expression, type, block)
-      expected_class = MR::ReadModel::QueryExpression::Dynamic
-      assert_instance_of expected_class, expression
-      assert_equal type,  expression.type
-      assert_equal block, expression.block
-    end
-
-    def assert_expression_applied(relation_spy, type, *args)
-      with_backtrace(caller) do
-        assert_not_nil find_applied(relation_spy, type, args)
-      end
-    end
-
-    def assert_not_expression_applied(relation_spy, type, *args)
-      with_backtrace(caller) do
-        assert_nil find_applied(relation_spy, type, args)
-      end
-    end
-
-    def find_applied(relation_spy, type, args)
-      relation_spy.applied.detect{ |e| e.type == type && e.args == args }
     end
 
   end
@@ -382,83 +317,6 @@ module MR::ReadModel::Querying
     should "raise a no record class error using `build_for_all` with no record class" do
       subject.record_class = nil
       assert_raises(MR::ReadModel::NoRecordClassError){ subject.build_for_all }
-    end
-
-  end
-
-  class MergeQueryExpressionTests < UnitTests
-    desc "MergeQueryExpression"
-    setup do
-      @ar_relation = FakeTestRecord.scoped
-      @expression  = MR::ReadModel::MergeQueryExpression.new(:order, 'relation')
-    end
-    subject{ @expression }
-
-    should have_readers :type, :query_expression
-    should have_imeths :apply_to
-
-    should "build a query expression for a merge" do
-      query_expression = subject.query_expression
-      assert_instance_of MR::ReadModel::QueryExpression::Static, query_expression
-      assert_equal :merge, query_expression.type
-      assert_equal [ 'relation' ], query_expression.args
-    end
-
-    should "apply it's query expression using `apply_to`" do
-      query_expression = subject.query_expression
-      subject.apply_to(@ar_relation)
-      assert_expression_applied @ar_relation, query_expression.type, 'relation'
-    end
-
-  end
-
-  class StaticQueryExpressionTests < UnitTests
-    desc "QueryExpression::Static"
-    setup do
-      @ar_relation = FakeTestRecord.scoped
-      @expression  = MR::ReadModel::QueryExpression::Static.new(:select, 'column')
-    end
-    subject{ @expression }
-
-    should have_readers :type, :args
-
-    should "apply itself to an ActiveRecord relation using `apply_to`" do
-      subject.apply_to(@ar_relation)
-      assert_expression_applied @ar_relation, subject.type, *subject.args
-    end
-
-  end
-
-  class DynamicQueryExpressionTests < UnitTests
-    desc "QueryExpression::Dynamic"
-    setup do
-      @ar_relation = FakeTestRecord.scoped
-      block = proc{ 'column' }
-      @expression  = MR::ReadModel::QueryExpression::Dynamic.new(:select, &block)
-    end
-    subject{ @expression }
-
-    should have_readers :type, :block
-
-    should "apply itself to an ActiveRecord relation using `apply_to`" do
-      subject.apply_to(@ar_relation, 'test')
-      assert_expression_applied @ar_relation, subject.type, 'column'
-    end
-
-    should "yield any args to it's block using `apply_to`" do
-      yielded = nil
-      block = proc{ |args| yielded = args }
-      expression = MR::ReadModel::QueryExpression::Dynamic.new(:select, &block)
-      expression.apply_to(@ar_relation, 'test')
-      assert_equal 'test', yielded
-    end
-
-    should "eval it's block in the ActiveRecord relation's scope using `apply_to`" do
-      scope = nil
-      block = proc{ |args| scope = self }
-      expression = MR::ReadModel::QueryExpression::Dynamic.new(:select, &block)
-      expression.apply_to(@ar_relation, 'test')
-      assert_equal @ar_relation, scope
     end
 
   end

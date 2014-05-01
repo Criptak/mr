@@ -1,3 +1,4 @@
+require 'mr/read_model/query_expression'
 require 'mr/record'
 require 'mr/query'
 
@@ -28,7 +29,7 @@ module MR::ReadModel
 
       def select(*args, &block)
         add_query_expression(:select, *args, &block)
-      rescue InvalidQueryExpression => exception
+      rescue InvalidQueryExpressionError => exception
         raise ArgumentError, exception.message, caller
       end
 
@@ -39,49 +40,49 @@ module MR::ReadModel
 
       def joins(*args, &block)
         add_query_expression(:joins, *args, &block)
-      rescue InvalidQueryExpression => exception
+      rescue InvalidQueryExpressionError => exception
         raise ArgumentError, exception.message, caller
       end
 
       def where(*args, &block)
         add_merge_query_expression(:where, *args, &block)
-      rescue InvalidQueryExpression => exception
+      rescue InvalidQueryExpressionError => exception
         raise ArgumentError, exception.message, caller
       end
 
       def order(*args, &block)
         add_merge_query_expression(:order, *args, &block)
-      rescue InvalidQueryExpression => exception
+      rescue InvalidQueryExpressionError => exception
         raise ArgumentError, exception.message, caller
       end
 
       def group(*args, &block)
         add_query_expression(:group, *args, &block)
-      rescue InvalidQueryExpression => exception
+      rescue InvalidQueryExpressionError => exception
         raise ArgumentError, exception.message, caller
       end
 
       def having(*args, &block)
         add_query_expression(:having, *args, &block)
-      rescue InvalidQueryExpression => exception
+      rescue InvalidQueryExpressionError => exception
         raise ArgumentError, exception.message, caller
       end
 
       def limit(*args, &block)
         add_query_expression(:limit, *args, &block)
-      rescue InvalidQueryExpression => exception
+      rescue InvalidQueryExpressionError => exception
         raise ArgumentError, exception.message, caller
       end
 
       def offset(*args, &block)
         add_query_expression(:offset, *args, &block)
-      rescue InvalidQueryExpression => exception
+      rescue InvalidQueryExpressionError => exception
         raise ArgumentError, exception.message, caller
       end
 
       def merge(*args, &block)
         add_merge_query_expression(:merge, *args, &block)
-      rescue InvalidQueryExpression => exception
+      rescue InvalidQueryExpressionError => exception
         raise ArgumentError, exception.message, caller
       end
 
@@ -128,68 +129,9 @@ module MR::ReadModel
     end
   end
 
-  class MergeQueryExpression
-    attr_accessor :type, :query_expression
-
-    def initialize(type, *args, &block)
-      @type = type
-      @query_expression = QueryExpression.new(:merge, *args, &block)
-    end
-
-    def apply_to(relation, args = nil)
-      @query_expression.apply_to(relation, args)
-    end
-  end
-
-  module QueryExpression
-    def self.new(type, *args, &block)
-      if !args.empty?
-        Static.new(type, *args)
-      elsif block
-        Dynamic.new(type, &block)
-      else
-        raise InvalidQueryExpression
-      end
-    end
-
-    class Static
-      attr_reader :type, :args
-
-      def initialize(type, *args)
-        @type = type
-        @args = args
-      end
-
-      # apply_to has to take a second arg that it ignores, this is so it has the
-      # same interface as `Dynamic` (which actually needs the second arg)
-      def apply_to(relation, ignored = nil)
-        relation.send(@type, *@args)
-      end
-    end
-
-    class Dynamic
-      attr_reader :type, :block
-
-      def initialize(type, &block)
-        @type  = type
-        @block = block
-      end
-
-      def apply_to(relation, args)
-        relation.send(@type, relation.instance_exec(args, &@block))
-      end
-    end
-  end
-
   class NoRecordClassError < RuntimeError
     def initialize
       super "a record class hasn't been set - set one using `from`"
-    end
-  end
-
-  class InvalidQueryExpression < RuntimeError
-    def initialize
-      super "must be passed arguments or a block"
     end
   end
 
