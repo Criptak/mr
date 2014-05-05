@@ -7,6 +7,7 @@ require 'test/support/models/area'
 require 'test/support/models/comment'
 require 'test/support/models/image'
 require 'test/support/models/user'
+require 'test/support/read_models/subquery_data'
 require 'test/support/read_models/user_with_area_data'
 
 module Bench

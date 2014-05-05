@@ -144,9 +144,29 @@ profiler.run("MR::ReadModel") do
     benchmark("merge with block") do |n|
       read_model_class.merge{ |value| AreaRecord.scoped }
     end
+    benchmark("inner join subquery") do |n|
+      read_model_class.inner_join_subquery do
+        read_model{ from AreaRecord }
+      end
+    end
+    benchmark("left outer join subquery") do |n|
+      read_model_class.left_outer_join_subquery do
+        read_model{ from AreaRecord }
+      end
+    end
+    benchmark("right outer join subquery") do |n|
+      read_model_class.right_outer_join_subquery do
+        read_model{ from AreaRecord }
+      end
+    end
+    benchmark("full outer join subquery") do |n|
+      read_model_class.full_outer_join_subquery do
+        read_model{ from AreaRecord }
+      end
+    end
 
-    first_area  = AreaRecord.new(:name => 'Area1').tap{ |a| a.save }
-    second_area = AreaRecord.new(:name => 'Area2').tap{ |a| a.save }
+    first_area  = AreaRecord.new(:name => 'Area1').tap(&:save)
+    second_area = AreaRecord.new(:name => 'Area2').tap(&:save)
     first_user  = UserRecord.new(:name => 'User1').tap do |u|
       u.area = first_area
       u.save
@@ -155,12 +175,16 @@ profiler.run("MR::ReadModel") do
       u.area = second_area
       u.save
     end
+    comment = CommentRecord.new(:parent => first_user).tap(&:save)
 
     benchmark("find") do
       UserWithAreaData.find(first_user.id)
     end
     benchmark("query") do
       UserWithAreaData.query.results
+    end
+    benchmark("subquery query") do
+      SubqueryData.query(:started_on => first_user.started_on).results
     end
   end
 

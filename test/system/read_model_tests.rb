@@ -8,6 +8,7 @@ require 'test/support/factory/comment'
 require 'test/support/factory/image'
 require 'test/support/factory/user'
 require 'test/support/read_models/comment_with_user_data'
+require 'test/support/read_models/subquery_data'
 require 'test/support/read_models/user_with_area_data'
 
 module MR::ReadModel
@@ -17,7 +18,7 @@ module MR::ReadModel
 
   end
 
-  class FieldsTests < SystemTests
+  class FieldsSystemTests < SystemTests
     desc "fields"
     setup do
       @area    = Factory::Area.saved_instance
@@ -56,7 +57,7 @@ module MR::ReadModel
 
   end
 
-  class QueryTests < SystemTests
+  class QuerySystemTests < SystemTests
     desc "query"
     setup do
       @matching_user = Factory::User.instance_stack.tap(&:create).model
@@ -78,7 +79,7 @@ module MR::ReadModel
 
   end
 
-  class FindTests < SystemTests
+  class FindSystemTests < SystemTests
     desc "find"
     setup do
       @matching_user = Factory::User.instance_stack.tap(&:create).model
@@ -89,6 +90,28 @@ module MR::ReadModel
     should "find a specific record by it's id" do
       assert_kind_of UserWithAreaData, subject
       assert_equal @matching_user.id, subject.user_id
+    end
+
+  end
+
+  class SubQuerySystemTests < SystemTests
+    desc "query that uses subqueries"
+    setup do
+      @user = Factory::User.instance_stack({
+        :area => { :active => true }
+      }).tap(&:create).model
+      @area       = @user.area
+      @started_on = @user.started_on
+      @comment = Factory::Comment.saved_instance(:parent => @user)
+      @results = SubqueryData.query(:started_on => @started_on).results
+    end
+    subject{ @results }
+
+    should "have found the matching area, user and comment data" do
+      assert_equal 1, subject.size
+      assert_includes @area.id,    subject.map(&:area_id)
+      assert_includes @user.id,    subject.map(&:user_id)
+      assert_includes @comment.id, subject.map(&:comment_id)
     end
 
   end
