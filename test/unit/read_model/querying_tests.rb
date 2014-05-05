@@ -72,6 +72,12 @@ module MR::ReadModel::Querying
       assert_dynamic_expression_added @relation, :select, select_proc
     end
 
+    should "return the expression using `select`" do
+      select_sql = "some_table.some_column AS 'something'"
+      expression = subject.select select_sql
+      assert_static_expression expression, :select, select_sql
+    end
+
     should "add a static join to the relation with `joins`" do
       join_args = [ :some_table, :other_table ]
       subject.joins(*join_args)
@@ -82,6 +88,12 @@ module MR::ReadModel::Querying
       join_proc = proc{ |name| "CROSS JOIN #{name}" }
       subject.joins(&join_proc)
       assert_dynamic_expression_added @relation, :joins, join_proc
+    end
+
+    should "return the expression using `joins`" do
+      join_args = [ :some_table, :other_table ]
+      expression = subject.joins(*join_args)
+      assert_static_expression expression, :joins, join_args
     end
 
     should "add a static merge to the relation with `where`" do
@@ -96,6 +108,12 @@ module MR::ReadModel::Querying
       assert_dynamic_merge_expression_added @relation, :where, merge_proc
     end
 
+    should "return the merge expression using `where`" do
+      merge_args = 'fake-relation'
+      expression = subject.where(merge_args)
+      assert_static_merge_expression expression, :where, merge_args
+    end
+
     should "add a static merge to the relation with `order`" do
       merge_args = 'fake-relation'
       subject.order(merge_args)
@@ -106,6 +124,12 @@ module MR::ReadModel::Querying
       merge_proc = proc{ 'fake-relation' }
       subject.order(&merge_proc)
       assert_dynamic_merge_expression_added @relation, :order, merge_proc
+    end
+
+    should "return the merge expression using `order`" do
+      merge_args = 'fake-relation'
+      expression = subject.order(merge_args)
+      assert_static_merge_expression expression, :order, merge_args
     end
 
     should "add a static group to the relation with `group`" do
@@ -120,6 +144,12 @@ module MR::ReadModel::Querying
       assert_dynamic_expression_added @relation, :group, group_proc
     end
 
+    should "return the expression using `group`" do
+      group_args = 'some_table.some_column'
+      expression = subject.group(group_args)
+      assert_static_expression expression, :group, group_args
+    end
+
     should "add a static having to the relation with `having`" do
       having_args = 'COUNT(*) > 0'
       subject.having(having_args)
@@ -130,6 +160,12 @@ module MR::ReadModel::Querying
       having_proc = proc{ |column| "COUNT(#{column}) > 0" }
       subject.having(&having_proc)
       assert_dynamic_expression_added @relation, :having, having_proc
+    end
+
+    should "return the expression using `having`" do
+      having_args = 'COUNT(*) > 0'
+      expression = subject.having(having_args)
+      assert_static_expression expression, :having, having_args
     end
 
     should "add a static limit to the relation with `limit`" do
@@ -144,6 +180,12 @@ module MR::ReadModel::Querying
       assert_dynamic_expression_added @relation, :limit, limit_proc
     end
 
+    should "return the expression using `limit`" do
+      limit_args = 1
+      expression = subject.limit(limit_args)
+      assert_static_expression expression, :limit, limit_args
+    end
+
     should "add a static offset to the relation with `offset`" do
       offset_args = 1
       subject.offset(offset_args)
@@ -154,6 +196,12 @@ module MR::ReadModel::Querying
       offset_proc = proc{ |count| count }
       subject.offset(&offset_proc)
       assert_dynamic_expression_added @relation, :offset, offset_proc
+    end
+
+    should "return the expression using `offset`" do
+      offset_args = 1
+      expression = subject.offset(offset_args)
+      assert_static_expression expression, :offset, offset_args
     end
 
     should "add a static merge to the relation with `merge`" do

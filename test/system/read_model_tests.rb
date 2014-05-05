@@ -20,10 +20,10 @@ module MR::ReadModel
   class FieldsTests < SystemTests
     desc "fields"
     setup do
-      @area    = Factory::Area.instance.tap(&:save)
-      @user    = Factory::User.instance(:area => @area).tap(&:save)
-      @image   = Factory::Image.instance(:user => @user).tap(&:save)
-      @comment = Factory::Comment.instance(:parent => @user).tap(&:save)
+      @area    = Factory::Area.saved_instance
+      @user    = Factory::User.saved_instance(:area => @area)
+      @image   = Factory::Image.saved_instance(:user => @user)
+      @comment = Factory::Comment.saved_instance(:parent => @user)
       @comment_with_user_data = CommentWithUserData.query.results.first
     end
     subject{ @comment_with_user_data }
@@ -59,10 +59,8 @@ module MR::ReadModel
   class QueryTests < SystemTests
     desc "query"
     setup do
-      @matching_user_stack = Factory::User.instance_stack.tap(&:create)
-      @matching_user = @matching_user_stack.model
-      @not_matching_user_stack = Factory::User.instance_stack.tap(&:create)
-      @not_matching_user = @not_matching_user_stack.model
+      @matching_user = Factory::User.instance_stack.tap(&:create).model
+      @not_matching_user = Factory::User.instance_stack.tap(&:create).model
       @query = UserWithAreaData.query(@matching_user.area_id)
     end
     subject{ @query }
@@ -83,8 +81,7 @@ module MR::ReadModel
   class FindTests < SystemTests
     desc "find"
     setup do
-      @matching_user_stack = Factory::User.instance_stack.tap(&:create)
-      @matching_user = @matching_user_stack.model
+      @matching_user = Factory::User.instance_stack.tap(&:create).model
       @user_with_area_data = UserWithAreaData.find(@matching_user.id)
     end
     subject{ @user_with_area_data }

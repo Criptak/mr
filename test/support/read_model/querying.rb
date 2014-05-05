@@ -26,20 +26,16 @@ module MR::ReadModel::Querying
     def assert_static_merge_expression_added(relation, type, *args)
       with_backtrace(caller) do
         assert_equal 1, relation.expressions.size
-        merge_expression = relation.expressions.first
-        expected_class = MR::ReadModel::MergeQueryExpression
-        assert_instance_of expected_class, merge_expression
-        assert_static_expression merge_expression.query_expression, :merge, args
+        expression = relation.expressions.first
+        assert_static_merge_expression expression, type, args
       end
     end
 
     def assert_dynamic_merge_expression_added(relation, type, block)
       with_backtrace(caller) do
         assert_equal 1, relation.expressions.size
-        merge_expression = relation.expressions.first
-        expected_class = MR::ReadModel::MergeQueryExpression
-        assert_instance_of expected_class, merge_expression
-        assert_dynamic_expression merge_expression.query_expression, :merge, block
+        expression = relation.expressions.first
+        assert_dynamic_merge_expression expression, type, block
       end
     end
 
@@ -47,7 +43,7 @@ module MR::ReadModel::Querying
       expected_class = MR::ReadModel::StaticQueryExpression
       assert_instance_of expected_class, expression
       assert_equal type, expression.type
-      assert_equal args, expression.args
+      assert_equal [*args], expression.args
     end
 
     def assert_dynamic_expression(expression, type, block)
@@ -55,6 +51,22 @@ module MR::ReadModel::Querying
       assert_instance_of expected_class, expression
       assert_equal type,  expression.type
       assert_equal block, expression.block
+    end
+
+    def assert_merge_expression(expression, type)
+      expected_class = MR::ReadModel::MergeQueryExpression
+      assert_instance_of expected_class, expression
+      assert_equal expression.type, type
+    end
+
+    def assert_static_merge_expression(expression, type, args)
+      assert_merge_expression expression, type
+      assert_static_expression expression.query_expression, :merge, args
+    end
+
+    def assert_dynamic_merge_expression(expression, type, block)
+      assert_merge_expression expression, type
+      assert_dynamic_expression expression.query_expression, :merge, block
     end
 
     def assert_expression_applied(relation_spy, type, *args)
