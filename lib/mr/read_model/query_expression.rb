@@ -11,7 +11,7 @@ module MR::ReadModel
       elsif block
         DynamicQueryExpression.new(type, &block)
       else
-        raise InvalidQueryExpressionError
+        raise InvalidQueryExpressionError, "must be passed args or a block"
       end
     end
   end
@@ -58,10 +58,6 @@ module MR::ReadModel
     end
   end
 
-  class InvalidQueryExpressionError < RuntimeError
-    def initialize
-      super "must be passed arguments or a block"
-    end
-  end
+  InvalidQueryExpressionError = Class.new(RuntimeError)
 
 end

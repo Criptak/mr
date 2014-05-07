@@ -29,7 +29,7 @@ module MR::ReadModel
 
       def select(*args, &block)
         add_query_expression(:select, *args, &block)
-      rescue InvalidQueryExpressionError => exception
+      rescue InvalidQueryExpressionError, ArgumentError => exception
         raise ArgumentError, exception.message, caller
       end
 
@@ -40,60 +40,64 @@ module MR::ReadModel
 
       def joins(*args, &block)
         add_query_expression(:joins, *args, &block)
-      rescue InvalidQueryExpressionError => exception
+      rescue InvalidQueryExpressionError, ArgumentError => exception
         raise ArgumentError, exception.message, caller
       end
 
       def where(*args, &block)
         add_merge_query_expression(:where, *args, &block)
-      rescue InvalidQueryExpressionError => exception
+      rescue InvalidQueryExpressionError, ArgumentError => exception
         raise ArgumentError, exception.message, caller
       end
 
       def order(*args, &block)
         add_merge_query_expression(:order, *args, &block)
-      rescue InvalidQueryExpressionError => exception
+      rescue InvalidQueryExpressionError, ArgumentError => exception
         raise ArgumentError, exception.message, caller
       end
 
       def group(*args, &block)
         add_query_expression(:group, *args, &block)
-      rescue InvalidQueryExpressionError => exception
+      rescue InvalidQueryExpressionError, ArgumentError => exception
         raise ArgumentError, exception.message, caller
       end
 
       def having(*args, &block)
         add_query_expression(:having, *args, &block)
-      rescue InvalidQueryExpressionError => exception
+      rescue InvalidQueryExpressionError, ArgumentError => exception
         raise ArgumentError, exception.message, caller
       end
 
       def limit(*args, &block)
         add_query_expression(:limit, *args, &block)
-      rescue InvalidQueryExpressionError => exception
+      rescue InvalidQueryExpressionError, ArgumentError => exception
         raise ArgumentError, exception.message, caller
       end
 
       def offset(*args, &block)
         add_query_expression(:offset, *args, &block)
-      rescue InvalidQueryExpressionError => exception
+      rescue InvalidQueryExpressionError, ArgumentError => exception
         raise ArgumentError, exception.message, caller
       end
 
       def merge(*args, &block)
         add_merge_query_expression(:merge, *args, &block)
-      rescue InvalidQueryExpressionError => exception
+      rescue InvalidQueryExpressionError, ArgumentError => exception
         raise ArgumentError, exception.message, caller
       end
 
       private
 
       def add_query_expression(type, *args, &block)
-        relation.expressions << QueryExpression.new(type, *args, &block)
+        QueryExpression.new(type, *args, &block).tap do |expression|
+          relation.expressions << expression
+        end
       end
 
       def add_merge_query_expression(type, *args, &block)
-        relation.expressions << MergeQueryExpression.new(type, *args, &block)
+        MergeQueryExpression.new(type, *args, &block).tap do |expression|
+          relation.expressions << expression
+        end
       end
 
     end
