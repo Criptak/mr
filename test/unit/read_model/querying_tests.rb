@@ -27,6 +27,10 @@ module MR::ReadModel::Querying
     should have_imeths :group, :having
     should have_imeths :limit, :offset
     should have_imeths :merge
+    should have_imeths :inner_join_subquery
+    should have_imeths :left_outer_join_subquery, :left_join_subquery
+    should have_imeths :right_outer_join_subquery, :right_join_subquery
+    should have_imeths :full_outer_join_subquery, :full_join_subquery
 
     should "return a Relation using `relation`" do
       relation = subject.relation
@@ -216,6 +220,60 @@ module MR::ReadModel::Querying
       assert_dynamic_merge_expression_added @relation, :merge, merge_proc
     end
 
+    should "return the merge expression using `merge`" do
+      merge_args = 'fake-relation'
+      expression = subject.merge(merge_args)
+      assert_static_merge_expression expression, :merge, merge_args
+    end
+
+    should "add a join subquery to the relation with `inner_join_subquery`" do
+      subquery_proc = proc{ as('my_table') }
+      expression = subject.inner_join_subquery(&subquery_proc)
+      assert_inner_join_subquery_added @relation, subquery_proc
+    end
+
+    should "return the subquery expression using `inner_join_subquery`" do
+      subquery_proc = proc{ as('my_table') }
+      expression = subject.inner_join_subquery(&subquery_proc)
+      assert_join_subquery_expression expression, :inner, subquery_proc
+    end
+
+    should "add a join subquery to the relation with `left_outer_join_subquery`" do
+      subquery_proc = proc{ as('my_table') }
+      expression = subject.left_outer_join_subquery(&subquery_proc)
+      assert_left_outer_join_subquery_added @relation, subquery_proc
+    end
+
+    should "return the subquery expression using `left_outer_join_subquery`" do
+      subquery_proc = proc{ as('my_table') }
+      expression = subject.left_outer_join_subquery(&subquery_proc)
+      assert_join_subquery_expression expression, :left, subquery_proc
+    end
+
+    should "add a join subquery to the relation with `right_outer_join_subquery`" do
+      subquery_proc = proc{ as('my_table') }
+      expression = subject.right_outer_join_subquery(&subquery_proc)
+      assert_right_outer_join_subquery_added @relation, subquery_proc
+    end
+
+    should "return the subquery expression using `right_outer_join_subquery`" do
+      subquery_proc = proc{ as('my_table') }
+      expression = subject.right_outer_join_subquery(&subquery_proc)
+      assert_join_subquery_expression expression, :right, subquery_proc
+    end
+
+    should "add a join subquery to the relation with `full_outer_join_subquery`" do
+      subquery_proc = proc{ as('my_table') }
+      expression = subject.full_outer_join_subquery(&subquery_proc)
+      assert_full_outer_join_subquery_added @relation, subquery_proc
+    end
+
+    should "return the subquery expression using `full_outer_join_subquery`" do
+      subquery_proc = proc{ as('my_table') }
+      expression = subject.full_outer_join_subquery(&subquery_proc)
+      assert_join_subquery_expression expression, :full, subquery_proc
+    end
+
     should "raise an ArgumentError when any query method isn't provided args or a block" do
       assert_raises(ArgumentError){ subject.select }
       assert_raises(ArgumentError){ subject.joins }
@@ -226,6 +284,10 @@ module MR::ReadModel::Querying
       assert_raises(ArgumentError){ subject.limit }
       assert_raises(ArgumentError){ subject.offset }
       assert_raises(ArgumentError){ subject.merge }
+      assert_raises(ArgumentError){ subject.inner_join_subquery }
+      assert_raises(ArgumentError){ subject.left_outer_join_subquery }
+      assert_raises(ArgumentError){ subject.right_outer_join_subquery }
+      assert_raises(ArgumentError){ subject.full_outer_join_subquery }
     end
 
   end

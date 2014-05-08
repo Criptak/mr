@@ -39,6 +39,38 @@ module MR::ReadModel::Querying
       end
     end
 
+    def assert_inner_join_subquery_added(relation, block)
+      with_backtrace(caller) do
+        assert_join_subquery_added(relation, :inner, block)
+      end
+    end
+
+    def assert_left_outer_join_subquery_added(relation, block)
+      with_backtrace(caller) do
+        assert_join_subquery_added(relation, :left, block)
+      end
+    end
+
+    def assert_right_outer_join_subquery_added(relation, block)
+      with_backtrace(caller) do
+        assert_join_subquery_added(relation, :right, block)
+      end
+    end
+
+    def assert_full_outer_join_subquery_added(relation, block)
+      with_backtrace(caller) do
+        assert_join_subquery_added(relation, :full, block)
+      end
+    end
+
+    def assert_join_subquery_added(relation, type, block)
+      assert_equal 1, relation.expressions.size
+      expression = relation.expressions.first
+      expected_class = MR::ReadModel::SubQueryExpression
+      assert_instance_of expected_class, expression
+      assert_join_subquery_expression expression, type, block
+    end
+
     def assert_static_expression(expression, type, args)
       expected_class = MR::ReadModel::StaticQueryExpression
       assert_instance_of expected_class, expression
@@ -69,15 +101,31 @@ module MR::ReadModel::Querying
       assert_dynamic_expression expression.query_expression, :merge, block
     end
 
+    def assert_subquery_expression(expression, type)
+      expected_class = MR::ReadModel::SubQueryExpression
+      assert_kind_of expected_class, expression
+      assert_equal type, expression.subquery_type
+    end
+
+    def assert_join_subquery_expression(expression, type, block)
+      assert_subquery_expression expression, :joins
+      assert_includes type, expression.subquery_args
+      assert_equal block, expression.subquery_block
+    end
+
     def assert_expression_applied(relation_spy, type, *args)
       with_backtrace(caller) do
-        assert_not_nil find_applied(relation_spy, type, args)
+        message = "couldn't find an applied #{type} expression " \
+                  "with #{args.inspect} args"
+        assert_not_nil find_applied(relation_spy, type, args), message
       end
     end
 
     def assert_not_expression_applied(relation_spy, type, *args)
       with_backtrace(caller) do
-        assert_nil find_applied(relation_spy, type, args)
+        message = "found an applied #{type} expression " \
+                  "with #{args.inspect} args"
+        assert_nil find_applied(relation_spy, type, args), message
       end
     end
 

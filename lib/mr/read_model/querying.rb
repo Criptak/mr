@@ -44,6 +44,33 @@ module MR::ReadModel
         raise ArgumentError, exception.message, caller
       end
 
+      def inner_join_subquery(&block)
+        add_subquery_expression(:joins, :inner, &block)
+      rescue InvalidQueryExpressionError, ArgumentError => exception
+        raise ArgumentError, exception.message, caller
+      end
+
+      def left_outer_join_subquery(&block)
+        add_subquery_expression(:joins, :left, &block)
+      rescue InvalidQueryExpressionError, ArgumentError => exception
+        raise ArgumentError, exception.message, caller
+      end
+      alias :left_join_subquery :left_outer_join_subquery
+
+      def right_outer_join_subquery(&block)
+        add_subquery_expression(:joins, :right, &block)
+      rescue InvalidQueryExpressionError, ArgumentError => exception
+        raise ArgumentError, exception.message, caller
+      end
+      alias :right_join_subquery :right_outer_join_subquery
+
+      def full_outer_join_subquery(&block)
+        add_subquery_expression(:joins, :full, &block)
+      rescue InvalidQueryExpressionError, ArgumentError => exception
+        raise ArgumentError, exception.message, caller
+      end
+      alias :full_join_subquery :full_outer_join_subquery
+
       def where(*args, &block)
         add_merge_query_expression(:where, *args, &block)
       rescue InvalidQueryExpressionError, ArgumentError => exception
@@ -96,6 +123,12 @@ module MR::ReadModel
 
       def add_merge_query_expression(type, *args, &block)
         MergeQueryExpression.new(type, *args, &block).tap do |expression|
+          relation.expressions << expression
+        end
+      end
+
+      def add_subquery_expression(type, *args, &block)
+        SubQueryExpression.new(type, *args, &block).tap do |expression|
           relation.expressions << expression
         end
       end
