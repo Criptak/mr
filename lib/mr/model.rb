@@ -28,6 +28,14 @@ module MR::Model
     other.kind_of?(self.class) ? record == other.record : super
   end
 
+  def eql?(other)
+    other.kind_of?(self.class) ? record.eql?(other.record) : super
+  end
+
+  def hash
+    record.hash
+  end
+
   def inspect
     object_hex = (self.object_id << 1).to_s(16)
     fields_inspect = self.class.fields.map do |field|

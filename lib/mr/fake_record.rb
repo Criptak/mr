@@ -23,6 +23,11 @@ module MR::FakeRecord
   def ==(other)
     other.kind_of?(self.class) ? self.id == other.id : super
   end
+  alias :eql? :==
+
+  def hash
+    self.id.hash
+  end
 
   def inspect
     object_hex = (self.object_id << 1).to_s(16)
