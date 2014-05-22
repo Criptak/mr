@@ -16,12 +16,14 @@ ActiveRecord::Schema.define(:version => 1) do
     t.date      :started_on
     t.timestamp :dob
     t.integer   :area_id, :null => false
+    t.integer   :benchmark_area_id
   end
 
   create_table :images do |t|
     t.string  :file_path
     t.binary  :data
     t.integer :user_id, :null => false
+    t.integer :benchmark_user_id
   end
 
   create_table :comments do |t|
@@ -30,6 +32,8 @@ ActiveRecord::Schema.define(:version => 1) do
     t.integer  :parent_id,   :null => false
     t.datetime :created_at
     t.integer  :created_by_id
+    t.string   :benchmark_parent_type
+    t.integer  :benchmark_parent_id
   end
 
 end

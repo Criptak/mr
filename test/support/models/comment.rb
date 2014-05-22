@@ -14,6 +14,10 @@ class CommentRecord < ActiveRecord::Base
     :foreign_key => 'created_by_id'
   }
 
+  belongs_to :benchmark_parent, {
+    :polymorphic => true
+  }
+
 end
 
 class Comment
@@ -25,6 +29,8 @@ class Comment
 
   polymorphic_belongs_to :parent
   belongs_to :created_by
+
+  polymorphic_belongs_to :benchmark_parent
 
 end
 
@@ -40,6 +46,8 @@ class FakeCommentRecord
 
   polymorphic_belongs_to :parent
   belongs_to :created_by, 'FakeUserRecord'
+
+  polymorphic_belongs_to :benchmark_parent
 
 end
 
