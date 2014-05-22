@@ -78,7 +78,7 @@ module MR::Model
     end
     subject{ @model }
 
-    should have_imeths :inspect
+    should have_imeths :==, :eql?, :hash, :inspect
 
     should "return a readable inspect" do
       object_hex = (subject.object_id << 1).to_s(16)
@@ -87,11 +87,22 @@ module MR::Model
       assert_equal expected, subject.inspect
     end
 
-    should "be comparable" do
+    should "be comparable using `==`" do
       same_model = @model_class.new(@fake_record)
       assert_equal same_model, subject
       other_model = @model_class.new.tap(&:save)
       assert_not_equal other_model, subject
+    end
+
+    should "be comparable using `eql?`" do
+      same_model = @model_class.new(@fake_record)
+      assert_true subject.eql?(same_model)
+      other_model = @model_class.new.tap(&:save)
+      assert_false subject.eql?(other_model)
+    end
+
+    should "demeter its fixnum hash value to its record" do
+      assert_equal @fake_record.hash, subject.hash
     end
 
   end

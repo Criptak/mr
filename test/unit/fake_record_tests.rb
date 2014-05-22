@@ -51,7 +51,7 @@ module MR::FakeRecord
   class InstanceTests < WithFakeRecordInstanceTests
     desc "for a fake record instance"
 
-    should have_imeths :inspect
+    should have_imeths :==, :eql?, :hash, :inspect
 
     should "return a readable inspect" do
       object_hex = (subject.object_id << 1).to_s(16)
@@ -65,6 +65,10 @@ module MR::FakeRecord
       assert_equal same_fake_record, subject
       other_fake_record = @fake_record_class.new.tap(&:save!)
       assert_not_equal other_fake_record, subject
+    end
+
+    should "demeter its fixnum hash value to its id" do
+      assert_equal subject.id.hash, subject.hash
     end
 
   end
