@@ -11,6 +11,11 @@ class AreaRecord < ActiveRecord::Base
     :foreign_key => 'area_id'
   }
 
+  has_many :benchmark_users, {
+    :class_name  => 'UserRecord',
+    :foreign_key => 'benchmark_area_id'
+  }
+
 end
 
 class ValidAreaRecord < AreaRecord
@@ -26,6 +31,8 @@ class Area
 
   has_many :users
 
+  has_many :benchmark_users
+
 end
 
 class FakeAreaRecord
@@ -39,5 +46,7 @@ class FakeAreaRecord
   attribute :meeting_time, :time
 
   has_many :users, 'FakeUserRecord'
+
+  has_many :benchmark_users, 'FakeUserRecord'
 
 end

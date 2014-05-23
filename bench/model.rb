@@ -114,44 +114,45 @@ profiler.run("MR::Model") do
       model_class.polymorphic_belongs_to "polymorphic_belongs_to_#{n}"
     end
 
-    first_area   = Area.new.tap{ |a| a.save }
-    second_area  = Area.new.tap{ |a| a.save }
-    first_user   = User.new.tap{ |u| u.save }
-    second_user  = User.new.tap{ |u| u.save }
-    first_image  = Image.new.tap{ |i| i.save }
-    second_image = Image.new.tap{ |i| i.save }
+    first_area   = Area.new.tap(&:save)
+    second_area  = Area.new.tap(&:save)
+    first_user   = User.new(:area => first_area).tap(&:save)
+    second_user  = User.new(:area => first_area).tap(&:save)
+    first_image  = Image.new(:user => first_user).tap(&:save)
+    second_image = Image.new(:user => first_user).tap(&:save)
 
-    first_user.area  = first_area
-    first_user.image = first_image
+    first_user.benchmark_area  = first_area
+    first_user.benchmark_image = first_image
     first_user.save
     comment = Comment.new.tap do |c|
       c.parent = first_user
+      c.benchmark_parent = first_user
       c.save
     end
 
     benchmark("read belongs to") do |n|
-      first_user.area
+      first_user.benchmark_area
     end
     benchmark("write belongs to") do |n|
-      first_user.area = (n % 2 == 0) ? second_area : first_area
+      first_user.benchmark_area = (n % 2 == 0) ? second_area : first_area
     end
     benchmark("read has many") do |n|
-      first_area.users
+      first_area.benchmark_users
     end
     benchmark("write has many") do |n|
-      first_area.users = (n % 2 == 0) ? [ first_user, second_user ] : [ first_user ]
+      first_area.benchmark_users = (n % 2 == 0) ? [ first_user, second_user ] : [ first_user ]
     end
     benchmark("read has one") do |n|
-      first_user.image
+      first_user.benchmark_image
     end
     benchmark("write has one") do |n|
-      first_user.image = (n % 2 == 0) ? second_image : first_image
+      first_user.benchmark_image = (n % 2 == 0) ? second_image : first_image
     end
     benchmark("read polymorphic belongs to") do |n|
-      comment.parent
+      comment.benchmark_parent
     end
     benchmark("write polymorphic belongs to") do |n|
-      comment.parent = (n % 2 == 0) ? second_user : first_user
+      comment.benchmark_parent = (n % 2 == 0) ? second_user : first_user
     end
   end
 

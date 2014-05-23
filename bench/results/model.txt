@@ -1,44 +1,44 @@
 MR::Model
 ---------
 Configuration
-  record_class read                      |       6.37 ms |       0.01 MB |
-  record_class write                     |      19.95 ms |        0.0 MB |
+  record_class read                      |        6.2 ms |        0.0 MB |
+  record_class write                     |      16.31 ms |        0.0 MB |
 Initialization
-  initialize with no arguments           |     331.88 ms |      37.19 MB |
-  initialize with a record               |      34.82 ms |       0.48 MB |
-  initialize with a hash                 |     904.48 ms |      58.53 MB |
-  initialize with a record and hash      |      457.7 ms |       3.34 MB |
+  initialize with no arguments           |     328.62 ms |      38.23 MB |
+  initialize with a record               |      29.01 ms |       0.73 MB |
+  initialize with a hash                 |     900.97 ms |      59.46 MB |
+  initialize with a record and hash      |      451.5 ms |       1.08 MB |
 Comparison
-  == unequal                             |       58.0 ms |        0.0 MB |
-  == equal                               |      55.59 ms |        0.0 MB |
+  == unequal                             |      58.81 ms |        0.0 MB |
+  == equal                               |       59.7 ms |        0.0 MB |
 Fields
-  field_reader                           |     410.69 ms |     171.57 MB |
-  field_writer                           |      282.5 ms |      66.55 MB |
-  field_accessor                         |     683.39 ms |     251.42 MB |
-  read single field                      |      52.96 ms |        0.0 MB |
-  write single field                     |     205.32 ms |       0.94 MB |
-  read single field was                  |      68.02 ms |        0.0 MB |
-  single field changed                   |      64.57 ms |        0.0 MB |
-  fields                                 |     309.17 ms |       23.8 MB |
-  fields=                                |     481.18 ms |        0.0 MB |
+  field_reader                           |     430.61 ms |     169.25 MB |
+  field_writer                           |     263.24 ms |      65.88 MB |
+  field_accessor                         |     672.82 ms |      250.2 MB |
+  read single field                      |      25.72 ms |        0.0 MB |
+  write single field                     |     123.32 ms |        2.1 MB |
+  read single field was                  |      35.86 ms |       0.31 MB |
+  single field changed                   |      37.95 ms |        0.0 MB |
+  fields                                 |     278.65 ms |      21.94 MB |
+  fields=                                |     415.15 ms |       2.04 MB |
 Associations
-  belongs_to                             |     340.63 ms |      96.09 MB |
-  has_many                               |     366.42 ms |       0.56 MB |
-  has_one                                |     385.99 ms |        0.0 MB |
-  polymorphic_belongs_to                 |     362.99 ms |       0.08 MB |
-  read belongs to                        |     228.23 ms |        0.0 MB |
-  write belongs to                       |     535.63 ms |        0.0 MB |
-  read has many                          |      371.4 ms |        0.0 MB |
-  write has many                         |    5208.66 ms |     515.41 MB |
-  read has one                           |     222.08 ms |        0.0 MB |
-  write has one                          |   11021.72 ms |     783.63 MB |
-  read polymorphic belongs to            |     385.22 ms |        0.0 MB |
-  write polymorphic belongs to           |     734.65 ms |        0.0 MB |
+  belongs_to                             |      304.7 ms |      121.5 MB |
+  has_many                               |     324.99 ms |       1.86 MB |
+  has_one                                |     334.34 ms |        0.0 MB |
+  polymorphic_belongs_to                 |     315.62 ms |       1.72 MB |
+  read belongs to                        |     198.68 ms |        0.0 MB |
+  write belongs to                       |     482.21 ms |        0.0 MB |
+  read has many                          |     218.64 ms |        0.0 MB |
+  write has many                         |    5884.43 ms |     519.03 MB |
+  read has one                           |     114.22 ms |       0.79 MB |
+  write has one                          |   12847.94 ms |      805.3 MB |
+  read polymorphic belongs to            |     258.96 ms |        0.0 MB |
+  write polymorphic belongs to           |     657.58 ms |       0.04 MB |
 Persistence
-  save                                   |    7597.82 ms |      178.6 MB |
-  destroy                                |    3280.24 ms |      -0.12 MB |
-  valid? and errors                      |     6604.7 ms |       0.04 MB |
+  save                                   |    8171.23 ms |     206.38 MB |
+  destroy                                |    3550.59 ms |       0.02 MB |
+  valid? and errors                      |    6785.77 ms |       0.04 MB |
 Querying
-  find                                   |    4341.23 ms |        0.0 MB |
-  all                                    |    3676.19 ms |        0.0 MB |
-Total                                    |      81.56 s  |    1011.12 MB |
+  find                                   |    4513.17 ms |        0.0 MB |
+  all                                    |    3885.71 ms |        0.0 MB |
+Total                                    |      83.28 s  |    1007.97 MB |

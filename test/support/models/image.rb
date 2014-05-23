@@ -11,6 +11,11 @@ class ImageRecord < ActiveRecord::Base
     :foreign_key => 'user_id'
   }
 
+  belongs_to :benchmark_user, {
+    :class_name  => 'UserRecord',
+    :foreign_key => 'benchmark_user_id'
+  }
+
 end
 
 class Image
@@ -21,6 +26,8 @@ class Image
   field_accessor :file_path, :data
 
   belongs_to :user
+
+  belongs_to :benchmark_user
 
 end
 
@@ -33,6 +40,8 @@ class FakeImageRecord
   attribute :user_id,   :integer, :null => false
 
   belongs_to :user, 'FakeUserRecord'
+
+  belongs_to :benchmark_user, 'FakeUserRecord'
 
 end
 
