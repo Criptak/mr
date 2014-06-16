@@ -1,6 +1,8 @@
 require 'assert'
 require 'mr/factory/model_stack'
 
+require 'mr/model'
+
 class MR::Factory::ModelStack
 
   class UnitTests < Assert::Context
@@ -8,14 +10,10 @@ class MR::Factory::ModelStack
     setup do
       @model = TestModel.new
       @record_stack_spy = RecordStackSpy.new
-      MR::Factory::RecordStack.stubs(:new).tap do |s|
-        s.with(@model.record)
-        s.returns(@record_stack_spy)
+      Assert.stub(MR::Factory::RecordStack, :new).with(@model.record) do
+        @record_stack_spy
       end
       @stack = MR::Factory::ModelStack.new(@model)
-    end
-    teardown do
-      MR::Factory::RecordStack.unstub(:new)
     end
     subject{ @stack }
 

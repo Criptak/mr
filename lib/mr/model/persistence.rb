@@ -1,3 +1,5 @@
+require 'active_record'
+require 'active_record/validations'
 require 'mr/model/configuration'
 
 module MR; end
