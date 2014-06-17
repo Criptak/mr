@@ -49,14 +49,8 @@ module MR::FakeRecord::Persistence
     desc "for a fake record instance"
     setup do
       @primary_key = 1
-      MR::Factory.stubs(:primary_key).tap do |s|
-        s.with(@fake_record_class)
-        s.returns(@primary_key)
-      end
+      Assert.stub(MR::Factory, :primary_key).with(@fake_record_class){ @primary_key }
       @fake_record = @fake_record_class.new
-    end
-    teardown do
-      MR::Factory.unstub(:primary_key)
     end
     subject{ @fake_record }
 
@@ -148,14 +142,13 @@ module MR::FakeRecord::Persistence
     setup do
       @default_timezone = ActiveRecord::Base.default_timezone
       @current_time = Time.now
-      Time.stubs(:now).returns(@current_time)
+      Assert.stub(Time, :now){ @current_time }
       @fake_record_class.attribute :created_at, :datetime
       @fake_record_class.attribute :updated_at, :datetime
       @fake_record = @fake_record_class.new
     end
     teardown do
       ActiveRecord::Base.default_timezone = @default_timezone
-      Time.unstub(:now)
     end
     subject{ @fake_record }
 
@@ -174,7 +167,7 @@ module MR::FakeRecord::Persistence
       updated_at = subject.updated_at
       assert_equal @current_time, updated_at
       new_time = Time.local(2013, 1, 1)
-      Time.stubs(:now).returns(new_time)
+      Assert.stub(Time, :now){ new_time }
       subject.save!
       assert_equal new_time, subject.updated_at
     end

@@ -1,5 +1,6 @@
 require 'active_model'
 require 'active_record'
+require 'active_record/validations'
 require 'mr/factory'
 require 'mr/fake_record/attributes'
 

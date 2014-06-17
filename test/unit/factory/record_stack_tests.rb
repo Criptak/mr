@@ -16,22 +16,14 @@ class MR::Factory::RecordStack
   class RecordStackTests < UnitTests
     setup do
       @stack_record_spy = StackRecordSpy.new
-      MR::Factory::Record.stubs(:new).tap do |s|
-        s.with(@record)
-        s.returns(@stack_record_spy)
-      end
+      Assert.stub(MR::Factory::Record, :new).with(@record){ @stack_record_spy }
 
       @tree_node_spy = TreeNodeSpy.new
-      MR::Factory::TreeNode.stubs(:new).tap do |s|
-        s.with(@stack_record_spy, {})
-        s.returns(@tree_node_spy)
+      Assert.stub(MR::Factory::TreeNode, :new).tap do |s|
+        s.with(@stack_record_spy, {}){ @tree_node_spy }
       end
 
       @record_stack = MR::Factory::RecordStack.new(@record)
-    end
-    teardown do
-      MR::Factory::TreeNode.unstub(:new)
-      MR::Factory::Record.unstub(:new)
     end
     subject{ @record_stack }
 
@@ -133,9 +125,9 @@ class MR::Factory::RecordStack
   class TreeNodeActionTests < TreeNodeTests
     setup do
       @stack_record_spy = StackRecordSpy.new
-      @tree_node.stubs(:stack_record).returns(@stack_record_spy)
+      Assert.stub(@tree_node, :stack_record){ @stack_record_spy }
       @tree_node_spy = TreeNodeSpy.new
-      @tree_node.stubs(:children).returns([ @tree_node_spy ])
+      Assert.stub(@tree_node, :children){ [@tree_node_spy] }
     end
 
     should "create its children, refresh its stack record associations and " \
@@ -249,7 +241,7 @@ class MR::Factory::RecordStack
       assert_true @record.new_record?
       subject.create
       assert_false @record.new_record?
-      @record.stubs(:save!).raises("shouldn't be called")
+      Assert.stub(@record, :save!){ raise "shouldn't be called" }
       assert_nothing_raised{ subject.create }
     end
 
@@ -290,14 +282,10 @@ class MR::Factory::RecordStack
 
       @factory = MR::Factory::RecordFactory.new(@stack_association.record_class)
       @factory_record = @stack_association.record_class.new
-      MR::Factory::RecordFactory.stubs(:new).tap do |s|
-        s.with(@stack_association.record_class)
-        s.returns(@factory)
+      Assert.stub(MR::Factory::RecordFactory, :new).tap do |s|
+        s.with(@stack_association.record_class){ @factory }
       end
-      @factory.stubs(:instance).returns(@factory_record)
-    end
-    teardown do
-      MR::Factory::RecordFactory.unstub(:new)
+      Assert.stub(@factory, :instance){ @factory_record }
     end
     subject{ @stack_association }
 

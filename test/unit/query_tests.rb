@@ -28,9 +28,9 @@ class MR::Query
     end
 
     should "call `count` on the count relation using #count" do
-      subject.stubs(:count_relation).returns(@relation)
+      Assert.stub(subject, :count_relation){ @relation }
       assert_equal 2, subject.count
-      subject.stubs(:count_relation).returns(FakeTestRecord.scoped)
+      Assert.stub(subject, :count_relation){ FakeTestRecord.scoped }
       assert_equal 0, subject.count
     end
 
@@ -109,9 +109,9 @@ class MR::Query
     end
 
     should "call `count` on the total count relation with #total_count" do
-      subject.stubs(:total_count_relation).returns(@unpaged_relation)
+      Assert.stub(subject, :total_count_relation){ @unpaged_relation }
       assert_equal 2, subject.total_count
-      subject.stubs(:total_count_relation).returns(FakeTestRecord.scoped)
+      Assert.stub(subject, :total_count_relation){ FakeTestRecord.scoped }
       assert_equal 0, subject.total_count
     end
 

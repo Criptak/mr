@@ -56,12 +56,9 @@ module MR::ReadModel::Querying
   class WithFromRecordClassTests < UnitTests
     setup do
       @ar_relation_spy = Ardb::RelationSpy.new
-      FakeTestRecord.stubs(:scoped).returns(@ar_relation_spy)
+      Assert.stub(FakeTestRecord, :scoped){ @ar_relation_spy }
       @read_model_class.from FakeTestRecord
       @relation = @read_model_class.relation
-    end
-    teardown do
-      FakeTestRecord.unstub(:scoped)
     end
 
     should "add a static select to the relation with `select`" do
