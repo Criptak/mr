@@ -122,11 +122,16 @@ module MR::ReadModel
     subject{ @expression }
 
     should have_readers :subquery_type, :subquery_args, :subquery_block
+    should have_imeths :type
 
     should "know its subquery attributes" do
       assert_equal @type,  subject.subquery_type
       assert_equal @args,  subject.subquery_args
       assert_equal @block, subject.subquery_block
+    end
+
+    should "alias its subquery type, to be a compatible query expression" do
+      assert_equal subject.subquery_type, subject.type
     end
 
     should "build a subquery and apply its SQL to a relation using `apply_to`" do

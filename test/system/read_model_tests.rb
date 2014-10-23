@@ -94,8 +94,7 @@ module MR::ReadModel
 
   end
 
-  class SubQuerySystemTests < SystemTests
-    desc "query that uses subqueries"
+  class SubQuerySetupTests < SystemTests
     setup do
       @user = Factory::User.instance_stack({
         :area => { :active => true }
@@ -103,6 +102,13 @@ module MR::ReadModel
       @area       = @user.area
       @started_on = @user.started_on
       @comment = Factory::Comment.saved_instance(:parent => @user)
+    end
+
+  end
+
+  class SubQuerySystemTests < SubQuerySetupTests
+    desc "query that uses subqueries"
+    setup do
       @results = SubqueryData.query(:started_on => @started_on).results
     end
     subject{ @results }
@@ -112,6 +118,21 @@ module MR::ReadModel
       assert_includes @area.id,    subject.map(&:area_id)
       assert_includes @user.id,    subject.map(&:user_id)
       assert_includes @comment.id, subject.map(&:comment_id)
+    end
+
+  end
+
+  class SubQueryFindSystemTests < SubQuerySetupTests
+    desc "find that uses subqueries"
+    setup do
+      @result = SubqueryData.find(@area.id, :started_on => @started_on)
+    end
+    subject{ @result }
+
+    should "have found the matching area, user and comment data" do
+      assert_equal @area.id,    subject.area_id
+      assert_equal @user.id,    subject.user_id
+      assert_equal @comment.id, subject.comment_id
     end
 
   end
