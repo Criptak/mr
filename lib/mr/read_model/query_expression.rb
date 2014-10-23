@@ -67,6 +67,7 @@ module MR::ReadModel
     }.freeze
 
     attr_reader :subquery_type, :subquery_args, :subquery_block
+    alias :type :subquery_type
 
     def initialize(type, *subquery_args, &block)
       @subquery_type  = type
