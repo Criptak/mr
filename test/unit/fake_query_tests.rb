@@ -3,6 +3,7 @@ require 'mr/fake_query'
 
 require 'mr/fake_record'
 require 'mr/model'
+require 'mr/query'
 
 class MR::FakeQuery
 
@@ -18,11 +19,18 @@ class MR::FakeQuery
     end
     subject{ @query }
 
-    should have_imeths :results, :count, :paged
+    should have_readers :results, :count
+    should have_imeths :paged
 
-    should "return the results and their size with #results and #count" do
+    should "know its results and count" do
       assert_equal @results, subject.results
       assert_equal @results.size, subject.count
+    end
+
+    should "default its results and count" do
+      query = MR::FakeQuery.new(nil)
+      assert_equal [], query.results
+      assert_equal 0, query.count
     end
 
     should "return an instance of a `FakePagedQuery` with #paged" do
@@ -34,7 +42,9 @@ class MR::FakeQuery
   class FakePagedQueryTests < UnitTests
     desc "MR::FakePagedQuery"
     setup do
-      @paged_query = MR::FakePagedQuery.new(@query, 1, 1)
+      @page_num = Factory.integer(@results.size)
+      @page_size = 1
+      @paged_query = MR::FakePagedQuery.new(@query, @page_num, @page_size)
     end
     subject{ @paged_query }
 
@@ -44,17 +54,24 @@ class MR::FakeQuery
       assert_kind_of MR::FakeQuery, subject
     end
 
-    should "fetch the paged results with #results" do
-      results = subject.results
-      assert_equal @results[0, 1], results
+    should "know its page num/size/offset" do
+      assert_equal @page_num, subject.page_num
+      assert_equal @page_size, subject.page_size
+      exp = MR::PagedQuery::PageOffset.new(@page_num, @page_size)
+      assert_equal exp, subject.page_offset
     end
 
-    should "count the paged results with #count" do
-      assert_equal 1, subject.count
+    should "know its paged results" do
+      exp = @results[subject.page_offset, subject.page_size]
+      assert_equal exp, subject.results
     end
 
-    should "count the total number of results with #total_count" do
-      assert_equal 3, subject.total_count
+    should "know its paged result count" do
+      assert_equal @page_size, subject.count
+    end
+
+    should "know its total number of results " do
+      assert_equal @results.size, subject.total_count
     end
 
   end

@@ -1,3 +1,5 @@
+require 'mr/query'
+
 module MR
 
   class FakeQuery
@@ -5,8 +7,8 @@ module MR
     attr_reader :results, :count
 
     def initialize(results)
-      @results = results
-      @count = results.size
+      @results = results || []
+      @count = @results.size
     end
 
     def paged(page_num = nil, page_size = nil)
@@ -26,7 +28,7 @@ module MR
       @unpaged_results = query.results.dup
       @total_count = @unpaged_results.size
 
-      super @unpaged_results.dup[@page_offset, @page_size]
+      super(@unpaged_results.dup[@page_offset, @page_size])
     end
 
   end
