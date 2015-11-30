@@ -20,9 +20,9 @@ Gem::Specification.new do |gem|
 
   gem.add_dependency("activerecord",  ["~> 3.2"])
   gem.add_dependency("activesupport", ["~> 3.2"])
-  gem.add_dependency("assert",        ["~> 2.11"])
+  gem.add_dependency("assert",        ["~> 2.15"])
 
-  gem.add_development_dependency("ardb",    ["~> 0.21"])
+  gem.add_development_dependency("ardb",    ["~> 0.24"])
   gem.add_development_dependency("sqlite3", ["~> 1.3"])
 
 end
