@@ -45,7 +45,12 @@ module MR::Factory
     def column_args
       @columns ||= non_association_columns(@record_class)
       @columns.inject({}) do |a, column|
-        a.merge(column.name.to_s => MR::Factory.send(column.type))
+        column_type = column.type || column.sql_type
+        if !column_type.nil? && MR::Factory.respond_to?(column_type)
+          a.merge(column.name.to_s => MR::Factory.send(column_type))
+        else
+          a
+        end
       end
     end
 
