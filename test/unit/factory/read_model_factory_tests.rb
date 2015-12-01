@@ -5,7 +5,10 @@ class MR::Factory::ReadModelFactory
 
   class UnitTests < Assert::Context
     desc "MR::Factory::ReadModelFactory"
-    subject{ MR::Factory::ReadModelFactory }
+    setup do
+      @factory_class = MR::Factory::ReadModelFactory
+    end
+    subject{ @factory_class }
 
     should "instance eval a block thats passed to it's `new`" do
       eval_scope = nil
@@ -22,7 +25,7 @@ class MR::Factory::ReadModelFactory
   class InstanceTests < UnitTests
     desc "instance"
     setup do
-      @factory = MR::Factory::ReadModelFactory.new(TestReadModel)
+      @factory = @factory_class.new(TestReadModel)
     end
     subject{ @factory }
 
